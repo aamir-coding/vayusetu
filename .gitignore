@@ -1,0 +1,91 @@
+# ---------- Node / pnpm ----------
+node_modules/
+.pnpm-store/
+.pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ---------- Turborepo ----------
+.turbo/
+*.tsbuildinfo
+
+# ---------- Build output ----------
+dist/
+build/
+out/
+.next/
+.vite/
+coverage/
+*.tgz
+
+# ---------- Vite / PWA ----------
+.vite-cache/
+dev-dist/
+stats.html
+
+# ---------- Environment & secrets ----------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+service-account*.json
+*-credentials.json
+application_default_credentials.json
+
+# ---------- Python (ingestion-jobs) ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ---------- GCP / Terraform ----------
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+.terraform.lock.hcl
+gcloud/
+*-key.json
+
+# ---------- IDE / OS ----------
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ---------- Testing ----------
+playwright-report/
+test-results/
+.nyc_output/
+
+# ---------- Logs ----------
+logs/
+*.log
+
+# ---------- Firebase ----------
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# ---------- Misc ----------
+*.local
+.cache/
+
+# ---------- to_be_ignored ----------
+to_be_ignored/

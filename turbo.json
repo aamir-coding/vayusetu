@@ -1,0 +1,40 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "globalDependencies": ["**/.env", "tsconfig.json"],
+  "globalEnv": [
+    "NODE_ENV",
+    "GOOGLE_CLOUD_PROJECT",
+    "GCP_REGION",
+    "VITE_API_BASE_URL",
+    "VITE_FIREBASE_CONFIG"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "build/**", ".next/**", "!.next/cache/**"],
+      "inputs": ["src/**", "package.json", "tsconfig.json"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^build"]
+    },
+    "lint": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "type-check": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "inputs": ["src/**", "test/**", "tests/**", "**/*.test.ts", "**/*.spec.ts"]
+    },
+    "clean": {
+      "cache": false
+    }
+  }
+}
