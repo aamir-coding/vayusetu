@@ -87,5 +87,5 @@ ui-debug.log
 *.local
 .cache/
 
-# ---------- to_be_ignored ----------
-to_be_ignored/
+# ---------- Docs ----------
+docs/
