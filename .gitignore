@@ -87,5 +87,3 @@ ui-debug.log
 *.local
 .cache/
 
-# ---------- Docs ----------
-docs/
