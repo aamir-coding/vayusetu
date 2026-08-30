@@ -1,0 +1,111 @@
+{
+  "app": {
+    "name": "वायुसेतु",
+    "tagline": "नागरिक की नज़र। उपग्रह की दृष्टि। राज्यव्यापी कार्रवाई।"
+  },
+  "nav": {
+    "capture": "रिपोर्ट",
+    "reports": "मेरी रिपोर्ट"
+  },
+  "common": {
+    "retry": "फिर कोशिश करें",
+    "cancel": "रद्द करें",
+    "save": "सहेजें",
+    "close": "बंद करें",
+    "loading": "लोड हो रहा है…",
+    "continue": "आगे बढ़ें",
+    "back": "वापस",
+    "change": "बदलें",
+    "verify": "सत्यापित करें",
+    "skipForNow": "अभी छोड़ें"
+  },
+  "capture": {
+    "title": "आप क्या देख रहे हैं?",
+    "subtitle": "अपने आसपास की हवा या प्रदूषण की फोटो लें।",
+    "takePhoto": "फोटो लें",
+    "retakePhoto": "फिर से फोटो लें",
+    "cameraUnavailable": "कैमरा उपलब्ध नहीं है — इसके बजाय फोटो चुनें",
+    "choosePhoto": "फोटो चुनें",
+    "voiceNote": "आवाज़ का संदेश जोड़ें (वैकल्पिक)",
+    "voiceRecording": "रिकॉर्ड हो रहा है… रोकने के लिए दबाएँ",
+    "voiceRecorded": "आवाज़ का संदेश रिकॉर्ड हो गया",
+    "removeVoice": "हटाएं",
+    "locating": "आपका स्थान खोजा जा रहा है…",
+    "locationFound": "स्थान मिल गया",
+    "locationDenied": "स्थान की अनुमति नहीं मिली",
+    "enterLocationManually": "स्थान खुद दर्ज करें",
+    "latitude": "अक्षांश",
+    "longitude": "देशांतर",
+    "sensorReadingTitle": "सेंसर रीडिंग (वैकल्पिक)",
+    "pm25": "PM2.5 (µg/m³)",
+    "pm10": "PM10 (µg/m³)",
+    "submit": "रिपोर्ट भेजें",
+    "submitting": "भेजा जा रहा है…",
+    "queuedOffline": "सहेज लिया गया। इंटरनेट आते ही भेज दिया जाएगा।",
+    "missingPhoto": "भेजने से पहले एक फोटो जोड़ें।",
+    "missingLocation": "भेजने से पहले स्थान की जानकारी ज़रूरी है।",
+    "reportingAs": "इस रूप में रिपोर्ट कर रहे हैं",
+    "roleCitizen": "नागरिक",
+    "roleFieldWorker": "फील्ड वर्कर"
+  },
+  "result": {
+    "analyzing": "आपकी फोटो पढ़ी जा रही है…",
+    "analyzingHint": "इसमें आमतौर पर कुछ सेकंड लगते हैं।",
+    "title": "हवा की झलक",
+    "play": "सलाह सुनें",
+    "pause": "रोकें",
+    "needsReview": "स्थानीय अधिकारी इस रिपोर्ट की पुष्टि के लिए संपर्क कर सकते हैं।",
+    "indeterminate": "हम इस फोटो से पूरी तरह समझ नहीं पाए — रिपोर्ट करने के लिए धन्यवाद। हमारी टीम इसे देखेगी।",
+    "reportAnother": "एक और रिपोर्ट करें",
+    "failed": "इस रिपोर्ट का विश्लेषण नहीं हो सका।",
+    "visibility": "दृश्यता ~{{meters}} मीटर"
+  },
+  "reports": {
+    "title": "मेरी रिपोर्ट",
+    "titleFieldWorker": "मेरे इलाके की रिपोर्ट",
+    "empty": "अभी तक कोई रिपोर्ट नहीं",
+    "emptyHint": "आपकी पहली रिपोर्ट भेजते ही यह यहाँ दिखेगी।",
+    "emptyAction": "अभी रिपोर्ट करें"
+  },
+  "auth": {
+    "verifyTitle": "अपना फ़ोन सत्यापित करें",
+    "verifySubtitle": "फ़ोन बदलने पर भी अपनी रिपोर्ट सुरक्षित रखें, और फील्ड वर्कर मोड खोलें।",
+    "phoneLabel": "फ़ोन नंबर",
+    "phonePlaceholder": "98765 43210",
+    "sendCode": "कोड भेजें",
+    "codeLabel": "6 अंकों का कोड",
+    "codeSentTo": "{{phone}} पर कोड भेजा गया",
+    "mockHint": "मॉक मोड — सत्यापित करने के लिए {{code}} डालें।",
+    "fieldWorkerQuestion": "क्या आप फील्ड वर्कर या एनजीओ सर्वेक्षक हैं?",
+    "nameLabel": "आपका नाम",
+    "namePlaceholder": "जैसे आनंद कुमार",
+    "verifyAndContinue": "सत्यापित करें और आगे बढ़ें",
+    "verified": "फ़ोन सत्यापित हो गया"
+  },
+  "offline": {
+    "banner_one": "{{count}} रिपोर्ट भेजने के लिए बाकी है",
+    "banner_other": "{{count}} रिपोर्ट भेजने के लिए बाकी हैं",
+    "synced": "सब भेजा जा चुका है",
+    "willSyncWhenOnline": "इंटरनेट आते ही अपने आप भेज दिया जाएगा।"
+  },
+  "pollutionSource": {
+    "crop_residue_burning": "फसल अवशेष जलाना",
+    "industrial_emission": "औद्योगिक उत्सर्जन",
+    "open_waste_burning": "खुले में कचरा जलाना",
+    "vehicular_smog": "वाहनों का धुआं",
+    "construction_dust": "निर्माण की धूल",
+    "no_visible_pollution": "कोई दिखाई देता प्रदूषण नहीं",
+    "indeterminate": "अनिश्चित"
+  },
+  "aqiCategory": {
+    "good": "अच्छी",
+    "satisfactory": "संतोषजनक",
+    "moderate": "मध्यम",
+    "poor": "खराब",
+    "very_poor": "बहुत खराब",
+    "severe": "गंभीर"
+  },
+  "language": {
+    "choose": "अपनी भाषा चुनें"
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "app": {
+    "name": "VayuSetu",
+    "tagline": "Citizen Eyes. Satellite Sight. Statewide Action."
+  },
+  "nav": {
+    "capture": "Report",
+    "reports": "My Reports"
+  },
+  "common": {
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "loading": "Loading…",
+    "continue": "Continue",
+    "back": "Back",
+    "change": "Change",
+    "verify": "Verify",
+    "skipForNow": "Skip for now"
+  },
+  "capture": {
+    "title": "What do you see?",
+    "subtitle": "Take a photo of the air or pollution near you.",
+    "takePhoto": "Take Photo",
+    "retakePhoto": "Retake Photo",
+    "cameraUnavailable": "Camera unavailable — choose a photo instead",
+    "choosePhoto": "Choose a Photo",
+    "voiceNote": "Add a voice note (optional)",
+    "voiceRecording": "Recording… tap to stop",
+    "voiceRecorded": "Voice note recorded",
+    "removeVoice": "Remove",
+    "locating": "Finding your location…",
+    "locationFound": "Location found",
+    "locationDenied": "Location access was denied",
+    "enterLocationManually": "Enter location manually",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "sensorReadingTitle": "Sensor reading (optional)",
+    "pm25": "PM2.5 (µg/m³)",
+    "pm10": "PM10 (µg/m³)",
+    "submit": "Send Report",
+    "submitting": "Sending…",
+    "queuedOffline": "Saved. We'll send it once you're back online.",
+    "missingPhoto": "Add a photo before sending.",
+    "missingLocation": "We need a location before sending.",
+    "reportingAs": "Reporting as",
+    "roleCitizen": "Citizen",
+    "roleFieldWorker": "Field Worker"
+  },
+  "result": {
+    "analyzing": "Reading your photo…",
+    "analyzingHint": "This usually takes a few seconds.",
+    "title": "Air Snapshot",
+    "play": "Play advisory",
+    "pause": "Pause",
+    "needsReview": "A local official may follow up to confirm this report.",
+    "indeterminate": "We couldn't tell for sure from this photo — thank you for reporting. Our team will take a look.",
+    "reportAnother": "Report Another",
+    "failed": "This report couldn't be analyzed.",
+    "visibility": "Visibility ~{{meters}} m"
+  },
+  "reports": {
+    "title": "My Reports",
+    "titleFieldWorker": "My Area Reports",
+    "empty": "No reports yet",
+    "emptyHint": "Your reports will show up here once you send your first one.",
+    "emptyAction": "Report Now"
+  },
+  "auth": {
+    "verifyTitle": "Verify your phone",
+    "verifySubtitle": "Keep your reports if you switch phones, and unlock field worker mode.",
+    "phoneLabel": "Phone number",
+    "phonePlaceholder": "98765 43210",
+    "sendCode": "Send Code",
+    "codeLabel": "6-digit code",
+    "codeSentTo": "Code sent to {{phone}}",
+    "mockHint": "Mock mode — use {{code}} to verify.",
+    "fieldWorkerQuestion": "Are you a field worker or NGO surveyor?",
+    "nameLabel": "Your name",
+    "namePlaceholder": "e.g. Anand Kumar",
+    "verifyAndContinue": "Verify & Continue",
+    "verified": "Phone verified"
+  },
+  "offline": {
+    "banner_one": "{{count}} report waiting to send",
+    "banner_other": "{{count}} reports waiting to send",
+    "synced": "All caught up",
+    "willSyncWhenOnline": "Will send automatically when you're back online."
+  },
+  "pollutionSource": {
+    "crop_residue_burning": "Crop Residue Burning",
+    "industrial_emission": "Industrial Emission",
+    "open_waste_burning": "Open Waste Burning",
+    "vehicular_smog": "Vehicular Smog",
+    "construction_dust": "Construction Dust",
+    "no_visible_pollution": "No Visible Pollution",
+    "indeterminate": "Indeterminate"
+  },
+  "aqiCategory": {
+    "good": "Good",
+    "satisfactory": "Satisfactory",
+    "moderate": "Moderate",
+    "poor": "Poor",
+    "very_poor": "Very Poor",
+    "severe": "Severe"
+  },
+  "language": {
+    "choose": "Choose your language"
+  }
+}

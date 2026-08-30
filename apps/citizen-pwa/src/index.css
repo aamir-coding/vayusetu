@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    font-family: theme('fontFamily.sans');
+  }
+
+  :lang(hi) body,
+  :lang(mr) body {
+    font-family: theme('fontFamily.devanagari');
+  }
+
+  :lang(pa) body {
+    font-family: theme('fontFamily.gurmukhi');
+  }
+
+  /* Large, obvious focus rings everywhere — Rina and Anand are often on a
+     phone in bright sunlight; a faint focus outline is not enough. */
+  :focus-visible {
+    outline: 2px solid theme('colors.brand.500');
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,6 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="VayuSetu">
+  <rect width="512" height="512" rx="112" fill="#0E2224"/>
+  <path d="M96 320c48-96 128-144 160-144s112 48 160 144" fill="none" stroke="#1F948C" stroke-width="28" stroke-linecap="round"/>
+  <path d="M140 360c34-68 88-102 116-102s82 34 116 102" fill="none" stroke="#3FB3AA" stroke-width="24" stroke-linecap="round"/>
+  <circle cx="256" cy="176" r="34" fill="#EFA22A"/>
+</svg>

@@ -1,0 +1,111 @@
+{
+  "app": {
+    "name": "ਵਾਯੂਸੇਤੂ",
+    "tagline": "ਨਾਗਰਿਕ ਦੀਆਂ ਅੱਖਾਂ। ਸੈਟੇਲਾਈਟ ਦੀ ਨਜ਼ਰ। ਰਾਜ-ਵਿਆਪੀ ਕਾਰਵਾਈ।"
+  },
+  "nav": {
+    "capture": "ਰਿਪੋਰਟ",
+    "reports": "ਮੇਰੀਆਂ ਰਿਪੋਰਟਾਂ"
+  },
+  "common": {
+    "retry": "ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
+    "cancel": "ਰੱਦ ਕਰੋ",
+    "save": "ਸੰਭਾਲੋ",
+    "close": "ਬੰਦ ਕਰੋ",
+    "loading": "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ…",
+    "continue": "ਅੱਗੇ ਵਧੋ",
+    "back": "ਪਿੱਛੇ",
+    "change": "ਬਦਲੋ",
+    "verify": "ਤਸਦੀਕ ਕਰੋ",
+    "skipForNow": "ਹੁਣ ਲਈ ਛੱਡੋ"
+  },
+  "capture": {
+    "title": "ਤੁਹਾਨੂੰ ਕੀ ਦਿਖਾਈ ਦੇ ਰਿਹਾ ਹੈ?",
+    "subtitle": "ਆਪਣੇ ਆਲੇ-ਦੁਆਲੇ ਦੀ ਹਵਾ ਜਾਂ ਪ੍ਰਦੂਸ਼ਣ ਦੀ ਫੋਟੋ ਲਓ।",
+    "takePhoto": "ਫੋਟੋ ਲਓ",
+    "retakePhoto": "ਫੋਟੋ ਦੁਬਾਰਾ ਲਓ",
+    "cameraUnavailable": "ਕੈਮਰਾ ਉਪਲਬਧ ਨਹੀਂ — ਇਸ ਦੀ ਬਜਾਏ ਫੋਟੋ ਚੁਣੋ",
+    "choosePhoto": "ਫੋਟੋ ਚੁਣੋ",
+    "voiceNote": "ਆਵਾਜ਼ ਸੁਨੇਹਾ ਜੋੜੋ (ਵਿਕਲਪਿਕ)",
+    "voiceRecording": "ਰਿਕਾਰਡ ਹੋ ਰਿਹਾ ਹੈ… ਰੋਕਣ ਲਈ ਦਬਾਓ",
+    "voiceRecorded": "ਆਵਾਜ਼ ਸੁਨੇਹਾ ਰਿਕਾਰਡ ਹੋ ਗਿਆ",
+    "removeVoice": "ਹਟਾਓ",
+    "locating": "ਤੁਹਾਡੀ ਥਾਂ ਲੱਭੀ ਜਾ ਰਹੀ ਹੈ…",
+    "locationFound": "ਥਾਂ ਮਿਲ ਗਈ",
+    "locationDenied": "ਟਿਕਾਣੇ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਮਿਲੀ",
+    "enterLocationManually": "ਟਿਕਾਣਾ ਖੁਦ ਦਰਜ ਕਰੋ",
+    "latitude": "ਅਕਸ਼ਾਂਸ਼",
+    "longitude": "ਦੇਸ਼ਾਂਤਰ",
+    "sensorReadingTitle": "ਸੈਂਸਰ ਰੀਡਿੰਗ (ਵਿਕਲਪਿਕ)",
+    "pm25": "PM2.5 (µg/m³)",
+    "pm10": "PM10 (µg/m³)",
+    "submit": "ਰਿਪੋਰਟ ਭੇਜੋ",
+    "submitting": "ਭੇਜੀ ਜਾ ਰਹੀ ਹੈ…",
+    "queuedOffline": "ਸੰਭਾਲ ਲਿਆ। ਇੰਟਰਨੈੱਟ ਆਉਂਦੇ ਹੀ ਭੇਜ ਦਿੱਤਾ ਜਾਵੇਗਾ।",
+    "missingPhoto": "ਭੇਜਣ ਤੋਂ ਪਹਿਲਾਂ ਇੱਕ ਫੋਟੋ ਜੋੜੋ।",
+    "missingLocation": "ਭੇਜਣ ਤੋਂ ਪਹਿਲਾਂ ਟਿਕਾਣਾ ਲੋੜੀਂਦਾ ਹੈ।",
+    "reportingAs": "ਇਸ ਰੂਪ ਵਿੱਚ ਰਿਪੋਰਟ ਕਰ ਰਹੇ ਹੋ",
+    "roleCitizen": "ਨਾਗਰਿਕ",
+    "roleFieldWorker": "ਫੀਲਡ ਵਰਕਰ"
+  },
+  "result": {
+    "analyzing": "ਤੁਹਾਡੀ ਫੋਟੋ ਪੜ੍ਹੀ ਜਾ ਰਹੀ ਹੈ…",
+    "analyzingHint": "ਇਸ ਵਿੱਚ ਆਮ ਤੌਰ 'ਤੇ ਕੁਝ ਸਕਿੰਟ ਲੱਗਦੇ ਹਨ।",
+    "title": "ਹਵਾ ਦੀ ਝਲਕ",
+    "play": "ਸਲਾਹ ਸੁਣੋ",
+    "pause": "ਰੋਕੋ",
+    "needsReview": "ਸਥਾਨਕ ਅਧਿਕਾਰੀ ਇਸ ਰਿਪੋਰਟ ਦੀ ਪੁਸ਼ਟੀ ਲਈ ਸੰਪਰਕ ਕਰ ਸਕਦੇ ਹਨ।",
+    "indeterminate": "ਅਸੀਂ ਇਸ ਫੋਟੋ ਤੋਂ ਪੱਕਾ ਨਹੀਂ ਦੱਸ ਸਕੇ — ਰਿਪੋਰਟ ਕਰਨ ਲਈ ਧੰਨਵਾਦ। ਸਾਡੀ ਟੀਮ ਇਸਨੂੰ ਦੇਖੇਗੀ।",
+    "reportAnother": "ਇੱਕ ਹੋਰ ਰਿਪੋਰਟ ਕਰੋ",
+    "failed": "ਇਸ ਰਿਪੋਰਟ ਦਾ ਵਿਸ਼ਲੇਸ਼ਣ ਨਹੀਂ ਹੋ ਸਕਿਆ।",
+    "visibility": "ਦਿੱਖ ~{{meters}} ਮੀ"
+  },
+  "reports": {
+    "title": "ਮੇਰੀਆਂ ਰਿਪੋਰਟਾਂ",
+    "titleFieldWorker": "ਮੇਰੇ ਇਲਾਕੇ ਦੀਆਂ ਰਿਪੋਰਟਾਂ",
+    "empty": "ਹਾਲੇ ਕੋਈ ਰਿਪੋਰਟ ਨਹੀਂ",
+    "emptyHint": "ਤੁਹਾਡੀ ਪਹਿਲੀ ਰਿਪੋਰਟ ਭੇਜਦੇ ਹੀ ਇਹ ਇੱਥੇ ਦਿਖਾਈ ਦੇਵੇਗੀ।",
+    "emptyAction": "ਹੁਣੇ ਰਿਪੋਰਟ ਕਰੋ"
+  },
+  "auth": {
+    "verifyTitle": "ਆਪਣਾ ਫ਼ੋਨ ਤਸਦੀਕ ਕਰੋ",
+    "verifySubtitle": "ਫ਼ੋਨ ਬਦਲਣ 'ਤੇ ਵੀ ਆਪਣੀਆਂ ਰਿਪੋਰਟਾਂ ਸੁਰੱਖਿਅਤ ਰੱਖੋ, ਅਤੇ ਫੀਲਡ ਵਰਕਰ ਮੋਡ ਖੋਲ੍ਹੋ।",
+    "phoneLabel": "ਫ਼ੋਨ ਨੰਬਰ",
+    "phonePlaceholder": "98765 43210",
+    "sendCode": "ਕੋਡ ਭੇਜੋ",
+    "codeLabel": "6-ਅੰਕਾਂ ਦਾ ਕੋਡ",
+    "codeSentTo": "{{phone}} 'ਤੇ ਕੋਡ ਭੇਜਿਆ ਗਿਆ",
+    "mockHint": "ਮੌਕ ਮੋਡ — ਤਸਦੀਕ ਲਈ {{code}} ਵਰਤੋ।",
+    "fieldWorkerQuestion": "ਕੀ ਤੁਸੀਂ ਫੀਲਡ ਵਰਕਰ ਜਾਂ ਐਨਜੀਓ ਸਰਵੇਖਣਕਾਰ ਹੋ?",
+    "nameLabel": "ਤੁਹਾਡਾ ਨਾਮ",
+    "namePlaceholder": "ਜਿਵੇਂ ਅਨੰਦ ਕੁਮਾਰ",
+    "verifyAndContinue": "ਤਸਦੀਕ ਕਰੋ ਅਤੇ ਅੱਗੇ ਵਧੋ",
+    "verified": "ਫ਼ੋਨ ਤਸਦੀਕ ਹੋ ਗਿਆ"
+  },
+  "offline": {
+    "banner_one": "{{count}} ਰਿਪੋਰਟ ਭੇਜਣੀ ਬਾਕੀ ਹੈ",
+    "banner_other": "{{count}} ਰਿਪੋਰਟਾਂ ਭੇਜਣੀਆਂ ਬਾਕੀ ਹਨ",
+    "synced": "ਸਭ ਭੇਜਿਆ ਜਾ ਚੁੱਕਾ ਹੈ",
+    "willSyncWhenOnline": "ਇੰਟਰਨੈੱਟ ਆਉਂਦੇ ਹੀ ਆਪਣੇ ਆਪ ਭੇਜ ਦਿੱਤਾ ਜਾਵੇਗਾ।"
+  },
+  "pollutionSource": {
+    "crop_residue_burning": "ਫ਼ਸਲ ਦੀ ਰਹਿੰਦ-ਖੂੰਹਦ ਸਾੜਨਾ",
+    "industrial_emission": "ਉਦਯੋਗਿਕ ਨਿਕਾਸ",
+    "open_waste_burning": "ਖੁੱਲ੍ਹੇ ਵਿੱਚ ਕੂੜਾ ਸਾੜਨਾ",
+    "vehicular_smog": "ਵਾਹਨਾਂ ਦਾ ਧੂੰਆਂ",
+    "construction_dust": "ਉਸਾਰੀ ਦੀ ਧੂੜ",
+    "no_visible_pollution": "ਕੋਈ ਦਿਖਾਈ ਦਿੰਦਾ ਪ੍ਰਦੂਸ਼ਣ ਨਹੀਂ",
+    "indeterminate": "ਅਨਿਸ਼ਚਿਤ"
+  },
+  "aqiCategory": {
+    "good": "ਚੰਗੀ",
+    "satisfactory": "ਤਸੱਲੀਬਖਸ਼",
+    "moderate": "ਦਰਮਿਆਨੀ",
+    "poor": "ਮਾੜੀ",
+    "very_poor": "ਬਹੁਤ ਮਾੜੀ",
+    "severe": "ਗੰਭੀਰ"
+  },
+  "language": {
+    "choose": "ਆਪਣੀ ਭਾਸ਼ਾ ਚੁਣੋ"
+  }
+}
