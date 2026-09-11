@@ -1,0 +1,19 @@
+{
+  "name": "pipeline-a-eval",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Week 1: hand-tune Pipeline A's system instruction against ~50 labeled real photos (TEAM_ROLES_AND_REPO_MAP.md, Engineer 3 / Week 1).",
+  "type": "module",
+  "scripts": {
+    "start": "tsx evalPipelineA.ts"
+  },
+  "dependencies": {
+    "@vayusetu/gemini-client": "workspace:*",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "tsx": "^4.16.5",
+    "@types/node": "^20.14.0"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "name": "@vayusetu/submission-service",
+  "version": "0.1.0",
+  "private": true,
+  "description": "VayuSetu Submission Service -- implements the Users and Submissions REST endpoints from API_CONTRACTS.md §4.2: registers citizen/field-worker Submissions, resolves jurisdiction + H3 cell, and publishes submission.created for analysis-service to pick up.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc --noEmit",
+    "start": "tsx src/index.ts",
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rimraf .turbo *.tsbuildinfo",
+    "emulator:topics": "node scripts/setup-pubsub-topics.mjs"
+  },
+  "dependencies": {
+    "@vayusetu/shared-types": "workspace:*",
+    "@vayusetu/gcp-clients": "workspace:*",
+    "@fastify/cors": "^10.0.1",
+    "@fastify/rate-limit": "^10.1.1",
+    "@google-cloud/pubsub": "^4.9.0",
+    "fastify": "^5.1.0",
+    "fastify-plugin": "^5.0.1",
+    "firebase-admin": "^12.6.0",
+    "h3-js": "^4.1.0",
+    "pino": "^9.4.0",
+    "pino-pretty": "^11.2.2",
+    "tsx": "^4.19.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@types/node": "^22.7.5",
+    "eslint": "^9.13.0",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.15.0",
+    "vitest": "^2.1.3"
+  }
+}
