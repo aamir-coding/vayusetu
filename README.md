@@ -20,6 +20,124 @@ pnpm dev            # runs every app's dev script in parallel via turbo
 - **Citizen PWA**: opens straight into report capture, no login wall (silent anonymous auth). Tap **Verify** in the header to try the phone-OTP flow — mock OTP is `123456`.
 - **Admin Dashboard**: sign-in screen offers two personas — Officer Deshmukh (district_admin) and Ms. Iyer (state_admin) — since real accounts are provisioned out-of-band per the contract, not self-registered.
 
+## Submission API local test
+
+The submission service uses local Firestore and Pub/Sub emulators. Run each step in a separate terminal and keep the emulator and API terminals running. The service scripts do not automatically load `apps/submission-service/.env.local`, so set the variables shown below.
+
+### Bash
+
+**Terminal 1 — start emulators from the repository root:**
+
+```bash
+./infra/scripts/dev-emulators.sh
+```
+
+**Terminal 2 — create Pub/Sub topics and debug subscriptions:**
+
+```bash
+cd apps/submission-service
+export PUBSUB_EMULATOR_HOST=localhost:8085
+export GOOGLE_CLOUD_PROJECT=vayusetu-ncr-dev
+pnpm emulator:topics
+```
+
+**Terminal 3 — start the API:**
+
+```bash
+cd apps/submission-service
+export AUTH_MODE=mock
+export NODE_ENV=development
+export PORT=8080
+export GOOGLE_CLOUD_PROJECT=vayusetu-ncr-dev
+export FIRESTORE_EMULATOR_HOST=localhost:8081
+export PUBSUB_EMULATOR_HOST=localhost:8085
+pnpm dev
+```
+
+**Terminal 4 — exercise the API:**
+
+```bash
+curl http://localhost:8080/healthz
+
+curl -X POST http://localhost:8080/api/v1/users/register \
+	-H "Authorization: Bearer mock-token:rina-test" \
+	-H "Content-Type: application/json" \
+	-d '{"displayName":"Rina","preferredLanguage":"hi-IN","role":"citizen"}'
+
+curl http://localhost:8080/api/v1/users/me \
+	-H "Authorization: Bearer mock-token:rina-test"
+
+curl -X POST http://localhost:8080/api/v1/submissions \
+	-H "Authorization: Bearer mock-token:rina-test" \
+	-H "Content-Type: application/json" \
+	-d '{"mediaType":"photo","photoStorageUrl":"https://storage.googleapis.com/example/photo.jpg","geo":{"lat":28.6129,"lng":77.2295},"capturedAt":"2026-09-10T10:00:00.000Z"}'
+
+curl "http://localhost:8080/api/v1/submissions?pageSize=10" \
+	-H "Authorization: Bearer mock-token:rina-test"
+
+gcloud config set api_endpoint_overrides/pubsub http://localhost:8085/
+gcloud pubsub subscriptions pull \
+	submission.created-debug-pull --auto-ack --project=vayusetu-ncr-dev
+
+# Run this after local emulator testing to restore real GCP Pub/Sub commands.
+gcloud config unset api_endpoint_overrides/pubsub
+```
+
+### PowerShell
+
+**Terminal 1 — start emulators from the repository root:**
+
+```powershell
+bash ./infra/scripts/dev-emulators.sh
+```
+
+**Terminal 2 — create Pub/Sub topics and debug subscriptions:**
+
+```powershell
+cd apps/submission-service
+$env:PUBSUB_EMULATOR_HOST="localhost:8085"
+$env:GOOGLE_CLOUD_PROJECT="vayusetu-ncr-dev"
+pnpm emulator:topics
+```
+
+**Terminal 3 — start the API:**
+
+```powershell
+cd apps/submission-service
+$env:AUTH_MODE="mock"
+$env:NODE_ENV="development"
+$env:PORT="8080"
+$env:GOOGLE_CLOUD_PROJECT="vayusetu-ncr-dev"
+$env:FIRESTORE_EMULATOR_HOST="localhost:8081"
+$env:PUBSUB_EMULATOR_HOST="localhost:8085"
+pnpm dev
+```
+
+The API log should contain `authMode=mock`. **Terminal 4 — exercise the API:**
+
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8080/healthz"
+
+$body = @{ displayName = "Rina"; preferredLanguage = "hi-IN"; role = "citizen" } | ConvertTo-Json -Compress
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/users/register" -Method Post -Headers @{ Authorization = "Bearer mock-token:rina-test" } -ContentType "application/json" -Body $body
+
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/users/me" -Headers @{ Authorization = "Bearer mock-token:rina-test" }
+
+$body = @{ mediaType = "photo"; photoStorageUrl = "https://storage.googleapis.com/example/photo.jpg"; geo = @{ lat = 28.6129; lng = 77.2295 }; capturedAt = "2026-09-10T10:00:00.000Z" } | ConvertTo-Json -Compress
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/submissions" -Method Post -Headers @{ Authorization = "Bearer mock-token:rina-test" } -ContentType "application/json" -Body $body
+
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/submissions?pageSize=10" -Headers @{ Authorization = "Bearer mock-token:rina-test" }
+
+$env:PUBSUB_EMULATOR_HOST="localhost:8085"
+gcloud config set api_endpoint_overrides/pubsub http://localhost:8085/
+gcloud pubsub subscriptions pull submission.created-debug-pull --auto-ack --project=vayusetu-ncr-dev
+
+# Run this after local emulator testing to restore real GCP Pub/Sub commands.
+gcloud config unset api_endpoint_overrides/pubsub
+```
+
+If the emulator terminal is stopped and restarted, rerun `pnpm emulator:topics` before submitting another report. The emulator does not persist topics, subscriptions, or messages between restarts.
+
 ## What's here
 
 | Path | Owner | Status |
@@ -29,11 +147,26 @@ pnpm dev            # runs every app's dev script in parallel via turbo
 | `packages/ui-components` | Engineer 1 | shadcn/ui-style component library, typed against `shared-types` |
 | `apps/citizen-pwa` | Engineer 1 | Feature 1 (Snap & Sense) — capture, snapshot result, my reports, phone auth, offline queue, 4-language i18n |
 | `apps/admin-dashboard` | Engineer 1 | Alert queue, hotspot map, forecast view, Federation panel, Lite Mode |
-| `apps/submission-service`, `analysis-service`, `hotspot-service`, `forecast-service`, `alert-service`, `federation-service`, `ingestion-jobs` | Engineers 2–4 | Not yet built |
+| `apps/submission-service` | Engineer 2 | Week 1 scaffold and Users/Submissions API; local emulator-tested |
+| `analysis-service`, `hotspot-service`, `forecast-service`, `alert-service`, `federation-service`, `ingestion-jobs` | Engineers 2–4 | Planned or in progress |
 
 ## Commands
 
 Standard turbo-orchestrated scripts from the repo root: `pnpm build`, `pnpm dev`, `pnpm lint`, `pnpm type-check`, `pnpm format`. Scope any of these to one app with `pnpm --filter @vayusetu/citizen-pwa <script>`.
+
+## Terraform and secrets
+
+Terraform configuration lives in `infra/terraform`. The NCR development environment has been applied to project `vayusetu-ncr-dev`; the generated `tfplan`, Terraform state, `.tfvars`, and credentials are intentionally ignored by Git.
+
+Terraform creates empty Secret Manager containers only. Add real values out-of-band with `gcloud secrets versions add`; never put API keys in Terraform files, `.env` files committed to Git, or frontend code. The deployed Cloud Run services initially use the public `hello` placeholder until each real service image is deployed.
+
+When using Pub/Sub emulator commands with `gcloud`, set the local endpoint first:
+
+```powershell
+gcloud config set api_endpoint_overrides/pubsub http://localhost:8085/
+gcloud pubsub subscriptions pull submission.created-debug-pull --auto-ack --project=vayusetu-ncr-dev
+gcloud config unset api_endpoint_overrides/pubsub
+```
 
 ## Contract gaps found while building the frontend
 
