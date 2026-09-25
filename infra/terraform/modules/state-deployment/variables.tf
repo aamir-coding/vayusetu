@@ -39,3 +39,59 @@ variable "allowed_upload_origins" {
   default     = ["http://localhost:5173", "http://localhost:5174"]
   description = "Origins allowed to PUT directly to the citizen-media bucket via signed URL -- the Citizen PWA and Admin Dashboard dev servers by default; add production Firebase Hosting domains once those exist."
 }
+
+# ---------------------------------------------------------------- Week 2
+
+variable "default_state_code" {
+  type        = string
+  default     = "DL"
+  description = "Jurisdiction fallback for submission-service/alert-service when geocoding can't resolve a point (and the only value used if no Maps key is configured)."
+}
+
+variable "default_district_code" {
+  type        = string
+  default     = "DL-CENTRAL"
+  description = "District half of the jurisdiction fallback. Team convention code, not a numeric LGD code -- see WEEK2_SETUP.md."
+}
+
+variable "maps_api_key_secret_populated" {
+  type        = bool
+  default     = false
+  description = "Set true only AFTER `gcloud secrets versions add google-maps-api-key ...`. Cloud Run refuses to deploy a revision that references a secret with no versions, so the GOOGLE_MAPS_API_KEY env is wired only when this is true."
+}
+
+variable "dashboard_base_url" {
+  type        = string
+  default     = null
+  description = "Admin dashboard origin used for alert deep links. Defaults to the Firebase Hosting default domain https://<project_id>.web.app. Must be https in deployed envs (FCM rejects non-https web-push links)."
+}
+
+variable "enable_alert_push_subscriptions" {
+  type        = bool
+  default     = false
+  description = "Create the Pub/Sub PUSH subscriptions that deliver hotspot.updated/forecast.updated to alert-service. Leave false until alert-service's real image has been deployed once: the Week 1 hello-world placeholder answers every push with 200, which Pub/Sub treats as a successful ack -- real events would be silently dropped."
+}
+
+variable "enable_ci_triggers" {
+  type        = bool
+  default     = false
+  description = "Create Cloud Build GitHub triggers. Requires the one-time manual step of installing the Cloud Build GitHub App on the repo and connecting it in the console first (see WEEK2_SETUP.md); applying with this true before that fails."
+}
+
+variable "github_owner" {
+  type        = string
+  default     = ""
+  description = "GitHub org/user that owns the monorepo (required when enable_ci_triggers = true)."
+}
+
+variable "github_repo" {
+  type        = string
+  default     = ""
+  description = "GitHub repository name of the monorepo (required when enable_ci_triggers = true)."
+}
+
+variable "ci_branch_regex" {
+  type        = string
+  default     = "^main$"
+  description = "Branch whose pushes deploy, and which PRs must target to be validated."
+}
