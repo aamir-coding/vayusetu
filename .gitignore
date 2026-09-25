@@ -53,9 +53,12 @@ pip-delete-this-directory.txt
 .terraform/
 *.tfstate
 *.tfstate.*
+*.tfplan
+tfplan
+crash.log
+crash.*.log
 *.tfvars
 !*.tfvars.example
-.terraform.lock.hcl
 gcloud/
 *-key.json
 

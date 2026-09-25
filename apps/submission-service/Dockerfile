@@ -13,7 +13,7 @@ RUN corepack enable
 
 # ---- deps: install once, leveraging the workspace lockfile ----
 FROM base AS deps
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.json ./
 COPY packages/shared-types/package.json packages/shared-types/package.json
 COPY packages/gcp-clients/package.json packages/gcp-clients/package.json
 COPY apps/submission-service/package.json apps/submission-service/package.json

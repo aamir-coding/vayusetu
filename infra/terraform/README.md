@@ -95,11 +95,100 @@ gcloud run deploy submission-service-ncr-dev \
 
 This updates the *image* only — Terraform's `lifecycle.ignore_changes` means a later `terraform apply` won't fight you over it or revert it.
 
+### Manually deploy via Cloud Build (no local Docker needed)
+
+If Docker isn't installed locally, `gcloud builds submit` runs the same multi-stage build in the cloud instead — this is what CI (`infra/cloudbuild/<app>.yaml`) does too, so testing this way exercises the real CI path before the GitHub trigger even exists:
+
+```bash
+# from the REPO ROOT
+gcloud builds submit --config infra/cloudbuild/submission-service.yaml \
+  --substitutions=_DEPLOY=true,_ENV=ncr-dev,_REGION=asia-south1 \
+  --project=vayusetu-ncr-dev \
+  --service-account="projects/vayusetu-ncr-dev/serviceAccounts/cloudbuild-ncr-dev@vayusetu-ncr-dev.iam.gserviceaccount.com" .
+
+# same for alert-service:
+gcloud builds submit --config infra/cloudbuild/alert-service.yaml \
+  --substitutions=_DEPLOY=true,_ENV=ncr-dev,_REGION=asia-south1 \
+  --project=vayusetu-ncr-dev \
+  --service-account="projects/vayusetu-ncr-dev/serviceAccounts/cloudbuild-ncr-dev@vayusetu-ncr-dev.iam.gserviceaccount.com" .
+```
+
+`--service-account` makes Cloud Build run every step — including fetching its own uploaded source — as `cloudbuild-ncr-dev`, not the default Cloud Build SA, which needs explicit read access to the auto-created `<project>_cloudbuild` staging bucket or the build fails immediately with `storage.objects.get` denied before a single build step runs. `cloudbuild.tf`'s `google_storage_bucket_iam_member.cloudbuild_deployer_source_access` grants this via Terraform now. That bucket doesn't exist until the *first* `gcloud builds submit` attempt auto-creates it though, so on a brand-new project the very first submit may need the grant applied by hand first:
+```bash
+gcloud storage buckets add-iam-policy-binding gs://vayusetu-ncr-dev_cloudbuild \
+  --member=serviceAccount:cloudbuild-ncr-dev@vayusetu-ncr-dev.iam.gserviceaccount.com \
+  --role=roles/storage.objectViewer
+```
+
+Both Dockerfiles `COPY` the repo-root `tsconfig.json` explicitly (alongside `pnpm-workspace.yaml`/`pnpm-lock.yaml`/`package.json`) — every package's `tsconfig.json` `extends` it, and without that line the in-image `tsc` build fails with `error TS5083: Cannot read file '/app/tsconfig.json'`. If you add a new service Dockerfile, copy that line too.
+
 ## Enable Firebase Auth sign-in methods (manual, Console)
 
 `google_firebase_project` turns the project into a Firebase project, but which sign-in methods are active (Anonymous, Phone) is product configuration, not infrastructure — enable both at:
 `https://console.firebase.google.com/project/vayusetu-ncr-dev/authentication/providers`
 (Anonymous for citizen-pwa's no-login-wall flow; Phone for the verify-your-number upgrade.)
+
+## Testing the deployed services
+
+### Health check: use `/health`, not `/healthz`
+
+Cloud Run's public `*.run.app` domain intercepts the exact path `/healthz` at the Google Frontend edge layer and returns its own static "confused robot" 404 page — the request never reaches the container. Confirmed empirically: every sibling path (`/health`, `/healthy`, `/_ah/health`, even a nonexistent path) correctly reaches the app and gets a real response from Fastify; only the literal string `/healthz` doesn't (its 404 is missing the `server: Google Frontend` / `x-cloud-trace-context` headers every other response has). Both services register their check at `/health` for exactly this reason — don't rename it back.
+
+```bash
+curl -s https://submission-service-ncr-dev-818188514572.asia-south1.run.app/health
+curl -s https://alert-service-ncr-dev-818188514572.asia-south1.run.app/health
+```
+Expect `{"ok":true,"service":"..."}` from each.
+
+### Get a real Firebase ID token (Anonymous Auth)
+
+citizen-pwa's real phone-OTP login isn't deployed until Engineer 1's Week 4, so mint a real token a different way — `verifyIdToken` on the server can't distinguish an anonymous token from a phone-verified one, so this is good enough for testing.
+
+One-time: enable **Anonymous** sign-in at `https://console.firebase.google.com/project/vayusetu-ncr-dev/authentication/providers`, then copy the **Web API Key** from Project Settings (gear icon) → General.
+
+```bash
+WEB_API_KEY="<paste Web API Key>"
+S="https://submission-service-ncr-dev-818188514572.asia-south1.run.app/api/v1"
+
+RESP=$(curl -s -X POST "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=$WEB_API_KEY" \
+  -H 'content-type: application/json' -d '{"returnSecureToken":true}')
+
+TOKEN=$(echo "$RESP" | sed -n 's/.*"idToken"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+
+curl -s -X POST "$S/users/register" -H "authorization: Bearer $TOKEN" \
+  -H 'content-type: application/json' \
+  -d '{"displayName":"Test Citizen","preferredLanguage":"en","role":"citizen"}'
+```
+Expect a `201` with the created user back. `$TOKEN` stays valid for `expiresIn` seconds (from `$RESP`, typically 3600) — reuse it for the flow below instead of signing up again.
+
+### Full signed-upload flow (API_CONTRACTS.md §4.2)
+
+Real sample photos are already in the repo for this — `vayusetu-engineer3-week1/ml/pipeline-a-eval/raw-photos/<category>/*.jpg` (kept as a sibling of the main repo checkout).
+
+```bash
+R=$(curl -s -X POST "$S/submissions/upload-url" -H "authorization: Bearer $TOKEN" \
+  -H 'content-type: application/json' -d '{"kind":"photo","contentType":"image/jpeg"}')
+
+UPLOAD_URL=$(echo "$R" | sed -n 's/.*"uploadUrl"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+STORAGE_URL=$(echo "$R" | sed -n 's/.*"storageUrl"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+
+curl -s -X PUT "$UPLOAD_URL" -H 'Content-Type: image/jpeg' \
+  --data-binary @"/absolute/path/to/a/real/photo.jpg"   # EXACT same Content-Type as requested above
+
+curl -s -X POST "$S/submissions" -H "authorization: Bearer $TOKEN" \
+  -H 'content-type: application/json' \
+  -d "{\"mediaType\":\"photo\",\"photoStorageUrl\":\"$STORAGE_URL\",\"geo\":{\"lat\":28.6329,\"lng\":77.2195},\"capturedAt\":\"$(date -u +%FT%TZ)\"}"
+```
+The PUT returns an empty body with no error output on success. `POST /submissions` rejects any `photoStorageUrl` outside the caller's own signed-URL prefix.
+
+## Windows / Git Bash environment gotchas (hit during first real rollout)
+
+| Symptom | Cause / fix |
+|---|---|
+| `gsutil`: `python3.14: command not found` | `gsutil`'s legacy Python shell-out can't find an interpreter on `PATH`. Don't chase a Python install for this — use the modern `gcloud storage` surface instead, e.g. `gcloud storage buckets add-iam-policy-binding ...` in place of `gsutil iam ch ...`. Same effect, no Python dependency. |
+| `jq: command not found` | Not installed on this machine. For a flat top-level string field, use `sed -n 's/.*"<field>"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p'` instead of `jq -r .<field>` — used above for `idToken`, `uploadUrl`, `storageUrl`. A field nested inside an object/array needs a different extraction; don't force this pattern onto those. |
+| `node -e "..."` piped in or with its output captured prints `stdin is not a tty` / `stdout is not a tty` | Git Bash/MinTTY auto-wraps `node.exe` through `winpty`, which mishandles redirected stdin/stdout even for a non-interactive `-e` script. Don't fight it — avoid `node` for quick JSON parsing in this shell and use the `sed` pattern above instead. |
+| A real `gcloud pubsub ...` command hangs, or fails with a refused `localhost:8085` connection | Check `gcloud config list` for a leftover `api_endpoint_overrides/pubsub` pointed at the local emulator. `gcloud config unset api_endpoint_overrides/pubsub` before using real Pub/Sub — easy to forget after a local emulator session. |
 
 ## Debugging Terraform itself
 
