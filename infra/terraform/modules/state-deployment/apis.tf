@@ -19,6 +19,7 @@ locals {
     "iam.googleapis.com",
     "iamcredentials.googleapis.com", # Signed-URL generation from Cloud Run's metadata credential
     "cloudresourcemanager.googleapis.com",
+
     "geocoding-backend.googleapis.com", # submission-service's reverseGeocode.ts
     "aiplatform.googleapis.com",        # Gemini + AutoML (Engineer 3, Week 2+)
     "speech.googleapis.com",            # Voice-note transcription (Engineer 3)
@@ -31,6 +32,15 @@ locals {
     "fcm.googleapis.com",              # FCM HTTP v1 send (alert-service)
     "fcmregistrations.googleapis.com", # web-push token registration (admin dashboard)
     "firebaseinstallations.googleapis.com",
+
+    "geocoding-backend.googleapis.com",   # submission-service's reverseGeocode.ts
+    "aiplatform.googleapis.com",          # Gemini + AutoML (Engineer 3, Week 2+)
+    "speech.googleapis.com",              # Voice-note transcription (Engineer 3)
+    "texttospeech.googleapis.com",        # Advisory/alert audio synthesis
+    "translate.googleapis.com",           # Static UI-string localization
+    "cloudscheduler.googleapis.com",      # Hourly/6-hourly model-scoring triggers (Week 2+)
+    "cloudfunctions.googleapis.com",
+ 
   ]
 }
 

@@ -1,0 +1,25 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "corridor_id": "mumbai_pune",
+        "name": "Mumbai-Pune Expressway & Urban Corridor",
+        "states": ["Maharashtra"]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [72.75, 18.50],
+            [74.05, 18.50],
+            [74.05, 19.35],
+            [72.75, 19.35],
+            [72.75, 18.50]
+          ]
+        ]
+      }
+    }
+  ]
+}

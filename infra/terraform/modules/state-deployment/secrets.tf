@@ -9,6 +9,7 @@ locals {
     "google-maps-api-key",
     "sms-gateway-credentials",
     "whatsapp-gateway-credentials",
+    "cpcb-api-key",
   ]
 }
 
