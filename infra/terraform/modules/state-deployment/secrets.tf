@@ -10,6 +10,7 @@ locals {
     "sms-gateway-credentials",
     "whatsapp-gateway-credentials",
     "cpcb-api-key",
+    "imd-api-key",
   ]
 }
 
