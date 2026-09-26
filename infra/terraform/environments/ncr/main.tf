@@ -18,6 +18,9 @@ module "ncr_dev" {
   openaq_api_key_secret_populated = var.openaq_api_key_secret_populated
   enable_ingestion_schedules      = var.enable_ingestion_schedules
 
+  # Phase 1 AI layer
+  enable_analysis_push_subscription = var.enable_analysis_push_subscription
+
   labels = {
     corridor    = "ncr-airshed"
     environment = "dev"

@@ -56,3 +56,8 @@ variable "openaq_api_key_secret_populated" {
   type    = bool
   default = false
 }
+
+variable "enable_analysis_push_subscription" {
+  type    = bool
+  default = false
+}

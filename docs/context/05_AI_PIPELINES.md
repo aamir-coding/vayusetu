@@ -158,3 +158,22 @@ draft_alert_briefing with your output; never respond in free text.
 
 ## Pipeline D — Conversational Clarification (bounded, multi-turn)
 Used within the PWA's guided voice-reporting mode (and, Phase 2, the IVR hotline). When Pipeline A's `confidenceScore` falls below threshold and `sourceClassification` is `indeterminate`, Gemini 3.7 Flash gets one follow-up turn to ask a single clarifying question (e.g., "I can see smoke but can't tell if it's a factory or a field — can you point the camera a bit further away?"), capped at **two turns maximum** (respect low-literacy/low-patience users), with a graceful fallback ("recorded as unclassified, will be reviewed") if the citizen doesn't respond. Reuses Pipeline A's function schema rather than introducing a new one — the exchange either produces a completed `record_air_quality_assessment` call or terminates into the fallback state.
+
+**Implementation (26 Sep 2026):** in clarification mode the model is given Pipeline A's instruction plus a short addendum and **two** allowed functions: the unchanged `record_air_quality_assessment`, and `ask_clarifying_question { question, language }`, which is the only way the model can produce the follow-up question. The question is stored on `Submission.clarifications[]` and surfaced as `AnalysisResult.pendingClarification`. The citizen answers via `POST /submissions/:id/clarify` (text and/or one more photo), which re-runs the pipeline with the whole exchange as context. After two turns, or with no answer, the report stays `needsHumanReview` with reviewNote "Recorded as unclassified; will be reviewed." Code: `packages/gemini-client/src/pipelineD.ts`.
+
+## Deployment notes (verified live, 26 Sep 2026)
+
+| Pipeline | Service | Model / API | Location | Env override |
+|---|---|---|---|---|
+| A, D | Vertex AI Gemini | `gemini-3.7-flash` | `global` | `GEMINI_TRIAGE_MODEL`, `GEMINI_LOCATION` |
+| C | Vertex AI Gemini | `gemini-3.1-pro-preview` (no GA `gemini-3.1-pro` id yet) | `global` | `GEMINI_BRIEFING_MODEL` |
+| A (voice in) | Cloud Speech-to-Text v2 | `chirp_3` | `us` | `STT_MODEL`, `STT_LOCATION` |
+| B (voice out) | Cloud Text-to-Speech | `<lang>-Chirp3-HD-Aoede` | global | `TTS_VOICE_NAME` |
+
+- **Data residency:** none of these models answers in `asia-south1` today (Gemini 404s there; Speech has no Indic model there). Only the photo URI or audio bytes and the derived context block are sent; nothing is stored outside the project. Move each to an India region as soon as Model Garden or Speech lists one there. This is a config change, not a deploy.
+- **Punjabi speech** must be requested as `pa-Guru-IN` (Cloud Speech's code); `pa-IN` is rejected. `chirp_2` garbles Punjabi and Marathi, so do not use it as a fallback.
+- **Measured latency:**
+  - Pipeline A: about 7.7 s for a 2019 Delhi smog photo, classified correctly as `vehicular_smog` with a Hindi advisory.
+  - Pipeline C: about 18 s for a hotspot briefing.
+- **Pipeline C citation grounding:** Gemini tends to cite leaf names (`citizenReportCount`). alert-service expands a leaf to its unique full path (the shallowest match wins) instead of dropping it from the audit trail.
+
