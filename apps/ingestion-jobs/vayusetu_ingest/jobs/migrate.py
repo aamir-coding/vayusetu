@@ -24,9 +24,11 @@ def statements(settings: Settings) -> list[tuple[str, str]]:
     for f in files:
         sql = f.read_text(encoding="utf-8")
         sql = re.sub(r"`core\.", f"`{settings.project}.{settings.dataset}.", sql)
-        for stmt in (s.strip() for s in sql.split(";")):
-            if stmt and not all(line.strip().startswith("--") or not line.strip() for line in stmt.splitlines()):
-                out.append((f.name, stmt))
+        # Drop `--` comments BEFORE splitting on ';' -- a semicolon inside a
+        # comment otherwise cuts a statement in half. (DDL has no string
+        # literals containing '--'.)
+        sql = re.sub(r"--[^\n]*", "", sql)
+        out.extend((f.name, stmt) for stmt in (x.strip() for x in sql.split(";")) if stmt)
     return out
 
 
