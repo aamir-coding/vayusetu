@@ -22,7 +22,11 @@ locals {
         "roles/pubsub.publisher",  # analysis.completed
         "roles/aiplatform.user",   # Gemini 3.7 Flash (Pipeline A)
         "roles/storage.objectViewer",
-        "roles/secretmanager.secretAccessor",
+        "roles/secretmanager.secretAccessor",      # Maps key (Air Quality API context)
+        "roles/speech.client",                     # Speech-to-Text v2 (voice notes)
+        "roles/serviceusage.serviceUsageConsumer", # Text-to-Speech has no finer-grained role
+        "roles/bigquery.jobUser",                  # context query (h3_cells, ground truth, satellite)
+        "roles/bigquery.dataViewer",
       ]
     }
     hotspot-service = {

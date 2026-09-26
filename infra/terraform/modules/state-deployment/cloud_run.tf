@@ -38,6 +38,18 @@ locals {
       DEFAULT_STATE_CODE    = var.default_state_code
       DEFAULT_DISTRICT_CODE = var.default_district_code
     }
+    analysis-service = {
+      NODE_ENV              = "production"
+      PUBSUB_PUSH_AUTH      = "oidc"
+      PUBSUB_PUSH_AUDIENCE  = local.analysis_push_audience
+      PUBSUB_PUSH_SA_EMAIL  = google_service_account.pubsub_push.email
+      ADVISORY_AUDIO_BUCKET = google_storage_bucket.advisory_audio.name
+      RAW_ARCHIVE_BUCKET    = google_storage_bucket.model_artifacts.name
+      GEMINI_LOCATION       = var.gemini_location
+      GEMINI_TRIAGE_MODEL   = var.gemini_triage_model
+      STT_MODEL             = "chirp_3"
+      STT_LOCATION          = "us"
+    }
     alert-service = {
       NODE_ENV              = "production"
       AUTH_MODE             = "firebase"
@@ -50,12 +62,15 @@ locals {
       DASHBOARD_BASE_URL    = coalesce(var.dashboard_base_url, "https://${var.project_id}.web.app")
       DEFAULT_STATE_CODE    = var.default_state_code
       DEFAULT_DISTRICT_CODE = var.default_district_code
+      BRIEFING_GENERATOR    = var.briefing_generator
+      GEMINI_LOCATION       = var.gemini_location
+      GEMINI_BRIEFING_MODEL = var.gemini_briefing_model
     }
   }
 
   # Services that reverse-geocode (both call the shared resolver in
   # packages/gcp-clients/src/geocoding.ts).
-  maps_key_services = ["submission-service", "alert-service"]
+  maps_key_services = ["submission-service", "alert-service", "analysis-service"]
 }
 
 resource "google_cloud_run_v2_service" "service" {
