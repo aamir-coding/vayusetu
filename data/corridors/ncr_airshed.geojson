@@ -1,0 +1,25 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "corridor_id": "ncr_airshed",
+        "name": "National Capital Region (NCR) Airshed",
+        "states": ["Delhi", "Haryana", "Uttar Pradesh", "Rajasthan"]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [76.25, 27.80],
+            [77.95, 27.80],
+            [77.95, 29.25],
+            [76.25, 29.25],
+            [76.25, 27.80]
+          ]
+        ]
+      }
+    }
+  ]
+}
