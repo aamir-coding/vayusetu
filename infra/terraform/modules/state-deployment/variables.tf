@@ -127,3 +127,37 @@ variable "openaq_api_key_secret_populated" {
   default     = false
   description = "Set true only AFTER adding a version to the openaq-api-key secret."
 }
+
+# --- Phase 1: AI layer ---
+
+variable "enable_analysis_push_subscription" {
+  type        = bool
+  default     = false
+  description = "Push submission.created to analysis-service. Enable only AFTER its real image is deployed (the hello placeholder would ack and drop every report)."
+}
+
+variable "briefing_generator" {
+  type        = string
+  default     = "gemini"
+  description = "alert-service Pipeline C generator: gemini (Gemini Pro, with guards + template fallback) or template."
+  validation {
+    condition     = contains(["gemini", "template"], var.briefing_generator)
+    error_message = "briefing_generator must be gemini or template."
+  }
+}
+
+variable "gemini_location" {
+  type        = string
+  default     = "global"
+  description = "Vertex AI location for Gemini. The planned models answer only on `global` today (asia-south1 returns 404); switch when Model Garden lists them in India."
+}
+
+variable "gemini_triage_model" {
+  type    = string
+  default = "gemini-3.7-flash"
+}
+
+variable "gemini_briefing_model" {
+  type    = string
+  default = "gemini-3.1-pro-preview"
+}
