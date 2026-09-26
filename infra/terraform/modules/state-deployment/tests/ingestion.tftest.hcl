@@ -33,7 +33,7 @@ run "ingestion_defaults_are_safe" {
   command = plan
 
   assert {
-    condition     = length(google_cloud_run_v2_job.ingestion) == 10
+    condition     = length(google_cloud_run_v2_job.ingestion) == 11
     error_message = "Every ingestion job should exist (on the placeholder image) from the first apply."
   }
   assert {
@@ -67,7 +67,7 @@ run "ingestion_schedules_and_secrets_when_enabled" {
   }
 
   assert {
-    condition     = length(google_cloud_scheduler_job.ingestion) == 8
+    condition     = length(google_cloud_scheduler_job.ingestion) == 9
     error_message = "Every job except migrate and the one-off OpenAQ backfill should be scheduled."
   }
   assert {

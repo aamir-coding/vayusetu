@@ -24,6 +24,9 @@ module "ncr_dev" {
   enable_model_schedules            = var.enable_model_schedules
   hotspot_scorer                    = var.hotspot_scorer
   hotspot_model                     = var.hotspot_model
+  forecaster                        = var.forecaster
+  forecast_model                    = var.forecast_model
+  ml_pipeline_submitters            = var.ml_pipeline_submitters
 
   labels = {
     corridor    = "ncr-airshed"

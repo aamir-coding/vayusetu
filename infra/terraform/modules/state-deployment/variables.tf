@@ -201,3 +201,25 @@ variable "enable_model_schedules" {
   default     = false
   description = "Cloud Scheduler for hotspot hourly scoring and forecast 6-hourly runs. Enable after the images are deployed and the backfills have landed."
 }
+
+variable "forecaster" {
+  type        = string
+  default     = "persistence"
+  description = "forecast-service: persistence (bootstrap baseline) | batch (AutoML Forecasting via Vertex AI batch prediction)."
+  validation {
+    condition     = contains(["persistence", "batch"], var.forecaster)
+    error_message = "forecaster must be persistence or batch."
+  }
+}
+
+variable "forecast_model" {
+  type        = string
+  default     = ""
+  description = "Registry model resource (projects/.../models/<id>) for forecaster = batch; its `default` alias is used."
+}
+
+variable "ml_pipeline_submitters" {
+  type        = list(string)
+  default     = []
+  description = "IAM members (e.g. user:someone@example.com) allowed to submit Vertex AI Pipelines runs as the ml-pipelines service account."
+}

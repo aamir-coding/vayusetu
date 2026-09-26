@@ -98,7 +98,7 @@ run "alert_service_env_matches_push_config" {
   }
   # Other engineers' services get no Engineer-2 env injected.
   assert {
-    condition     = length(google_cloud_run_v2_service.service["forecast-service"].template[0].containers[0].env) == 1
+    condition     = length(google_cloud_run_v2_service.service["federation-service"].template[0].containers[0].env) == 1
     error_message = "Only GOOGLE_CLOUD_PROJECT should be set on services Engineer 2 doesn't own."
   }
 }
@@ -140,8 +140,8 @@ run "ci_triggers_path_filtered_and_deploy_gated" {
   }
 
   assert {
-    condition     = length(google_cloudbuild_trigger.pr) == 6 && length(google_cloudbuild_trigger.main) == 6
-    error_message = "Expected a PR and a main trigger for each of the 6 apps."
+    condition     = length(google_cloudbuild_trigger.pr) == 7 && length(google_cloudbuild_trigger.main) == 7
+    error_message = "Expected a PR and a main trigger for each of the 7 apps."
   }
   assert {
     condition     = alltrue([for t in google_cloudbuild_trigger.pr : t.substitutions["_DEPLOY"] == "false"])
@@ -164,8 +164,8 @@ run "ci_triggers_path_filtered_and_deploy_gated" {
   }
   # actAs only on the runtime SAs CI deploys -- never project-wide.
   assert {
-    condition     = length(google_service_account_iam_member.cloudbuild_act_as_runtime) == 4
-    error_message = "Deployer should act as exactly the 4 deployable services' runtime SAs."
+    condition     = length(google_service_account_iam_member.cloudbuild_act_as_runtime) == 5
+    error_message = "Deployer should act as exactly the 5 deployable services' runtime SAs."
   }
 }
 

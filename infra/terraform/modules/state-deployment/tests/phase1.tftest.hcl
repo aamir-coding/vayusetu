@@ -110,3 +110,33 @@ run "hotspot_push_and_schedule_when_enabled" {
     error_message = "Hourly scoring runs at :40, after weather (:05) and the citizen rollup (:20)."
   }
 }
+
+run "forecast_job_defaults" {
+  command = plan
+
+  assert {
+    condition     = length(google_cloud_scheduler_job.forecast_score) == 0
+    error_message = "Forecast schedule must be opt-in."
+  }
+  assert {
+    condition     = google_cloud_run_v2_job.forecast_score.template[0].template[0].containers[0].args == tolist(["job:forecast"])
+    error_message = "The forecast job runs the job:forecast script from the service image."
+  }
+  assert {
+    condition     = length(google_project_iam_member.ml_pipelines_roles) == 3
+    error_message = "ml-pipelines SA: aiplatform.user + BigQuery dataEditor/jobUser only."
+  }
+}
+
+run "forecast_schedule_when_enabled" {
+  command = plan
+
+  variables {
+    enable_model_schedules = true
+  }
+
+  assert {
+    condition     = google_cloud_scheduler_job.forecast_score[0].schedule == "15 */6 * * *"
+    error_message = "Forecasts run every 6 h at :15, after the Weather API forecast (:10)."
+  }
+}
