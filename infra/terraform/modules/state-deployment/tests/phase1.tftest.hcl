@@ -72,3 +72,41 @@ run "analysis_push_matches_app_config" {
     error_message = "Poison reports must dead-letter instead of retrying forever."
   }
 }
+
+run "hotspot_defaults_are_safe" {
+  command = plan
+
+  assert {
+    condition     = length(google_pubsub_subscription.hotspot_service_push) == 0 && length(google_cloud_scheduler_job.hotspot_hourly) == 0
+    error_message = "hotspot push + hourly schedule must be opt-in until the image is deployed."
+  }
+  assert {
+    condition     = google_cloud_run_v2_job.hotspot_hourly.template[0].template[0].containers[0].args == tolist(["job:hourly"])
+    error_message = "The hourly job runs the job:hourly script from the service image."
+  }
+  assert {
+    condition = anytrue([
+      for e in google_cloud_run_v2_service.service["hotspot-service"].template[0].containers[0].env :
+      e.name == "HOTSPOT_SCORER" && e.value == "heuristic"
+    ])
+    error_message = "Scorer defaults to the heuristic bootstrap until a model is registered."
+  }
+}
+
+run "hotspot_push_and_schedule_when_enabled" {
+  command = plan
+
+  variables {
+    enable_hotspot_push_subscription = true
+    enable_model_schedules           = true
+  }
+
+  assert {
+    condition     = google_pubsub_subscription.hotspot_service_push[0].push_config[0].oidc_token[0].audience == "vayusetu-hotspot-service-ncr-test"
+    error_message = "Push audience must match what hotspot-service verifies."
+  }
+  assert {
+    condition     = google_cloud_scheduler_job.hotspot_hourly[0].schedule == "40 * * * *"
+    error_message = "Hourly scoring runs at :40, after weather (:05) and the citizen rollup (:20)."
+  }
+}

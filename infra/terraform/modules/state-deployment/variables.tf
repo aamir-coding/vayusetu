@@ -161,3 +161,43 @@ variable "gemini_briefing_model" {
   type    = string
   default = "gemini-3.1-pro-preview"
 }
+
+variable "vertex_location" {
+  type        = string
+  default     = "asia-south1"
+  description = "Vertex AI region for AutoML training, endpoints and batch prediction (data residency: India)."
+}
+
+variable "hotspot_scorer" {
+  type        = string
+  default     = "heuristic"
+  description = "hotspot-service scorer: heuristic (bootstrap until the first model is registered) | endpoint (online, always-on node) | batch (per-run job)."
+  validation {
+    condition     = contains(["heuristic", "endpoint", "batch"], var.hotspot_scorer)
+    error_message = "hotspot_scorer must be heuristic, endpoint or batch."
+  }
+}
+
+variable "hotspot_endpoint_id" {
+  type        = string
+  default     = ""
+  description = "Vertex AI endpoint id serving the hotspot model (hotspot_scorer = endpoint)."
+}
+
+variable "hotspot_model" {
+  type        = string
+  default     = ""
+  description = "Registry model resource (projects/.../models/<id>); batch scoring uses its `default` alias."
+}
+
+variable "enable_hotspot_push_subscription" {
+  type        = bool
+  default     = false
+  description = "Push analysis.completed to hotspot-service (fast path). Enable only after its real image is deployed."
+}
+
+variable "enable_model_schedules" {
+  type        = bool
+  default     = false
+  description = "Cloud Scheduler for hotspot hourly scoring and forecast 6-hourly runs. Enable after the images are deployed and the backfills have landed."
+}
