@@ -115,6 +115,9 @@ resource "google_cloud_run_v2_service" "service" {
   lifecycle {
     ignore_changes = [
       template[0].containers[0].image,
+      # Service-level `scaling` is server-defaulted by the API; provider 6.x
+      # reports it as a perpetual diff that would hide real drift.
+      scaling,
       client,
       client_version,
     ]
