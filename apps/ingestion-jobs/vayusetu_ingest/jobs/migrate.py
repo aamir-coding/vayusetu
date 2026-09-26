@@ -19,7 +19,12 @@ log = logging.getLogger(__name__)
 
 def statements(settings: Settings) -> list[tuple[str, str]]:
     schema_dir = DATA_DIR / "schemas"
-    files = sorted(schema_dir.glob("*.sql")) + sorted((schema_dir / "migrations").glob("*.sql"))
+    # tables -> column migrations -> functions/TVFs that read those columns
+    files = (
+        sorted(schema_dir.glob("*.sql"))
+        + sorted((schema_dir / "migrations").glob("*.sql"))
+        + sorted((schema_dir / "features").glob("*.sql"))
+    )
     out = []
     for f in files:
         sql = f.read_text(encoding="utf-8")
