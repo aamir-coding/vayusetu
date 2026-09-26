@@ -94,7 +94,7 @@ def sample_cells(cells: list[dict], per_corridor: int) -> list[dict]:
     return out
 
 
-def load_points(bq: bigquery.Client, settings: Settings, per_corridor: int) -> list[dict]:
+def load_points(bq: bigquery.Client, settings: Settings, per_corridor: int, scope: str = "all") -> list[dict]:
     corridor_filter = ""
     if settings.corridor_ids:
         corridor_filter = "AND corridor_id IN UNNEST(@corridors)"
@@ -110,13 +110,17 @@ def load_points(bq: bigquery.Client, settings: Settings, per_corridor: int) -> l
             f"SELECT h3_index, corridor_id, lat, lng FROM `{settings.table('h3_cells')}` "
             f"WHERE NOT has_monitor_within_radius {corridor_filter}", job_config=cfg).result()
     ]
+    if scope == "stations":
+        return stations
     return stations + sample_cells(unmonitored, per_corridor)
 
 
-def run(settings: Settings, hours: int = 26, **_: object) -> None:
+def run(settings: Settings, hours: int = 26, scope: str = "all", **_: object) -> None:
+    """scope=stations: monitor sites only, a few hours back -- run 6-hourly so
+    forecast-service can gap-fill the ~2-day OpenAQ lag up to the forecast origin."""
     key = require_env("GOOGLE_MAPS_API_KEY")
     bq = bigquery.Client(project=settings.project, location=settings.bq_location)
-    points = load_points(bq, settings, int(os.getenv("AQ_SAMPLE_CELLS_PER_CORRIDOR", "100")))
+    points = load_points(bq, settings, int(os.getenv("AQ_SAMPLE_CELLS_PER_CORRIDOR", "100")), scope)
     if not points:
         raise SystemExit("No points: run `openaq` then `seed` first (stations + h3_cells)")
     s, now, rows, failures = session(), utc_now_iso(), [], 0

@@ -82,3 +82,12 @@ def test_parameters_cover_every_pipeline_input(kind, monkeypatch):
     assert set(params) == expected
     assert params["labels"]["vayusetu-feature-schema"] in {"hs-v1", "fc-v1"}
     assert all(re.fullmatch(r"[a-z0-9_-]{1,63}", v) for v in params["labels"].values())
+
+
+def test_forecast_scoring_input_matches_training_columns():
+    # AutoML batch prediction matches input columns to the training schema:
+    # core.forecast_input must produce every training column (bar split).
+    scoring = (REPO / "data/schemas/features/forecast_input.sql").read_text(encoding="utf-8")
+    f = specs.FORECAST
+    for col in (*f.available_at_forecast, *f.unavailable_at_forecast, *f.attribute_columns, f.series_column, f.time_column):
+        assert re.search(rf"\b{col}\b", scoring), col

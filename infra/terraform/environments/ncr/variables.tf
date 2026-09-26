@@ -81,3 +81,18 @@ variable "hotspot_model" {
   type    = string
   default = ""
 }
+
+variable "forecaster" {
+  type    = string
+  default = "persistence"
+}
+
+variable "forecast_model" {
+  type    = string
+  default = ""
+}
+
+variable "ml_pipeline_submitters" {
+  type    = list(string)
+  default = []
+}
