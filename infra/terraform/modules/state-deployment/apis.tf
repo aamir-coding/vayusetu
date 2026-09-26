@@ -32,15 +32,11 @@ locals {
     "fcm.googleapis.com",              # FCM HTTP v1 send (alert-service)
     "fcmregistrations.googleapis.com", # web-push token registration (admin dashboard)
     "firebaseinstallations.googleapis.com",
+    # Ingestion (ingestion.tf): Maps Platform environment APIs + Earth Engine
+    "airquality.googleapis.com", # modeled AQI history/backfill
+    "weather.googleapis.com",    # observed + forecast meteorology
+    "earthengine.googleapis.com",
 
-    "geocoding-backend.googleapis.com",   # submission-service's reverseGeocode.ts
-    "aiplatform.googleapis.com",          # Gemini + AutoML (Engineer 3, Week 2+)
-    "speech.googleapis.com",              # Voice-note transcription (Engineer 3)
-    "texttospeech.googleapis.com",        # Advisory/alert audio synthesis
-    "translate.googleapis.com",           # Static UI-string localization
-    "cloudscheduler.googleapis.com",      # Hourly/6-hourly model-scoring triggers (Week 2+)
-    "cloudfunctions.googleapis.com",
- 
   ]
 }
 

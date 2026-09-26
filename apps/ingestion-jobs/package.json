@@ -1,0 +1,9 @@
+{
+  "name": "@vayusetu/ingestion-jobs",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Python ingestion jobs. The scripts wrap pytest so `pnpm test` at the repo root covers them too; needs a venv (see README).",
+  "scripts": {
+    "test": "node scripts/pytest.mjs"
+  }
+}

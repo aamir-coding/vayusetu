@@ -23,7 +23,8 @@ import type { GeoPoint } from '@vayusetu/shared-types';
 import { useAuth } from '../hooks/useAuth';
 import { getCurrentGeo } from '../lib/geolocation';
 import { uploadBlob } from '../lib/uploadClient';
-import { submissionsApi, ApiClientError } from '../lib/apiClient';
+import { submissionsApi, isRetryable } from '../lib/apiClient';
+import { compressPhoto, networkType, pickAudioMimeType } from '../lib/media';
 import { enqueueSubmission } from '../lib/offlineQueue';
 
 const MAX_VOICE_SECONDS = 10;
@@ -110,30 +111,30 @@ export function CaptureScreen() {
     setCameraActive(false);
   }
 
-  function capturePhoto() {
-    const video = videoRef.current;
-    if (!video) return;
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d')?.drawImage(video, 0, 0);
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) return;
-        setPhotoBlob(blob);
-        setPhotoUrl(URL.createObjectURL(blob));
-        stopCamera();
-      },
-      'image/jpeg',
-      0.85,
-    );
+  function acceptPhoto(blob: Blob) {
+    setPhotoBlob(blob);
+    setPhotoUrl(URL.createObjectURL(blob));
   }
 
-  function handleFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
+  async function capturePhoto() {
+    const video = videoRef.current;
+    if (!video) return;
+    try {
+      acceptPhoto(await compressPhoto(video));
+      stopCamera();
+    } catch (error) {
+      push({ tone: 'error', title: (error as Error).message });
+    }
+  }
+
+  async function handleFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setPhotoBlob(file);
-    setPhotoUrl(URL.createObjectURL(file));
+    try {
+      acceptPhoto(await compressPhoto(file));
+    } catch (error) {
+      push({ tone: 'error', title: (error as Error).message });
+    }
   }
 
   function retakePhoto() {
@@ -145,14 +146,15 @@ export function CaptureScreen() {
   async function startRecording() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
+      const mimeType = pickAudioMimeType();
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       audioChunksRef.current = [];
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
       recorder.onstop = () => {
         stream.getTracks().forEach((t) => t.stop());
-        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const blob = new Blob(audioChunksRef.current, { type: recorder.mimeType || mimeType || 'audio/webm' });
         setAudioBlob(blob);
         setAudioUrl(URL.createObjectURL(blob));
       };
@@ -218,8 +220,8 @@ export function CaptureScreen() {
 
       await ensureRegistered();
       const token = await getToken();
-      const photoStorageUrl = await uploadBlob('photo', photoBlob);
-      const audioStorageUrl = audioBlob ? await uploadBlob('audio', audioBlob) : undefined;
+      const photoStorageUrl = await uploadBlob(token, 'photo', photoBlob);
+      const audioStorageUrl = audioBlob ? await uploadBlob(token, 'audio', audioBlob) : undefined;
 
       const { submission } = await submissionsApi.create(token, {
         mediaType: audioStorageUrl ? 'photo_audio' : 'photo',
@@ -227,15 +229,17 @@ export function CaptureScreen() {
         audioStorageUrl,
         geo: finalGeo,
         capturedAt: new Date().toISOString(),
-        deviceMeta: { platform: 'web', appVersion: '0.1.0' },
+        deviceMeta: { platform: 'web', appVersion: __APP_VERSION__, networkType: networkType() },
         fieldSensorReading,
       });
       navigate(`/result/${submission.id}`);
     } catch (error) {
-      if (error instanceof ApiClientError) {
-        push({ tone: 'error', title: 'Could not send report', description: error.message });
+      if (!isRetryable(error)) {
+        // Will fail the same way on every retry (validation, permissions):
+        // tell the user now rather than parking it in the offline queue forever.
+        push({ tone: 'error', title: t('capture.sendFailed'), description: (error as Error).message });
       } else {
-        // Offline, or a network-level failure — queue it locally instead of losing the report.
+        // Offline, network failure or a transient server error -- queue it locally instead of losing the report.
         await enqueueSubmission({
           mediaType: audioBlob ? 'photo_audio' : 'photo',
           photoBlob,

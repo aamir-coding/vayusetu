@@ -46,7 +46,8 @@
     "missingLocation": "भेजने से पहले स्थान की जानकारी ज़रूरी है।",
     "reportingAs": "इस रूप में रिपोर्ट कर रहे हैं",
     "roleCitizen": "नागरिक",
-    "roleFieldWorker": "फील्ड वर्कर"
+    "roleFieldWorker": "फील्ड वर्कर",
+    "sendFailed": "रिपोर्ट नहीं भेजी जा सकी"
   },
   "result": {
     "analyzing": "आपकी फोटो पढ़ी जा रही है…",
@@ -86,7 +87,8 @@
     "banner_one": "{{count}} रिपोर्ट भेजने के लिए बाकी है",
     "banner_other": "{{count}} रिपोर्ट भेजने के लिए बाकी हैं",
     "synced": "सब भेजा जा चुका है",
-    "willSyncWhenOnline": "इंटरनेट आते ही अपने आप भेज दिया जाएगा।"
+    "willSyncWhenOnline": "इंटरनेट आते ही अपने आप भेज दिया जाएगा।",
+    "rejected": "एक सहेजी गई रिपोर्ट अस्वीकार होकर हटा दी गई: {{reason}}"
   },
   "pollutionSource": {
     "crop_residue_burning": "फसल अवशेष जलाना",

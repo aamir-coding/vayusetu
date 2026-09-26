@@ -15,7 +15,7 @@
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint -- --fix",
     "type-check": "turbo run type-check",
-    "test": "turbo run test",
+    "test": "turbo run test --concurrency=2",
     "test:watch": "turbo run test -- --watch",
     "clean": "turbo run clean && rimraf node_modules apps/*/node_modules packages/*/node_modules apps/*/dist packages/*/dist apps/*/.turbo packages/*/.turbo .turbo",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\" --ignore-unknown",
