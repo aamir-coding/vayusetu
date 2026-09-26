@@ -189,3 +189,33 @@ describe('Gemini briefing generator -- model output is untrusted input', () => {
     expect(outcomes[0]!.detail.ungroundedNumbers).not.toContain('0.92');
   });
 });
+
+describe('citation canonicalization (found live: Gemini cites leaf names)', () => {
+  const payload = buildPipelineCPayload(hotspotInput);
+
+  it('expands an unambiguous leaf to its full path, preferring the current event over history', async () => {
+    const { canonicalizeCitation } = await import('../src/gemini/briefingPrompt.js');
+    expect(canonicalizeCitation(payload, 'citizenReportCount')).toBe('contributingSignals.citizenReportCount');
+    expect(canonicalizeCitation(payload, 'contributingSignals.satelliteAOD')).toBe('contributingSignals.satelliteAOD');
+    expect(canonicalizeCitation(payload, 'stage_1')).toBe('corridor.grapThresholds.stage_1');
+  });
+
+  it('still rejects invented fields and prototype names', async () => {
+    const { canonicalizeCitation } = await import('../src/gemini/briefingPrompt.js');
+    expect(canonicalizeCitation(payload, 'windSpeed')).toBeUndefined();
+    expect(canonicalizeCitation(payload, 'constructor')).toBeUndefined();
+    expect(canonicalizeCitation(payload, 'aqiMin')).toBeUndefined(); // 4 thresholds at the same depth -> ambiguous
+  });
+
+  it('the generator keeps leaf-name citations instead of dropping them', async () => {
+    const { gen, outcomes } = harness(async () => ({
+      ...goodHotspotAnswer,
+      citedSignals: ['citizenReportCount', 'satelliteAOD', 'windSpeed'],
+    }));
+    const briefing = await gen.generate(hotspotInput);
+    expect(briefing.citedSignals).toEqual(['contributingSignals.citizenReportCount', 'contributingSignals.satelliteAOD']);
+    expect(outcomes[0]!.detail.repairs).toEqual(
+      expect.arrayContaining([expect.stringContaining('expanded citations'), 'dropped citations: windSpeed']),
+    );
+  });
+});

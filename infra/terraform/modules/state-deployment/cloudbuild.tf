@@ -14,7 +14,7 @@
 
 locals {
   ci_shared_paths = {
-    backend  = ["packages/shared-types/**", "packages/gcp-clients/**"]
+    backend  = ["packages/shared-types/**", "packages/gcp-clients/**", "packages/gemini-client/**"]
     frontend = ["packages/shared-types/**", "packages/ui-components/**", "packages/config/**"] # config = shared Tailwind tokens
   }
   ci_root_paths = ["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml", "tsconfig.json", "turbo.json", ".dockerignore"]
