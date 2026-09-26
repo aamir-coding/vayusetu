@@ -35,7 +35,7 @@ export function buildPipelineDeps(logger: FastifyBaseLogger): PipelineDeps {
   const briefing: BriefingGenerator =
     env.BRIEFING_GENERATOR === 'gemini'
       ? createGeminiBriefingGenerator({
-          callModel: createPipelineCModelCall(), // throws at boot until Engineer 3 lands it
+          callModel: createPipelineCModelCall({ project: env.GOOGLE_CLOUD_PROJECT }),
           fallback: templateBriefingGenerator,
           timeoutMs: env.BRIEFING_TIMEOUT_MS,
           logger,

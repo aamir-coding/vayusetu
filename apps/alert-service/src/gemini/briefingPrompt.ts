@@ -129,3 +129,37 @@ export function resolvePath(obj: unknown, path: string): unknown {
   }
   return cur;
 }
+
+function* ownPaths(obj: unknown, prefix: string[] = []): Generator<string[]> {
+  if (obj === null || typeof obj !== 'object') return;
+  for (const key of Object.keys(obj)) {
+    const path = [...prefix, key];
+    yield path;
+    yield* ownPaths((obj as Record<string, unknown>)[key], path);
+  }
+}
+
+function formatPath(parts: string[]): string {
+  return parts.map((p, i) => (/^\d+$/.test(p) ? `[${p}]` : i === 0 ? p : `.${p}`)).join('');
+}
+
+/**
+ * The model often cites a leaf by name ("citizenReportCount") instead of its
+ * full path ("contributingSignals.citizenReportCount"). A citation is
+ * grounded if it resolves as written, or if it names exactly one field at the
+ * shallowest depth where it occurs -- the current event's value beats a
+ * history entry of the same name. Returns the full path, or undefined for
+ * data the model was never given (and for true ties, which stay dropped).
+ */
+export function canonicalizeCitation(payload: unknown, citation: string): string | undefined {
+  if (resolvePath(payload, citation) !== undefined) return citation;
+  if (!/^[A-Za-z_][\w]*(\.[A-Za-z_][\w]*)*$/.test(citation)) return undefined;
+  const want = citation.split('.');
+  const matches = [...ownPaths(payload)].filter(
+    (path) => path.length >= want.length && want.every((seg, i) => path[path.length - want.length + i] === seg),
+  );
+  if (matches.length === 0) return undefined;
+  const minDepth = Math.min(...matches.map((m) => m.length));
+  const shallowest = matches.filter((m) => m.length === minDepth);
+  return shallowest.length === 1 ? formatPath(shallowest[0]!) : undefined;
+}
