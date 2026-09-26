@@ -40,6 +40,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("job", choices=sorted(JOBS))
     parser.add_argument("--hours", type=int)
     parser.add_argument("--mode", choices=["observed", "forecast", "latest", "backfill"])
+    parser.add_argument("--scope", choices=["all", "stations"], help="air-quality: stations only (6-hourly forecast gap-fill)")
     parser.add_argument("--start", help="YYYY-MM-DD (earth-engine backfill)")
     parser.add_argument("--days", type=int)
     parser.add_argument("--parallel", type=int, help="concurrent Earth Engine exports (earth-engine backfill)")
