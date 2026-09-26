@@ -109,16 +109,27 @@ def _wait(task, what: str) -> None:
         time.sleep(20)
 
 
-def merge_sql(settings: Settings, staging: str) -> str:
+EXPORTED_METRICS = ("no2", "aai", "aod", "burn", "fire_count")
+
+
+def _col(name: str, present: set[str]) -> str:
+    """EE omits a property from the export when it is null for EVERY feature
+    (e.g. a monsoon day where cloud masks all S5P NO2 pixels), so a column
+    can be missing from the staging table -- select NULL instead of failing."""
+    return f"s.{name}" if name in present else "CAST(NULL AS FLOAT64)"
+
+
+def merge_sql(settings: Settings, staging: str, present: set[str] | None = None) -> str:
+    present = set(EXPORTED_METRICS) if present is None else present
     return f"""
 MERGE `{settings.table('satellite_features')}` T
 USING (
   SELECT c.h3_index, s.corridor_id, DATE(s.observation_date) AS observation_date,
          CAST(NULL AS INT64) AS observation_hour,
-         s.no2 AS no2_column_mol_m2, s.aai AS aerosol_index, s.aod AS aod_550nm,
-         CAST(ROUND(s.fire_count) AS INT64) AS fire_detection_count,
+         {_col('no2', present)} AS no2_column_mol_m2, {_col('aai', present)} AS aerosol_index, {_col('aod', present)} AS aod_550nm,
+         CAST(ROUND({_col('fire_count', present)}) AS INT64) AS fire_detection_count,
          CAST(NULL AS FLOAT64) AS fire_frp_sum,  -- the EE FIRMS image carries no FRP band
-         s.burn AS burn_scar_fraction,
+         {_col('burn', present)} AS burn_scar_fraction,
          '{SOURCE}' AS source_dataset, CURRENT_TIMESTAMP() AS ingested_at
   FROM `{staging}` s JOIN `{settings.table('h3_cells')}` c ON c.h3_res7 = s.h3_res7
 ) S
@@ -126,17 +137,25 @@ ON T.h3_index = S.h3_index AND T.observation_date = S.observation_date AND T.sou
 WHEN MATCHED THEN UPDATE SET no2_column_mol_m2 = S.no2_column_mol_m2, aerosol_index = S.aerosol_index,
   aod_550nm = S.aod_550nm, fire_detection_count = S.fire_detection_count, burn_scar_fraction = S.burn_scar_fraction,
   corridor_id = S.corridor_id, ingested_at = S.ingested_at
-WHEN NOT MATCHED THEN INSERT ROW"""
+WHEN NOT MATCHED THEN INSERT (h3_index, corridor_id, observation_date, observation_hour, no2_column_mol_m2,
+  aerosol_index, aod_550nm, fire_detection_count, fire_frp_sum, burn_scar_fraction, source_dataset, ingested_at)
+VALUES (S.h3_index, S.corridor_id, S.observation_date, S.observation_hour, S.no2_column_mol_m2,
+  S.aerosol_index, S.aod_550nm, S.fire_detection_count, S.fire_frp_sum, S.burn_scar_fraction, S.source_dataset, S.ingested_at)
+"""  # explicit list: INSERT ROW matches by POSITION and migrations append columns at the end
 
 
-def run(settings: Settings, start: str | None = None, days: int = 1, **_: object) -> None:
+def run(settings: Settings, start: str | None = None, days: int = 1, parallel: int = 1, **_: object) -> None:
+    """Exports run server-side in Earth Engine, so `parallel` day-exports can
+    be in flight at once (backfills); each is merged as soon as it lands."""
     ee = _init_ee(settings.project)
     bq = bigquery.Client(project=settings.project, location=settings.bq_location)
     first = date.fromisoformat(start) if start else (datetime.now(timezone.utc).date() - timedelta(days=1))
     corridors = geo.load_corridors(settings.corridor_ids)
-    for offset in range(days):
-        day = first + timedelta(days=offset)
-        for corridor in corridors:
+    work = [(first + timedelta(days=o), c) for o in range(days) for c in corridors]
+    failures = 0
+    for i in range(0, len(work), max(1, parallel)):
+        in_flight = []
+        for day, corridor in work[i : i + max(1, parallel)]:
             staging = f"{settings.project}.{settings.dataset}.ee_stg_{corridor.id.replace('-', '_')}_{day:%Y%m%d}"
             task = ee.batch.Export.table.toBigQuery(
                 collection=_reduce(ee, corridor, day),
@@ -145,7 +164,17 @@ def run(settings: Settings, start: str | None = None, days: int = 1, **_: object
                 overwrite=True,
             )
             task.start()
-            _wait(task, staging)
-            bq.query(merge_sql(settings, staging)).result()
-            bq.delete_table(staging, not_found_ok=True)
-            log.info("earth-engine: %s %s merged", corridor.id, day)
+            in_flight.append((task, staging, corridor, day))
+        for task, staging, corridor, day in in_flight:
+            try:
+                _wait(task, staging)
+                present = {f.name for f in bq.get_table(staging).schema}
+                bq.query(merge_sql(settings, staging, present)).result()
+                log.info("earth-engine: %s %s merged", corridor.id, day)
+            except Exception as exc:  # one bad day must not sink a year-long backfill
+                failures += 1
+                log.error("earth-engine: %s %s failed: %s", corridor.id, day, exc)
+            finally:
+                bq.delete_table(staging, not_found_ok=True)
+    if failures:
+        raise SystemExit(f"earth-engine: {failures}/{len(work)} day-exports failed (rerun those days; merges are idempotent)")

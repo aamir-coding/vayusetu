@@ -135,3 +135,39 @@ class TestRollup:
         assert row["report_count"] == 3 and row["contributor_count"] == 2
         assert row["avg_severity"] == pytest.approx(10 / 3)
         assert row["corridor_id"] == "ncr-airshed" and row["observation_hour"] == 10
+
+
+class TestEra5:
+    def test_units_and_wind_direction(self):
+        from vayusetu_ingest.jobs import era5
+
+        props = {"t": 1790380800000, "h3_index": "w", "corridor_id": "ncr-airshed",
+                 "u_component_of_wind_10m": 3.0, "v_component_of_wind_10m": 0.0,  # blowing TOWARD east
+                 "temperature_2m": 300.15, "dewpoint_temperature_2m": 290.15,
+                 "total_precipitation": 0.0012, "boundary_layer_height": 412.5}
+        row = era5.to_row(props, "now")
+        assert row["wind_speed_ms"] == 3.0
+        assert row["wind_direction_deg"] == 270.0  # i.e. FROM the west
+        assert row["temperature_c"] == 27.0
+        assert 50 < row["relative_humidity_pct"] < 60
+        assert row["precipitation_mm"] == 1.2
+        assert row["boundary_layer_height_m"] == 412.5 and row["source"] == "ERA5"
+
+    def test_missing_wind_is_skipped(self):
+        from vayusetu_ingest.jobs import era5
+
+        assert era5.to_row({"t": 0, "h3_index": "w", "corridor_id": "c", "temperature_2m": 300.0}, "now") is None
+
+
+class TestEarthEngineMerge:
+    def test_missing_all_null_columns_become_null(self):
+        from vayusetu_ingest.config import Settings
+        from vayusetu_ingest.jobs import earth_engine
+
+        s = Settings(project="p", dataset="core", bq_location="asia-south1", reference_bucket=None, corridor_ids=())
+        sql = earth_engine.merge_sql(s, "p.core.stg", {"aai", "aod", "burn", "fire_count", "h3_res7", "corridor_id", "observation_date"})
+        assert "CAST(NULL AS FLOAT64) AS no2_column_mol_m2" in sql
+        assert "s.aod AS aod_550nm" in sql
+        full = earth_engine.merge_sql(s, "p.core.stg")
+        assert "s.no2 AS no2_column_mol_m2" in full
+        assert "INSERT ROW" not in full and "S.burn_scar_fraction, S.source_dataset" in full
