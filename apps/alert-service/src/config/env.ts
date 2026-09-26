@@ -43,6 +43,12 @@ const EnvSchema = z
     // An open alert for the same cell/corridor-state suppresses a new one of
     // equal-or-lower severity for this long (alert-fatigue guard).
     SUPPRESSION_WINDOW_HOURS: z.coerce.number().positive().default(24),
+
+    // Week 3 -- Pipeline C. 'template' until Engineer 3's model call lands
+    // (src/gemini/modelCall.ts). Timeout must stay well under the push
+    // subscription's ack deadline (Terraform: 120 s) -- one call per event.
+    BRIEFING_GENERATOR: z.enum(['template', 'gemini']).default('template'),
+    BRIEFING_TIMEOUT_MS: z.coerce.number().int().min(1000).max(90_000).default(30_000),
   })
   .superRefine((e, ctx) => {
     if (e.PUBSUB_PUSH_AUTH === 'oidc') {

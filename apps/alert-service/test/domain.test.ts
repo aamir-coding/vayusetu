@@ -124,6 +124,7 @@ describe('template briefing (Pipeline C stand-in)', () => {
       corridor: NCR,
       jurisdiction: { stateCode: 'HR', districtCode: 'HR-SONIPAT' },
       severity: 'critical',
+      history: [],
     });
     expect(AlertBriefingSchema.safeParse(b).success).toBe(true);
     expect(words(b.title)).toBeLessThanOrEqual(12);
@@ -144,8 +145,8 @@ describe('template briefing (Pipeline C stand-in)', () => {
         kind: 'forecast',
         run: r,
         corridor,
-        jurisdiction: { stateCode: corridor.states[0]! },
         severity: a.severity!,
+        history: [],
         worst: a.worst,
         impliedGrapStage: a.impliedGrapStage,
       });

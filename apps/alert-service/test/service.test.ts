@@ -36,6 +36,7 @@ const { requireOfficial } = await import('../src/plugins/auth.js');
 const { GeocodingError } = await import('@vayusetu/gcp-clients');
 type Deps = import('../src/pipeline/alertPipeline.js').PipelineDeps;
 type Adapter = import('../src/notifications/types.js').ChannelAdapter;
+type BriefingInput = import('../src/domain/briefing.js').BriefingInput;
 
 // ---------------------------------------------------------------- fixtures
 const silent = { info: () => {}, warn: () => {}, error: () => {} };
@@ -92,6 +93,7 @@ let app: FastifyInstance;
 let clock: Date;
 let pushSends: Array<{ alertId: string; to: string[] }>;
 let resolveJurisdiction: ReturnType<typeof vi.fn>;
+let briefingCalls: BriefingInput[];
 
 function makeDeps(): Deps {
   const push: Adapter = {
@@ -103,7 +105,13 @@ function makeDeps(): Deps {
     },
   };
   return {
-    briefing: templateBriefingGenerator,
+    briefing: {
+      name: 'spy(template)',
+      generate: async (input) => {
+        briefingCalls.push(input);
+        return templateBriefingGenerator.generate(input);
+      },
+    },
     gateway: createNotificationGateway({
       adapters: { push, sms: createStubChannel('sms', silent), whatsapp: createStubChannel('whatsapp', silent) },
       dashboardBaseUrl: 'http://localhost:5174',
@@ -144,6 +152,7 @@ beforeEach(async () => {
   fakeDb.reset();
   clock = new Date('2026-09-24T06:10:00.000Z');
   pushSends = [];
+  briefingCalls = [];
   resolveJurisdiction = vi.fn(async () => ({ stateCode: 'DL', districtCode: 'DL-CENTRAL' }));
   fakeDb.collection('corridors').seed('ncr-airshed', NCR as never);
   fakeDb.collection('corridors').seed('mumbai-pune-corridor', {
@@ -267,6 +276,29 @@ describe('hotspot.updated pipeline', () => {
     expect(fakeDb.collection('alerts').all()).toHaveLength(2);
   });
 
+  it('WEEK 3: ACKs (drops) a HotspotCell that violates the contract, naming the bad field, without briefing', async () => {
+    const cell = seedCell('2026-09-24T06', 0.92);
+    const broken = { ...cell } as Record<string, unknown>;
+    delete broken.contributingSignals;
+    fakeDb.collection('hotspots').seed(cell.id, broken as never);
+    expect((await hotspotEvent(cell)).statusCode).toBe(204);
+    expect(fakeDb.collection('alerts').all()).toHaveLength(0);
+    expect(briefingCalls).toHaveLength(0);
+  });
+
+  it('WEEK 3: gives the briefing recent same-cell history, newest first, excluding the event cell itself', async () => {
+    seedCell('2026-09-24T04', 0.4);
+    seedCell('2026-09-24T05', 0.55);
+    const cell = seedCell('2026-09-24T06', 0.92);
+    await hotspotEvent(cell);
+    const input = briefingCalls[0]!;
+    expect(input.kind).toBe('hotspot');
+    expect(input.history.map((h) => ('timestampHour' in h ? h.timestampHour : ''))).toEqual([
+      '2026-09-24T05:00:00.000Z',
+      '2026-09-24T04:00:00.000Z',
+    ]);
+  });
+
   it('resumes dispatch when a previous attempt created the alert but crashed before notifying', async () => {
     const cell = seedCell('2026-09-24T06', 0.92);
     seedAlert(`hotspot_${cell.id}`, { severity: 'critical', notificationsSent: [], status: 'new' });
@@ -298,6 +330,24 @@ describe('forecast.updated pipeline', () => {
     expect(alerts.map((a) => a.id).sort()).toEqual(['DL', 'HR', 'RJ', 'UP'].map((s) => `forecast_${runId}_${s}`));
     expect(alerts.every((a) => a.severity === 'critical' && a.impliedGrapStage === 'stage_3' && !a.assignedJurisdiction.districtCode)).toBe(true);
     expect(pushSends).toEqual([{ alertId: `forecast_${runId}_DL`, to: ['mock-iyer'] }]);
+  });
+
+  it('WEEK 3: one corridor-level briefing per forecast run, reused for every state (1 Gemini call, not 4)', async () => {
+    const runId = seedRun('ncr-airshed', [280, 420, 390]);
+    await push('forecast-updated', { forecastRunId: runId, corridorId: 'ncr-airshed', maxHorizonAQI: 420 });
+    expect(fakeDb.collection('alerts').all()).toHaveLength(4);
+    expect(briefingCalls).toHaveLength(1);
+    const titles = new Set(fakeDb.collection('alerts').all().map((a) => (a.data as unknown as Alert).title));
+    expect(titles.size).toBe(1);
+  });
+
+  it('WEEK 3: ACKs a ForecastRun with an invalid horizon (72h is the max contract horizon)', async () => {
+    const runId = seedRun('ncr-airshed', [280, 420, 390]);
+    const doc = fakeDb.collection('forecasts').all().find((d) => d.id === runId)!.data as { horizons: Array<{ horizonHours: number }> };
+    doc.horizons[0]!.horizonHours = 96;
+    fakeDb.collection('forecasts').seed(runId, doc as never);
+    expect((await push('forecast-updated', { forecastRunId: runId, corridorId: 'ncr-airshed', maxHorizonAQI: 420 })).statusCode).toBe(204);
+    expect(fakeDb.collection('alerts').all()).toHaveLength(0);
   });
 
   it('uses NAQI bands for a non-GRAP corridor, and creates nothing below them', async () => {
