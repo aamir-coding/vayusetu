@@ -1,0 +1,13 @@
+{
+  "_comment": "Single source for which Cloud Run service serves which /api/v1 prefix. Read by both apps' Vite dev proxy and by infra/scripts/gen-firebase-json.mjs (Firebase Hosting rewrites), so local dev and production route identically and same-origin (no CORS). devPort: the service's local PORT (8081 = Firestore emulator, 8085 = Pub/Sub emulator are taken).",
+  "services": {
+    "submission-service": {
+      "devPort": 8080,
+      "prefixes": ["/api/v1/users", "/api/v1/submissions", "/api/v1/analysis", "/api/v1/corridors", "/api/v1/resources"]
+    },
+    "alert-service": { "devPort": 8082, "prefixes": ["/api/v1/alerts"] },
+    "federation-service": { "devPort": 8083, "prefixes": ["/api/v1/federation"] },
+    "hotspot-service": { "devPort": 8086, "prefixes": ["/api/v1/hotspots"] },
+    "forecast-service": { "devPort": 8087, "prefixes": ["/api/v1/forecasts"] }
+  }
+}

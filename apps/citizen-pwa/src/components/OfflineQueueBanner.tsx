@@ -5,7 +5,8 @@ import { CloudOff, RefreshCw } from 'lucide-react';
 import { useToast } from '@vayusetu/ui-components';
 import { countQueuedSubmissions, listQueuedSubmissions, removeQueuedSubmission } from '../lib/offlineQueue';
 import { uploadBlob } from '../lib/uploadClient';
-import { submissionsApi } from '../lib/apiClient';
+import { isRetryable, submissionsApi } from '../lib/apiClient';
+import { networkType } from '../lib/media';
 import { useAuth } from '../hooks/useAuth';
 
 export function OfflineQueueBanner() {
@@ -32,21 +33,27 @@ export function OfflineQueueBanner() {
         try {
           await ensureRegistered();
           const token = await getToken();
-          const photoStorageUrl = await uploadBlob('photo', item.photoBlob);
-          const audioStorageUrl = item.audioBlob ? await uploadBlob('audio', item.audioBlob) : undefined;
+          const photoStorageUrl = await uploadBlob(token, 'photo', item.photoBlob);
+          const audioStorageUrl = item.audioBlob ? await uploadBlob(token, 'audio', item.audioBlob) : undefined;
           await submissionsApi.create(token, {
             mediaType: audioStorageUrl ? 'photo_audio' : 'photo',
             photoStorageUrl,
             audioStorageUrl,
             geo: item.geo,
             capturedAt: item.capturedAt,
+            deviceMeta: { platform: 'web', appVersion: __APP_VERSION__, networkType: networkType() },
             fieldSensorReading: item.fieldSensorReading,
           });
           await removeQueuedSubmission(item.localId);
           sentAny = true;
         } catch (error) {
-          console.warn('Queued submission failed to send, will retry later', error);
-          break; // stop on first failure — likely offline again, try the rest next time
+          if (isRetryable(error)) {
+            console.warn('Queued submission failed to send, will retry later', error);
+            break; // offline again or server trouble -- try the rest next time
+          }
+          // Permanently rejected: drop it so it can't block every report queued after it.
+          await removeQueuedSubmission(item.localId);
+          push({ tone: 'error', title: t('offline.rejected', { reason: (error as Error).message }) });
         }
       }
       if (sentAny) {

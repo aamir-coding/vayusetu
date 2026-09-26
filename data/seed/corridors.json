@@ -1,0 +1,29 @@
+{
+  "_comment": "Canonical corridor registry (API_CONTRACTS.md Corridor, minus the fields the seed job derives: boundaryGeoJsonStorageUrl, monitoringStationIds, createdAt). IDs are the contract's CorridorId slugs -- every service, the dashboards and Terraform use these exact strings. GRAP thresholds are CAQM's revised GRAP (Stage I 201-300, II 301-400, III 401-450, IV >450). Corridors without an active GRAP framework omit thresholds; alert-service then falls back to CPCB National AQI bands.",
+  "corridors": [
+    {
+      "id": "ncr-airshed",
+      "name": "Delhi-NCR Airshed",
+      "states": ["DL", "HR", "UP", "RJ"],
+      "population": 46000000,
+      "grapFrameworkActive": true,
+      "grapThresholds": {
+        "stage_1": { "aqiMin": 201, "aqiMax": 300 },
+        "stage_2": { "aqiMin": 301, "aqiMax": 400 },
+        "stage_3": { "aqiMin": 401, "aqiMax": 450 },
+        "stage_4": { "aqiMin": 451, "aqiMax": 500 }
+      },
+      "boundaryFile": "corridors/ncr-airshed.geojson",
+      "cpcbStates": ["Delhi", "Haryana", "Uttar_Pradesh", "Uttar Pradesh", "Rajasthan"]
+    },
+    {
+      "id": "mumbai-pune-corridor",
+      "name": "Mumbai–Pune Industrial Corridor",
+      "states": ["MH"],
+      "population": 31000000,
+      "grapFrameworkActive": false,
+      "boundaryFile": "corridors/mumbai-pune-corridor.geojson",
+      "cpcbStates": ["Maharashtra"]
+    }
+  ]
+}

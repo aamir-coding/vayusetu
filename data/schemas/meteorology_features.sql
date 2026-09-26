@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS `core.meteorology_features` (
   relative_humidity_pct FLOAT64,
   boundary_layer_height_m FLOAT64,
   precipitation_mm FLOAT64,
-  source STRING NOT NULL,              -- 'IMD'
+  source STRING NOT NULL,              -- 'GOOGLE_WEATHER_API' (live) | 'ERA5_LAND' (Earth Engine backfill)
   ingested_at TIMESTAMP NOT NULL
 )
 PARTITION BY observation_date

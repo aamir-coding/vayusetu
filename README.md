@@ -148,11 +148,18 @@ If the emulator terminal is stopped and restarted, rerun `pnpm emulator:topics` 
 | `apps/citizen-pwa` | Engineer 1 | Feature 1 (Snap & Sense) — capture, snapshot result, my reports, phone auth, offline queue, 4-language i18n |
 | `apps/admin-dashboard` | Engineer 1 | Alert queue, hotspot map, forecast view, Federation panel, Lite Mode |
 | `apps/submission-service` | Engineer 2 | Week 1 scaffold and Users/Submissions API; local emulator-tested |
-| `analysis-service`, `hotspot-service`, `forecast-service`, `alert-service`, `federation-service`, `ingestion-jobs` | Engineers 2–4 | Planned or in progress |
+| `apps/alert-service` | Engineer 2 | Live: severity, routing, FCM, Pipeline C guard layer |
+| `apps/federation-service` | Engineer 2 | Built + tested; deploy pending the Exchange project |
+| `apps/ingestion-jobs` | Engineer 4 | Python Cloud Run Jobs: CPCB, Air Quality API, Weather API, Earth Engine, rollup, seed, migrate (`python -m vayusetu_ingest --help`) |
+| `analysis-service`, `hotspot-service`, `forecast-service`, `packages/gemini-client`, `ml/` | (Engineer 3 scope) | Phase 1 of `docs/EXECUTION_PLAN.md` |
+
+## Where we are
+
+`docs/EXECUTION_PLAN.md` is the live plan: technology decisions, phases and the console steps that need an account owner.
 
 ## Commands
 
-Standard turbo-orchestrated scripts from the repo root: `pnpm build`, `pnpm dev`, `pnpm lint`, `pnpm type-check`, `pnpm format`. Scope any of these to one app with `pnpm --filter @vayusetu/citizen-pwa <script>`.
+Standard turbo-orchestrated scripts from the repo root: `pnpm build`, `pnpm dev`, `pnpm lint`, `pnpm type-check`, `pnpm test`, `pnpm format`. `pnpm test` includes the Python ingestion tests once `apps/ingestion-jobs/.venv` exists (`python -m venv .venv && .venv/Scripts/pip install -r requirements-dev.txt`). Frontends run on MSW mocks by default; set `VITE_USE_MOCKS=false` in `apps/<app>/.env.local` to use real services through the dev proxy. On Windows run `git config core.longpaths true` once. Scope any of these to one app with `pnpm --filter @vayusetu/citizen-pwa <script>`.
 
 ## Terraform and secrets
 

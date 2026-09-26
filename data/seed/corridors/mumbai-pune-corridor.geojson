@@ -1,0 +1,18 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "corridorId": "mumbai-pune-corridor",
+        "name": "Mumbai–Pune Industrial Corridor",
+        "states": ["MH"],
+        "note": "Bounding-box approximation covering MMR and the Pune metropolitan region."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[72.75, 18.5], [74.05, 18.5], [74.05, 19.35], [72.75, 19.35], [72.75, 18.5]]]
+      }
+    }
+  ]
+}

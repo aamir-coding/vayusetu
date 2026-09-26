@@ -46,7 +46,8 @@
     "missingLocation": "ਭੇਜਣ ਤੋਂ ਪਹਿਲਾਂ ਟਿਕਾਣਾ ਲੋੜੀਂਦਾ ਹੈ।",
     "reportingAs": "ਇਸ ਰੂਪ ਵਿੱਚ ਰਿਪੋਰਟ ਕਰ ਰਹੇ ਹੋ",
     "roleCitizen": "ਨਾਗਰਿਕ",
-    "roleFieldWorker": "ਫੀਲਡ ਵਰਕਰ"
+    "roleFieldWorker": "ਫੀਲਡ ਵਰਕਰ",
+    "sendFailed": "ਰਿਪੋਰਟ ਨਹੀਂ ਭੇਜੀ ਜਾ ਸਕੀ"
   },
   "result": {
     "analyzing": "ਤੁਹਾਡੀ ਫੋਟੋ ਪੜ੍ਹੀ ਜਾ ਰਹੀ ਹੈ…",
@@ -86,7 +87,8 @@
     "banner_one": "{{count}} ਰਿਪੋਰਟ ਭੇਜਣੀ ਬਾਕੀ ਹੈ",
     "banner_other": "{{count}} ਰਿਪੋਰਟਾਂ ਭੇਜਣੀਆਂ ਬਾਕੀ ਹਨ",
     "synced": "ਸਭ ਭੇਜਿਆ ਜਾ ਚੁੱਕਾ ਹੈ",
-    "willSyncWhenOnline": "ਇੰਟਰਨੈੱਟ ਆਉਂਦੇ ਹੀ ਆਪਣੇ ਆਪ ਭੇਜ ਦਿੱਤਾ ਜਾਵੇਗਾ।"
+    "willSyncWhenOnline": "ਇੰਟਰਨੈੱਟ ਆਉਂਦੇ ਹੀ ਆਪਣੇ ਆਪ ਭੇਜ ਦਿੱਤਾ ਜਾਵੇਗਾ।",
+    "rejected": "ਇੱਕ ਸੰਭਾਲੀ ਰਿਪੋਰਟ ਰੱਦ ਹੋ ਕੇ ਹਟਾ ਦਿੱਤੀ ਗਈ: {{reason}}"
   },
   "pollutionSource": {
     "crop_residue_burning": "ਫ਼ਸਲ ਦੀ ਰਹਿੰਦ-ਖੂੰਹਦ ਸਾੜਨਾ",

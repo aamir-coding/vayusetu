@@ -12,8 +12,8 @@ Two persistence layers, deliberately different jobs: **Firestore** for operation
 | `analysisResults/{submissionId}` | Same as parent `Submission.id` (1:1) | Gemini-derived structured assessment |
 | `hotspots/{h3Index}_{timestampHour}` | Composite | Hourly fused hotspot score per H3 cell |
 | `forecasts/{corridorId}_{forecastRunTimestamp}` | Composite | Per-corridor forecast run |
-| `alerts/{alertId}` | Auto-ID | Routed, status-tracked official alert |
-| `corridors/{corridorId}` | Slug (e.g. `ncr-airshed`) | Corridor configuration, incl. GRAP thresholds |
+| `alerts/{alertId}` | Deterministic: `hotspot_<HotspotCell.id>` / `forecast_<ForecastRun.id>_<stateCode>` (Pub/Sub redelivery can never duplicate an alert) | Routed, status-tracked official alert |
+| `corridors/{corridorId}` | Slug: `ncr-airshed`, `mumbai-pune-corridor` (canonical list: `data/seed/corridors.json`; written only by the ingestion `seed` job) | Corridor configuration, incl. GRAP thresholds |
 | `monitoringStations/{stationId}` | CPCB/SPCB station code | Official reference monitor registry |
 | `resourceRequests/{requestId}` | Auto-ID | Cross-jurisdiction resource coordination |
 | `federationExchange/{stateCode}/sharedModels/{modelId}` | Sub-collection | Local view of models shared to/from the National Exchange |
@@ -161,6 +161,18 @@ CREATE TABLE `vayusetu.federation_exchange.hotspot_summary` (
 PARTITION BY week_start_date
 CLUSTER BY source_state_code;
 ```
+
+## Tables added 26 Sep 2026 (realignment, Phase 0)
+DDL in `data/schemas/`, applied by `python -m vayusetu_ingest migrate` (idempotent; column additions live in `data/schemas/migrations/`). All `observation_date`/`observation_hour` columns are **UTC**.
+
+| Table | Purpose |
+|---|---|
+| `core.h3_cells` | Every res-8 cell per corridor + parents (res 7 EE sampling, res 6 federated, res 4 weather) + nearest official monitor and `has_monitor_within_radius` (3 km). All feature joins go through it — BigQuery has no H3. |
+| `core.monitoring_stations` | Official monitor registry from the CPCB feed (mirrored to Firestore `monitoringStations`). |
+| `core.modeled_aqi` | Google Air Quality API modeled hourly AQI (`ind_cpcb`) at monitor sites and sampled unmonitored cells. Never counted as a monitor. |
+| `core.meteorology_forecast` | Google Weather API 72 h hourly forecast per res-4 cell (forecast-model covariates). |
+
+Column changes: `satellite_features.burn_scar_fraction` (Sentinel-2 dNBR), `meteorology_features.corridor_id` (source is now `GOOGLE_WEATHER_API` / `ERA5_LAND`; IMD has no open API), `citizen_reports_agg.contributor_count` (federation k-anonymity). `ground_truth_aqi.pollutant_*` hold CPCB **sub-indices**; `aqi` is the station NAQI (max sub-index, ≥ 3 pollutants incl. PM).
 
 ## H3 Spatial Indexing (implementation note)
 BigQuery has no native H3 support (its native spatial clustering uses S2). H3 cell indices are computed **at the application layer** using `h3-js` (Node services) and `h3` (Python ingestion jobs), centralized in `packages/h3-utils`, and stored as an indexed `STRING` column in both Firestore and BigQuery. Native BigQuery `GEOGRAPHY`/`ST_*` functions handle polygon-containment and distance queries (e.g., "is this H3 cell inside the NCR corridor boundary"). The community-maintained Carto Analytics Toolbox for BigQuery can additionally do H3 conversions natively in SQL — an optional Phase 2 convenience, not a dependency.

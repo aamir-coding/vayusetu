@@ -95,3 +95,29 @@ variable "ci_branch_regex" {
   default     = "^main$"
   description = "Branch whose pushes deploy, and which PRs must target to be validated."
 }
+
+# --- Ingestion (ingestion.tf) ---
+
+variable "corridor_ids" {
+  type        = list(string)
+  default     = ["ncr-airshed"]
+  description = "Corridor ids (data/seed/corridors.json) this deployment ingests and scores. Data sovereignty: a state project holds only its own corridors."
+}
+
+variable "ingestion_image" {
+  type        = string
+  default     = "us-docker.pkg.dev/cloudrun/container/job:latest"
+  description = "Initial image for the ingestion Cloud Run Jobs. Public placeholder; CI replaces it (Terraform ignores image drift)."
+}
+
+variable "cpcb_api_key_secret_populated" {
+  type        = bool
+  default     = false
+  description = "Set true only AFTER adding a version to the cpcb-api-key secret (data.gov.in key). Jobs referencing an empty secret fail to deploy."
+}
+
+variable "enable_ingestion_schedules" {
+  type        = bool
+  default     = false
+  description = "Create the Cloud Scheduler triggers. Leave false until the real ingestion image is deployed and migrate/cpcb/seed have run once by hand."
+}
