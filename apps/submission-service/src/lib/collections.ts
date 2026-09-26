@@ -1,6 +1,6 @@
 import { getDb } from '@vayusetu/gcp-clients';
 import type { CollectionReference } from 'firebase-admin/firestore';
-import type { AnalysisResult, Submission, User } from '@vayusetu/shared-types';
+import type { Alert, AnalysisResult, Corridor, ResourceRequest, Submission, User } from '@vayusetu/shared-types';
 
 /**
  * A plain `as` cast, not a real `.withConverter()` -- these give
@@ -21,4 +21,16 @@ export function submissionsCollection(): CollectionReference<Submission> {
 
 export function analysisResultsCollection(): CollectionReference<AnalysisResult> {
   return getDb().collection('analysisResults') as CollectionReference<AnalysisResult>;
+}
+
+export function corridorsCollection(): CollectionReference<Corridor> {
+  return getDb().collection('corridors') as CollectionReference<Corridor>;
+}
+
+export function resourceRequestsCollection(): CollectionReference<ResourceRequest> {
+  return getDb().collection('resourceRequests') as CollectionReference<ResourceRequest>;
+}
+
+export function alertsCollection(): CollectionReference<Alert> {
+  return getDb().collection('alerts') as CollectionReference<Alert>;
 }

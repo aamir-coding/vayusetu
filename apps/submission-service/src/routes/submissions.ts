@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import type { Query } from 'firebase-admin/firestore';
 import { z } from 'zod';
 import { GeocodingError } from '@vayusetu/gcp-clients';
-import type { Jurisdiction, Paginated, Submission, User } from '@vayusetu/shared-types';
+import type { AnalysisResult, ClarificationExchange, Jurisdiction, Paginated, Submission, User } from '@vayusetu/shared-types';
 import { analysisResultsCollection, submissionsCollection, usersCollection } from '../lib/collections.js';
 import { requireAuthUser } from '../plugins/auth.js';
 import { ApiHttpError } from '../lib/errors.js';
@@ -12,6 +12,7 @@ import { publishSubmissionCreated } from '../lib/publishEvent.js';
 import { jurisdictionContains } from '../lib/jurisdiction.js';
 import { env } from '../config/env.js';
 import { mediaPrefixFor } from './uploads.js';
+import { decodePageToken, encodePageToken, officialScope, withPlayableAudio } from '../lib/scope.js';
 
 const GeoPointSchema = z.object({
   lat: z.number().min(-90).max(90),
@@ -34,11 +35,23 @@ const CreateSubmissionSchema = z
     geo: GeoPointSchema,
     capturedAt: z.string().datetime({ offset: true }),
     deviceMeta: DeviceMetaSchema,
+    // Persona 2's handheld sensor (Product Spec Feature 1), ug/m3.
+    fieldSensorReading: z
+      .object({ pm25: z.number().min(0).max(2000).optional(), pm10: z.number().min(0).max(2000).optional() })
+      .refine((r) => r.pm25 !== undefined || r.pm10 !== undefined, 'provide pm25 and/or pm10')
+      .optional(),
   })
   .refine((b) => b.mediaType !== 'photo_audio' || Boolean(b.audioStorageUrl), {
     path: ['audioStorageUrl'],
     message: 'audioStorageUrl is required when mediaType is photo_audio',
   });
+
+const ClarifyBodySchema = z
+  .object({
+    answerText: z.string().trim().min(1).max(500).optional(),
+    answerPhotoStorageUrl: z.string().url().optional(),
+  })
+  .refine((b) => b.answerText || b.answerPhotoStorageUrl, 'Provide answerText and/or answerPhotoStorageUrl');
 
 const SUBMISSION_STATUSES = ['queued', 'uploading', 'pending_analysis', 'analyzed', 'failed', 'flagged_for_review'] as const;
 
@@ -50,21 +63,12 @@ const ListQuerySchema = z.object({
   pageToken: z.string().optional(),
 });
 
-const OFFICIAL_ROLES = new Set<User['role']>(['district_admin', 'state_admin', 'super_admin']);
-
 async function requireOwnUser(uid: string): Promise<User> {
   const snap = await usersCollection().doc(uid).get();
   if (!snap.exists) {
     throw new ApiHttpError('UNAUTHORIZED', 'Register before submitting a report');
   }
   return snap.data()!;
-}
-
-/** Officials with no jurisdiction are only legitimate for super_admin. */
-function officialScope(user: User): Jurisdiction | 'all' | null {
-  if (!OFFICIAL_ROLES.has(user.role)) return null;
-  if (user.role === 'super_admin') return 'all';
-  return user.jurisdiction ?? null;
 }
 
 async function canReadSubmission(requesterUid: string, submission: Submission): Promise<boolean> {
@@ -92,16 +96,6 @@ function assertOwnMedia(uid: string, url: string | undefined, field: string) {
       expectedPrefix: prefix,
     });
   }
-}
-
-function encodePageToken(docId: string): string {
-  return Buffer.from(docId, 'utf-8').toString('base64url');
-}
-
-function decodePageToken(token: string): string {
-  const id = Buffer.from(token, 'base64url').toString('utf-8');
-  if (!/^[A-Za-z0-9_-]{1,128}$/.test(id)) throw new ApiHttpError('VALIDATION_ERROR', 'Invalid pageToken');
-  return id;
 }
 
 export default async function submissionsRoutes(app: FastifyInstance) {
@@ -145,6 +139,8 @@ export default async function submissionsRoutes(app: FastifyInstance) {
       uploadedAt: now,
       status: 'queued',
       ...(body.deviceMeta ? { deviceMeta: body.deviceMeta } : {}),
+      // Honoured for field workers only (contract); a citizen's is dropped.
+      ...(body.fieldSensorReading && user.role === 'field_worker' ? { fieldSensorReading: body.fieldSensorReading } : {}),
     };
     await ref.set(submission);
 
@@ -173,7 +169,54 @@ export default async function submissionsRoutes(app: FastifyInstance) {
     }
 
     const analysisSnap = await analysisResultsCollection().doc(id).get();
-    reply.send({ submission, analysis: analysisSnap.exists ? analysisSnap.data() : null });
+    const analysis = await withPlayableAudio(analysisSnap.exists ? analysisSnap.data()! : null, request.log);
+    reply.send({ submission, analysis });
+  });
+
+  // GET /analysis/:submissionId -- same authorization as the parent submission.
+  // Clients poll this while status is pending_analysis (or listen on Firestore).
+  app.get('/analysis/:submissionId', async (request, reply) => {
+    const { uid } = requireAuthUser(request);
+    const { submissionId } = request.params as { submissionId: string };
+    const snap = await submissionsCollection().doc(submissionId).get();
+    if (!snap.exists) throw new ApiHttpError('NOT_FOUND', 'Submission not found');
+    const submission = snap.data()!;
+    if (!(await canReadSubmission(uid, submission))) {
+      throw new ApiHttpError('FORBIDDEN_JURISDICTION', 'Outside your assigned jurisdiction');
+    }
+    const analysisSnap = await analysisResultsCollection().doc(submissionId).get();
+    const result = await withPlayableAudio(analysisSnap.exists ? analysisSnap.data()! : null, request.log);
+    reply.send({ status: submission.status, result });
+  });
+
+  // POST /submissions/:id/clarify -- the citizen's answer to Pipeline D's question.
+  app.post('/submissions/:id/clarify', async (request, reply) => {
+    const { uid } = requireAuthUser(request);
+    const { id } = request.params as { id: string };
+    const body = ClarifyBodySchema.parse(request.body);
+    assertOwnMedia(uid, body.answerPhotoStorageUrl, 'answerPhotoStorageUrl');
+
+    const ref = submissionsCollection().doc(id);
+    const snap = await ref.get();
+    if (!snap.exists) throw new ApiHttpError('NOT_FOUND', 'Submission not found');
+    const submission = snap.data()!;
+    if (submission.userId !== uid) throw new ApiHttpError('FORBIDDEN_JURISDICTION', 'Only the reporter can answer');
+
+    const analysisSnap = await analysisResultsCollection().doc(id).get();
+    const pending = analysisSnap.exists ? (analysisSnap.data() as AnalysisResult).pendingClarification : undefined;
+    const clarifications: ClarificationExchange[] = [...(submission.clarifications ?? [])];
+    const exchange = pending ? clarifications.find((c) => c.turn === pending.turn) : undefined;
+    if (!pending || !exchange || exchange.answeredAt) {
+      throw new ApiHttpError('CONFLICT', 'No clarifying question is waiting for an answer');
+    }
+    Object.assign(exchange, {
+      ...(body.answerText ? { answerText: body.answerText } : {}),
+      ...(body.answerPhotoStorageUrl ? { answerPhotoStorageUrl: body.answerPhotoStorageUrl } : {}),
+      answeredAt: new Date().toISOString(),
+    });
+    await ref.update({ clarifications, status: 'pending_analysis' });
+    await publishSubmissionCreated(id);
+    reply.status(202).send({ submission: { ...submission, clarifications, status: 'pending_analysis' } });
   });
 
   app.get('/submissions', async (request, reply) => {
@@ -244,8 +287,10 @@ export default async function submissionsRoutes(app: FastifyInstance) {
       throw new ApiHttpError('CONFLICT', 'Already analyzed');
     }
 
+    // update(), not set(): a whole-doc write could clobber a concurrent
+    // analysis-service write (transcript, clarifications).
+    await ref.update({ status: 'pending_analysis' });
     const updated: Submission = { ...submission, status: 'pending_analysis' };
-    await ref.set(updated);
     await publishSubmissionCreated(updated.id);
 
     reply.status(202).send({ submission: updated });
