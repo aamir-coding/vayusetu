@@ -27,6 +27,7 @@ locals {
   ci_apps = {
     submission-service = { deploy = true, paths = local.ci_shared_paths.backend }
     alert-service      = { deploy = true, paths = local.ci_shared_paths.backend }
+    analysis-service   = { deploy = true, paths = local.ci_shared_paths.backend }
     citizen-pwa        = { deploy = false, paths = local.ci_shared_paths.frontend }
     admin-dashboard    = { deploy = false, paths = local.ci_shared_paths.frontend }
   }

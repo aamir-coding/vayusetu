@@ -66,6 +66,16 @@ export interface User {
   updatedAt: ISODateString;
 }
 
+export interface ClarificationExchange {
+  turn: 1 | 2;                        // Pipeline D: at most two questions per report
+  question: string;                   // written by analysis-service, in the citizen's language
+  language: BCP47LanguageTag;
+  askedAt: ISODateString;
+  answerText?: string;                // written by POST /submissions/:id/clarify
+  answerPhotoStorageUrl?: string;
+  answeredAt?: ISODateString;
+}
+
 export interface Submission {
   id: string;
   userId: string;
@@ -84,6 +94,11 @@ export interface Submission {
     appVersion: string;
     networkType?: '2g' | '3g' | '4g' | '5g' | 'wifi' | 'unknown';
   };
+  fieldSensorReading?: {              // field_worker handheld sensor (Product Spec Feature 1), ug/m3
+    pm25?: number;
+    pm10?: number;
+  };
+  clarifications?: ClarificationExchange[];
 }
 
 export interface AnalysisResult {
@@ -107,6 +122,11 @@ export interface AnalysisResult {
     text: string;
     language: BCP47LanguageTag;
     audioStorageUrl?: string;
+  };
+  pendingClarification?: {           // Pipeline D question awaiting the citizen's answer
+    turn: 1 | 2;
+    question: string;
+    language: BCP47LanguageTag;
   };
   modelVersion: string;               // e.g. "gemini-3.7-flash@2026-07-14"
   rawResponseStorageUrl?: string;
@@ -256,7 +276,7 @@ export interface Paginated<T> {
 
 ## 4.2 — REST API Contracts
 
-**Service ownership** (routing: `packages/config/api-routes.json`, same map for the Vite dev proxy and Firebase Hosting rewrites): `submission-service` — Users, Submissions, Analysis, Corridors, Resource Coordination · `alert-service` — Alerts · `hotspot-service` — Hotspots · `forecast-service` — Forecasts · `federation-service` — Federation. `analysis-service` has no public routes (Pub/Sub worker). **24 endpoints** (23 + `POST /submissions/upload-url`).
+**Service ownership** (routing: `packages/config/api-routes.json`, same map for the Vite dev proxy and Firebase Hosting rewrites): `submission-service` — Users, Submissions, Analysis, Corridors, Resource Coordination · `alert-service` — Alerts · `hotspot-service` — Hotspots · `forecast-service` — Forecasts · `federation-service` — Federation. `analysis-service` has no public routes (Pub/Sub worker). **25 endpoints** (23 + `POST /submissions/upload-url` + `POST /submissions/:id/clarify`).
 
 **Conventions (apply to every endpoint, stated once):**
 - Base path: `https://api.vayusetu.gov.in/api/v1` (per-state deployments use a subdomain, e.g. `api-hr.vayusetu.gov.in`, same contract).
@@ -268,13 +288,14 @@ export interface Paginated<T> {
 ### Users
 - **`POST /users/register`** — Auth: any authenticated Firebase user, first call post-signup. Request: `{ displayName, preferredLanguage, role: 'citizen' | 'field_worker' }` *(district_admin+ accounts are provisioned out-of-band by a super_admin, never self-registered)*. Response `201`: `User`. Errors: `400`, `401`, `409` (profile exists).
 - **`GET /users/me`** — Auth: any authenticated user. Response `200`: `User`. Errors: `401`, `404`.
-- **`PATCH /users/me`** — Auth: any authenticated user. Request: `Partial<Pick<User, 'displayName' | 'preferredLanguage' | 'fcmTokens'>>`. Response `200`: `User`. Errors: `400`, `401`.
+- **`PATCH /users/me`** — Auth: any authenticated user. Request: `Partial<Pick<User, 'displayName' | 'preferredLanguage' | 'fcmTokens'>> & { role?: 'field_worker' }`. `role` is accepted only as the one-way upgrade `citizen` → `field_worker` (Persona 2 self-identifies later); any other role change is `403`. Response `200`: `User`. Errors: `400`, `401`, `403`.
 
 ### Submissions
 - **`POST /submissions/upload-url`** — Auth: citizen, field_worker (registered). Request: `{ kind: 'photo' | 'audio'; contentType: string }` (photo: image/jpeg, image/png, image/webp; audio: audio/webm, audio/ogg, audio/mp4, audio/mpeg, audio/wav; parameters such as `;codecs=opus` allowed). Response `200`: `{ uploadUrl: string; storageUrl: string; expiresAt: ISODateString }` — client PUTs the blob to `uploadUrl` with the identical `Content-Type` within 15 min, then passes `storageUrl` (`gs://…`) to `POST /submissions`, which rejects URLs not issued to the caller. Errors: `400`, `401`, `403`, `429`.
-- **`POST /submissions`** — Auth: citizen, field_worker. Request: `{ mediaType, photoStorageUrl, audioStorageUrl?, geo, capturedAt, deviceMeta? }` *(media uploads client-side to Cloud Storage via signed URL first; this endpoint registers the resulting metadata)*. Response `202`: `{ submission: Submission }` — `202` because analysis is async, `status` starts `'queued'`. Errors: `400`, `401`, `403` (official callers), `429`, `500` (jurisdiction temporarily unresolvable — client retries).
+- **`POST /submissions`** — Auth: citizen, field_worker. Request: `{ mediaType, photoStorageUrl, audioStorageUrl?, geo, capturedAt, deviceMeta?, fieldSensorReading? }` (`fieldSensorReading` honoured for `field_worker` only; PM values 0–2000 µg/m³) *(media uploads client-side to Cloud Storage via signed URL first; this endpoint registers the resulting metadata)*. Response `202`: `{ submission: Submission }` — `202` because analysis is async, `status` starts `'queued'`. Errors: `400`, `401`, `403` (official callers), `429`, `500` (jurisdiction temporarily unresolvable — client retries).
 - **`GET /submissions/:id`** — Auth: owner, or any official whose jurisdiction contains it. Response `200`: `{ submission: Submission; analysis: AnalysisResult | null }`. Errors: `401`, `403`, `404`.
 - **`GET /submissions`** — Auth: any authenticated user (citizens/field workers see only their own; officials see their jurisdiction). Query: `?userId=&status=&h3Index=&pageSize=&pageToken=`. Response `200`: `Paginated<Submission>`. Errors: `401`.
+- **`POST /submissions/:id/clarify`** — Auth: owner only. Pipeline D answer to `AnalysisResult.pendingClarification`. Request: `{ answerText?: string; answerPhotoStorageUrl?: string }` (at least one; photo URL issued by `upload-url`). Records the answer on the matching `Submission.clarifications[turn]`, resets `status` to `'pending_analysis'`, republishes `submission.created`. Response `202`: `{ submission: Submission }`. Errors: `400`, `401`, `403`, `404`, `409` (no question pending).
 - **`POST /submissions/:id/retry-analysis`** — Auth: owner, or district_admin+. Response `202`: `{ submission: Submission }` — `status` reset to `'pending_analysis'`. Errors: `401`, `403`, `404`, `409` (already analyzed and not flagged for review).
 
 ### Analysis

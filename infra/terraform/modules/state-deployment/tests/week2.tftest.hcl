@@ -119,8 +119,14 @@ run "maps_secret_wired_when_populated" {
   assert {
     condition = length([
       for e in google_cloud_run_v2_service.service["analysis-service"].template[0].containers[0].env : e if e.name == "GOOGLE_MAPS_API_KEY"
+    ]) == 1
+    error_message = "analysis-service needs the Maps key (Air Quality API context) once populated."
+  }
+  assert {
+    condition = length([
+      for e in google_cloud_run_v2_service.service["hotspot-service"].template[0].containers[0].env : e if e.name == "GOOGLE_MAPS_API_KEY"
     ]) == 0
-    error_message = "Only the geocoding services get the Maps key."
+    error_message = "Only services that call Maps Platform APIs get the Maps key."
   }
 }
 
@@ -134,8 +140,8 @@ run "ci_triggers_path_filtered_and_deploy_gated" {
   }
 
   assert {
-    condition     = length(google_cloudbuild_trigger.pr) == 4 && length(google_cloudbuild_trigger.main) == 4
-    error_message = "Expected a PR and a main trigger for each of the 4 apps."
+    condition     = length(google_cloudbuild_trigger.pr) == 5 && length(google_cloudbuild_trigger.main) == 5
+    error_message = "Expected a PR and a main trigger for each of the 5 apps."
   }
   assert {
     condition     = alltrue([for t in google_cloudbuild_trigger.pr : t.substitutions["_DEPLOY"] == "false"])
@@ -158,8 +164,8 @@ run "ci_triggers_path_filtered_and_deploy_gated" {
   }
   # actAs only on the runtime SAs CI deploys -- never project-wide.
   assert {
-    condition     = length(google_service_account_iam_member.cloudbuild_act_as_runtime) == 2
-    error_message = "Deployer should act as exactly the 2 deployable services' runtime SAs."
+    condition     = length(google_service_account_iam_member.cloudbuild_act_as_runtime) == 3
+    error_message = "Deployer should act as exactly the 3 deployable services' runtime SAs."
   }
 }
 

@@ -37,3 +37,23 @@ export async function createSignedUploadUrl(args: {
     expiresAt: new Date(expiresMs).toISOString(),
   };
 }
+
+/** `gs://bucket/path` -> { bucket, path }, or undefined for anything else. */
+export function parseGsUrl(url: string): { bucket: string; path: string } | undefined {
+  const m = /^gs:\/\/([^/]+)\/(.+)$/.exec(url);
+  return m ? { bucket: m[1]!, path: m[2]! } : undefined;
+}
+
+/**
+ * Short-lived V4 signed GET URL for a private object. Advisory audio is
+ * stored as gs:// (never public); services hand browsers this instead.
+ */
+export async function createSignedReadUrl(gsUrl: string, expiresInSeconds = 3600): Promise<string> {
+  const parsed = parseGsUrl(gsUrl);
+  if (!parsed) throw new Error(`Not a gs:// URL: ${gsUrl}`);
+  const [url] = await getStorage(getAdminApp())
+    .bucket(parsed.bucket)
+    .file(parsed.path)
+    .getSignedUrl({ version: 'v4', action: 'read', expires: Date.now() + expiresInSeconds * 1000 });
+  return url;
+}

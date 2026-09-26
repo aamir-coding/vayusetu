@@ -66,6 +66,16 @@ export interface User {
   updatedAt: ISODateString;
 }
 
+export interface ClarificationExchange {
+  turn: 1 | 2;                        // Pipeline D: at most two questions per report
+  question: string;                   // written by analysis-service, in the citizen's language
+  language: BCP47LanguageTag;
+  askedAt: ISODateString;
+  answerText?: string;                // written by POST /submissions/:id/clarify
+  answerPhotoStorageUrl?: string;
+  answeredAt?: ISODateString;
+}
+
 export interface Submission {
   id: string;
   userId: string;
@@ -84,6 +94,11 @@ export interface Submission {
     appVersion: string;
     networkType?: '2g' | '3g' | '4g' | '5g' | 'wifi' | 'unknown';
   };
+  fieldSensorReading?: {              // field_worker handheld sensor (Product Spec Feature 1), ug/m3
+    pm25?: number;
+    pm10?: number;
+  };
+  clarifications?: ClarificationExchange[];
 }
 
 export interface AnalysisResult {
@@ -107,6 +122,11 @@ export interface AnalysisResult {
     text: string;
     language: BCP47LanguageTag;
     audioStorageUrl?: string;
+  };
+  pendingClarification?: {           // Pipeline D question awaiting the citizen's answer
+    turn: 1 | 2;
+    question: string;
+    language: BCP47LanguageTag;
   };
   modelVersion: string;               // e.g. "gemini-3.7-flash@2026-07-14"
   rawResponseStorageUrl?: string;
