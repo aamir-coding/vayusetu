@@ -38,6 +38,7 @@ locals {
       DEFAULT_STATE_CODE    = var.default_state_code
       DEFAULT_DISTRICT_CODE = var.default_district_code
     }
+    hotspot-service = local.hotspot_env
     analysis-service = {
       NODE_ENV              = "production"
       PUBSUB_PUSH_AUTH      = "oidc"

@@ -41,7 +41,7 @@ features AS (
     ARRAY(SELECT DISTINCT h3_index FROM `{dataset}.monitoring_stations` WHERE is_official))
 )
 SELECT
-  f.* EXCEPT (has_monitor_within_radius, nearest_station_distance_km, nearest_station_aqi_d2),
+  f.* EXCEPT (has_monitor_within_radius, nearest_station_id, nearest_station_distance_km, nearest_station_aqi_d2),
   sh.aqi AS station_aqi,
   rn.aqi AS regional_aqi_now,
   sh.aqi - rn.aqi AS actual_aqi_deviation,

@@ -63,6 +63,7 @@ CREATE OR REPLACE TABLE FUNCTION `core.hotspot_features`(start_ts TIMESTAMP, end
     g.corridor_id,
     g.ts,
     g.has_monitor_within_radius,
+    g.nearest_station_id,              -- key, not a model feature
     g.nearest_station_distance_km,
     -- satellite (D-1, else D-2)
     COALESCE(s1.no2_column_mol_m2, s2.no2_column_mol_m2) AS sat_no2,
