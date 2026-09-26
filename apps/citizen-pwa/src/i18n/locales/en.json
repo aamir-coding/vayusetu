@@ -46,7 +46,8 @@
     "missingLocation": "We need a location before sending.",
     "reportingAs": "Reporting as",
     "roleCitizen": "Citizen",
-    "roleFieldWorker": "Field Worker"
+    "roleFieldWorker": "Field Worker",
+    "sendFailed": "Could not send report"
   },
   "result": {
     "analyzing": "Reading your photo…",
@@ -86,7 +87,8 @@
     "banner_one": "{{count}} report waiting to send",
     "banner_other": "{{count}} reports waiting to send",
     "synced": "All caught up",
-    "willSyncWhenOnline": "Will send automatically when you're back online."
+    "willSyncWhenOnline": "Will send automatically when you're back online.",
+    "rejected": "A saved report was rejected and removed: {{reason}}"
   },
   "pollutionSource": {
     "crop_residue_burning": "Crop Residue Burning",

@@ -41,3 +41,18 @@ variable "dashboard_base_url" {
   type    = string
   default = null
 }
+
+variable "cpcb_api_key_secret_populated" {
+  type    = bool
+  default = false
+}
+
+variable "enable_ingestion_schedules" {
+  type    = bool
+  default = false
+}
+
+variable "openaq_api_key_secret_populated" {
+  type    = bool
+  default = false
+}

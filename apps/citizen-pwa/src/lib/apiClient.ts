@@ -62,6 +62,19 @@ async function request<T>(path: string, token: string, init?: RequestInit): Prom
   return (await res.json()) as T;
 }
 
+/**
+ * Worth queueing and retrying later: the network is down (fetch throws a
+ * TypeError), the server is overloaded/rate-limiting, or it failed
+ * transiently (5xx -- e.g. POST /submissions's "jurisdiction unresolvable,
+ * retry"). Everything else (400/401/403/404/409) will fail again on retry,
+ * so it is surfaced to the user instead of parked in the offline queue.
+ */
+export function isRetryable(error: unknown): boolean {
+  if (error instanceof TypeError) return true;
+  const status = (error as { status?: unknown } | null)?.status;
+  return typeof status === 'number' && (status >= 500 || status === 429 || status === 408);
+}
+
 // ===================== Users =====================
 
 export interface RegisterUserRequest {
@@ -100,7 +113,16 @@ export interface CreateSubmissionRequest {
   fieldSensorReading?: { pm25?: number; pm10?: number };
 }
 
+export interface UploadUrlResponse {
+  uploadUrl: string;
+  storageUrl: string;
+  expiresAt: string;
+}
+
 export const submissionsApi = {
+  uploadUrl: (token: string, body: { kind: 'photo' | 'audio'; contentType: string }) =>
+    request<UploadUrlResponse>('/submissions/upload-url', token, { method: 'POST', body: JSON.stringify(body) }),
+
   create: (token: string, body: CreateSubmissionRequest) =>
     request<{ submission: Submission }>('/submissions', token, {
       method: 'POST',

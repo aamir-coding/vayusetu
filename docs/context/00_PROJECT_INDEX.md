@@ -24,6 +24,9 @@ Project Knowledge is scoped per engineer, and nothing here auto-syncs across the
 | Day | File(s) | What changed | By |
 |---|---|---|---|
 | 0 | All 6 | Initial extraction from PRD v1.0 | — |
+| 32 | 03_API_CONTRACTS.md | + `POST /submissions/upload-url` (24 endpoints); error lists for POST /submissions (+403, +500) and assign (+400); service ownership map incl. analysis/corridors/resources → submission-service | Engineer 2 (Claude) |
+| 32 | 04_DB_SCHEMA.md | Canonical corridor ids; deterministic alert ids; new tables h3_cells, monitoring_stations, modeled_aqi, meteorology_forecast; UTC convention; column additions | Engineer 4 role (Claude) |
+| 32 | 06_TEAM_ROLES_AND_REPO_MAP.md | Engineer 3 left; see `docs/EXECUTION_PLAN.md` for current ownership | Chirag |
 
 ## Ground rules for Claude in this project
 - `API_CONTRACTS.md` is the single source of truth for every shared type, endpoint, and event. If a request implies a field, endpoint, or shape that isn't in it, say so explicitly instead of inventing a plausible-looking extension.

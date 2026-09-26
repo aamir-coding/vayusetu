@@ -3,9 +3,10 @@ import ReactDOM from 'react-dom/client';
 import { App } from './App';
 import './i18n';
 import './index.css';
+import { useMocks } from './lib/mockMode';
 
 async function enableMockingIfNeeded() {
-  if (!import.meta.env.DEV) return;
+  if (!useMocks) return;
   const { worker } = await import('./mocks/browser');
   return worker.start({ onUnhandledRequest: 'bypass' });
 }

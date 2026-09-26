@@ -1,32 +1,30 @@
+import { submissionsApi } from './apiClient';
+
 /**
- * Product Spec Feature 1: "photo/voice to Cloud Storage" happens client-side
- * via a signed URL, *before* `POST /submissions` registers the resulting
- * metadata — the API contract is explicit that this endpoint only
- * registers already-uploaded media, it never accepts a raw file body.
- *
- * `submission-service` doesn't exist yet (Engineer 2, Week 1-2), so
- * `requestSignedUploadUrl` is intercepted by MSW in mock mode: it hands
- * back a same-origin `/mock-storage/...` URL that the mock PUT handler
- * accepts, so this function's real code path — get a URL, PUT the blob,
- * hand back the final storage URL — is fully exercised today and won't
- * need to change when the real signed-URL endpoint lands.
+ * Media goes straight to Cloud Storage via a V4 signed URL -- the binary
+ * never passes through Cloud Run (ARCHITECTURE_OVERVIEW.md, Cloud Storage
+ * row). Flow: POST /submissions/upload-url -> PUT blob with the EXACT signed
+ * Content-Type -> hand the returned gs:// storageUrl to POST /submissions,
+ * which rejects any URL that wasn't issued to this caller.
  */
 
-interface SignedUploadUrlResponse {
-  uploadUrl: string;
-  storageUrl: string;
+export class UploadError extends Error {
+  constructor(public status: number) {
+    super(status === 403 ? 'Upload link expired or was rejected' : `Upload failed (${status})`);
+    this.name = 'UploadError';
+  }
 }
 
-async function requestSignedUploadUrl(kind: 'photo' | 'audio', contentType: string): Promise<SignedUploadUrlResponse> {
-  const id = `${kind}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  const res = await fetch(`/mock-storage/sign?kind=${kind}&contentType=${encodeURIComponent(contentType)}&id=${id}`);
-  if (!res.ok) throw new Error(`Failed to obtain an upload URL (${res.status})`);
-  return (await res.json()) as SignedUploadUrlResponse;
+/** Blob.type can be empty, or carry params the server allows ("audio/webm;codecs=opus"). */
+function contentTypeFor(kind: 'photo' | 'audio', blob: Blob): string {
+  if (blob.type) return blob.type;
+  return kind === 'photo' ? 'image/jpeg' : 'audio/webm';
 }
 
-export async function uploadBlob(kind: 'photo' | 'audio', blob: Blob): Promise<string> {
-  const { uploadUrl, storageUrl } = await requestSignedUploadUrl(kind, blob.type || 'application/octet-stream');
-  const put = await fetch(uploadUrl, { method: 'PUT', body: blob, headers: { 'Content-Type': blob.type } });
-  if (!put.ok) throw new Error(`Upload failed (${put.status})`);
+export async function uploadBlob(token: string, kind: 'photo' | 'audio', blob: Blob): Promise<string> {
+  const contentType = contentTypeFor(kind, blob);
+  const { uploadUrl, storageUrl } = await submissionsApi.uploadUrl(token, { kind, contentType });
+  const put = await fetch(uploadUrl, { method: 'PUT', body: blob, headers: { 'Content-Type': contentType } });
+  if (!put.ok) throw new UploadError(put.status);
   return storageUrl;
 }

@@ -16,3 +16,4 @@
 .git
 **/.terraform
 **/*.tfstate*
+**/.venv

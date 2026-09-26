@@ -146,3 +146,26 @@ resource "google_cloudbuild_trigger" "main" {
 
   depends_on = [google_project_iam_member.cloudbuild_deployer]
 }
+
+# Whole-repo required check: every suite (Node, Python, Terraform) on every PR.
+resource "google_cloudbuild_trigger" "repo_ci" {
+  count = var.enable_ci_triggers ? 1 : 0
+
+  project     = var.project_id
+  location    = "global"
+  name        = "repo-ci-${var.environment_name}"
+  description = "All tests on PRs into ${var.ci_branch_regex} (make this the required status check)"
+
+  github {
+    owner = var.github_owner
+    name  = var.github_repo
+    pull_request {
+      branch = var.ci_branch_regex
+    }
+  }
+
+  filename        = "infra/cloudbuild/ci.yaml"
+  service_account = google_service_account.cloudbuild_deployer.id
+
+  depends_on = [google_project_iam_member.cloudbuild_deployer]
+}

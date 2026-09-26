@@ -29,10 +29,12 @@ resource "google_pubsub_topic" "events" {
 # analysis-service each provision their own real subscription when they
 # land (Week 2+).
 resource "google_pubsub_subscription" "debug_pull" {
-  for_each                   = google_pubsub_topic.events
+  # Keyed on the static topic list, not on the topic resources: a for_each
+  # over another resource's attributes can't be evaluated during `import`.
+  for_each                   = toset(local.pubsub_topics)
   project                    = var.project_id
-  name                       = "${each.value.name}-debug-pull"
-  topic                      = each.value.name
+  name                       = "${each.key}-debug-pull"
+  topic                      = google_pubsub_topic.events[each.key].name
   ack_deadline_seconds       = 30
   message_retention_duration = "86400s" # 24h -- plenty for manual debugging pulls
 
@@ -157,9 +159,9 @@ resource "google_pubsub_subscription" "alert_service_push" {
 
 # Dead-lettering also requires the agent to ack on the SOURCE subscription.
 resource "google_pubsub_subscription_iam_member" "dead_letter_source_subscriber" {
-  for_each     = google_pubsub_subscription.alert_service_push
+  for_each     = var.enable_alert_push_subscriptions ? local.alert_push_routes : {}
   project      = var.project_id
-  subscription = each.value.name
+  subscription = google_pubsub_subscription.alert_service_push[each.key].name
   role         = "roles/pubsub.subscriber"
   member       = local.pubsub_service_agent
 }

@@ -46,7 +46,8 @@
     "missingLocation": "पाठवण्यापूर्वी ठिकाण आवश्यक आहे.",
     "reportingAs": "या स्वरूपात अहवाल देत आहात",
     "roleCitizen": "नागरिक",
-    "roleFieldWorker": "फील्ड वर्कर"
+    "roleFieldWorker": "फील्ड वर्कर",
+    "sendFailed": "अहवाल पाठवता आला नाही"
   },
   "result": {
     "analyzing": "तुमचा फोटो वाचला जात आहे…",
@@ -86,7 +87,8 @@
     "banner_one": "{{count}} अहवाल पाठवायचा बाकी आहे",
     "banner_other": "{{count}} अहवाल पाठवायचे बाकी आहेत",
     "synced": "सर्व पाठवले गेले",
-    "willSyncWhenOnline": "इंटरनेट येताच आपोआप पाठवले जाईल."
+    "willSyncWhenOnline": "इंटरनेट येताच आपोआप पाठवले जाईल.",
+    "rejected": "जतन केलेला एक अहवाल नाकारला गेला आणि काढून टाकला: {{reason}}"
   },
   "pollutionSource": {
     "crop_residue_burning": "पीक अवशेष जाळणे",

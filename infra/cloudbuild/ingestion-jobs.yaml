@@ -1,0 +1,52 @@
+# ingestion-jobs: test, build the one image, point every ingestion Cloud Run
+# Job at it, then apply schema migrations.
+#   gcloud builds submit --config infra/cloudbuild/ingestion-jobs.yaml \
+#     --substitutions=_DEPLOY=true,_ENV=ncr-dev,_REGION=asia-south1 \
+#     --service-account="projects/$PROJECT/serviceAccounts/cloudbuild-ncr-dev@$PROJECT.iam.gserviceaccount.com" .
+
+substitutions:
+  _ENV: ncr-dev
+  _REGION: asia-south1
+  _AR_REPO: vayusetu
+  _DEPLOY: 'false'
+  _IMAGE: '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/ingestion-jobs'
+  _JOBS: 'ingest-migrate ingest-openaq ingest-openaq-backfill ingest-cpcb ingest-seed ingest-air-quality ingest-weather ingest-weather-forecast ingest-earth-engine ingest-rollup'
+
+options:
+  dynamicSubstitutions: true
+  substitutionOption: ALLOW_LOOSE
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: 1800s
+
+steps:
+  - id: test
+    name: python:3.12-slim
+    dir: apps/ingestion-jobs
+    entrypoint: bash
+    args: ['-c', 'pip install --quiet -r requirements-dev.txt && python -m pytest -q']
+
+  - id: image
+    name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        if [ "${_DEPLOY}" != "true" ]; then echo "validation-only build"; exit 0; fi
+        docker build -f apps/ingestion-jobs/Dockerfile -t "${_IMAGE}:${BUILD_ID}" -t "${_IMAGE}:latest" .
+        docker push --all-tags "${_IMAGE}"
+
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        if [ "${_DEPLOY}" != "true" ]; then exit 0; fi
+        for job in ${_JOBS}; do
+          gcloud run jobs update "$${job}-${_ENV}" --image="${_IMAGE}:${BUILD_ID}" --region="${_REGION}" --quiet
+        done
+        # Schema first, so the next scheduled run never meets a missing column.
+        gcloud run jobs execute "ingest-migrate-${_ENV}" --region="${_REGION}" --wait --quiet
