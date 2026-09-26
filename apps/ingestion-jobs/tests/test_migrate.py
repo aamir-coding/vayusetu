@@ -15,6 +15,13 @@ def test_statements_target_the_project_dataset():
         assert "`p.core." in sql
 
 
+def test_semicolons_in_comments_do_not_split_statements():
+    s = Settings(project="p", dataset="core", bq_location="asia-south1", reference_bucket=None, corridor_ids=())
+    for name, sql in migrate.statements(s):
+        assert sql.upper().startswith(("CREATE", "ALTER")), f"{name}: statement starts with {sql[:30]!r}"
+        assert "--" not in sql
+
+
 @pytest.mark.integration
 def test_earth_engine_one_day_export():
     """Live: needs ADC + an EE-registered GOOGLE_CLOUD_PROJECT."""
