@@ -8,6 +8,8 @@ import authPlugin from './plugins/auth.js';
 import usersRoutes from './routes/users.js';
 import submissionsRoutes from './routes/submissions.js';
 import uploadsRoutes from './routes/uploads.js';
+import corridorsRoutes from './routes/corridors.js';
+import resourcesRoutes from './routes/resources.js';
 
 export interface BuildAppOptions {
   /** Overrides RATE_LIMIT_MAX_PER_MINUTE -- lets tests exercise 429 without 60+ requests. */
@@ -63,6 +65,8 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
   await app.register(usersRoutes, { prefix: '/api/v1' });
   await app.register(uploadsRoutes, { prefix: '/api/v1' });
   await app.register(submissionsRoutes, { prefix: '/api/v1' });
+  await app.register(corridorsRoutes, { prefix: '/api/v1' });
+  await app.register(resourcesRoutes, { prefix: '/api/v1' });
 
   return app;
 }
