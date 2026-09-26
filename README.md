@@ -57,7 +57,7 @@ pnpm dev
 **Terminal 4 — exercise the API:**
 
 ```bash
-curl http://localhost:8080/healthz
+curl http://localhost:8080/health
 
 curl -X POST http://localhost:8080/api/v1/users/register \
 	-H "Authorization: Bearer mock-token:rina-test" \
@@ -116,7 +116,7 @@ pnpm dev
 The API log should contain `authMode=mock`. **Terminal 4 — exercise the API:**
 
 ```powershell
-Invoke-RestMethod -Uri "http://localhost:8080/healthz"
+Invoke-RestMethod -Uri "http://localhost:8080/health"
 
 $body = @{ displayName = "Rina"; preferredLanguage = "hi-IN"; role = "citizen" } | ConvertTo-Json -Compress
 Invoke-RestMethod -Uri "http://localhost:8080/api/v1/users/register" -Method Post -Headers @{ Authorization = "Bearer mock-token:rina-test" } -ContentType "application/json" -Body $body

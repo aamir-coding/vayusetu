@@ -1,6 +1,7 @@
 import { type App, getApps, initializeApp } from 'firebase-admin/app';
 import { type Auth, getAuth } from 'firebase-admin/auth';
 import { type Firestore, getFirestore } from 'firebase-admin/firestore';
+import { type Messaging, getMessaging } from 'firebase-admin/messaging';
 import { getProjectId } from './env.js';
 
 /**
@@ -10,7 +11,7 @@ import { getProjectId } from './env.js';
  * `gcloud auth application-default login` / GOOGLE_APPLICATION_CREDENTIALS
  * resolved to locally. Never construct a second `App` elsewhere in a
  * service -- always go through `getAdminApp()` so ID-token verification
- * (Auth) and document reads (Firestore) share one credential.
+ * (Auth), document reads (Firestore) and FCM (Messaging) share one credential.
  */
 let app: App | undefined;
 
@@ -31,4 +32,10 @@ export function getDb(): Firestore {
 
 export function getAdminAuth(): Auth {
   return getAuth(getAdminApp());
+}
+
+/** FCM. There is no FCM emulator -- this always talks to the real project,
+ *  which is why alert-service defaults PUSH_CHANNEL_MODE=stub for local dev. */
+export function getAdminMessaging(): Messaging {
+  return getMessaging(getAdminApp());
 }

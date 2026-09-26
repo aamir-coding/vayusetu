@@ -9,6 +9,13 @@ const EnvSchema = z.object({
   DEFAULT_STATE_CODE: z.string().default('DL'),
   DEFAULT_DISTRICT_CODE: z.string().default('DL-CENTRAL'),
   CORS_ORIGIN: z.string().default('*'),
+  // Citizen-media bucket (Terraform output `citizen_media_bucket`). Unset =>
+  // POST /submissions/upload-url returns a clear 500 and POST /submissions
+  // skips the media-ownership check (local dev without GCS).
+  MEDIA_BUCKET: z.string().optional(),
+  // Per-USER, not per-IP: Indian mobile carriers put thousands of phones
+  // behind one CGNAT address, so an IP limit would throttle a whole town.
+  RATE_LIMIT_MAX_PER_MINUTE: z.coerce.number().int().positive().default(60),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

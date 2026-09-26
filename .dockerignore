@@ -1,0 +1,18 @@
+# Repo-ROOT .dockerignore. Every service Dockerfile builds with the repo
+# root as context (`docker build -f apps/<svc>/Dockerfile .`), and Docker
+# only reads .dockerignore from the context root -- so the per-app ones
+# Week 1 shipped were never applied. Without this file:
+#   - local .env files (real keys) get baked into images
+#   - in CI, the host's pnpm node_modules symlinks are COPY'd over the
+#     container's own install, and every build uploads 100s of MB of context
+**/node_modules
+**/dist
+**/.turbo
+**/*.tsbuildinfo
+**/coverage
+**/.env
+**/.env.*
+!**/.env.example
+.git
+**/.terraform
+**/*.tfstate*

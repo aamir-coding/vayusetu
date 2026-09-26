@@ -2,19 +2,20 @@
   "name": "@vayusetu/gcp-clients",
   "version": "0.1.0",
   "private": true,
-  "description": "Typed Firestore, Pub/Sub, and BigQuery client wrappers shared by every VayuSetu backend service. Centralizes GCP SDK initialization (Application Default Credentials in Cloud Run, emulator hosts locally) and the Pub/Sub event-payload contract from API_CONTRACTS.md §4.3, so no two services construct a client -- or a topic payload shape -- differently.",
+  "description": "Typed Firestore, Pub/Sub, and BigQuery client wrappers shared by every VayuSetu backend service. Centralizes GCP SDK initialization (Application Default Credentials in Cloud Run, emulator hosts locally) and the Pub/Sub event-payload contract from API_CONTRACTS.md \u00a74.3, so no two services construct a client -- or a topic payload shape -- differently.",
   "license": "UNLICENSED",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./testing": "./src/testing/fakeFirestore.ts",
     "./*": "./src/*"
   },
   "scripts": {
     "type-check": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "echo \"no tests in gcp-clients yet\" && exit 0",
+    "test": "vitest run",
     "clean": "rimraf .turbo *.tsbuildinfo"
   },
   "dependencies": {
@@ -29,6 +30,7 @@
     "eslint": "^9.13.0",
     "rimraf": "^6.0.1",
     "typescript": "^5.6.3",
-    "typescript-eslint": "^8.15.0"
+    "typescript-eslint": "^8.15.0",
+    "vitest": "^2.1.3"
   }
 }

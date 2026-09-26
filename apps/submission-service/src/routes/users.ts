@@ -15,7 +15,14 @@ const UpdateBodySchema = z
   .object({
     displayName: z.string().min(1).max(120).optional(),
     preferredLanguage: z.string().min(2).max(10).optional(),
-    fcmTokens: z.array(z.string()).optional(),
+    // Officials' dashboards register FCM tokens here (alert-service reads
+    // them). De-duplicate and keep the 10 most recent: tokens accumulate per
+    // browser/device, and every stale one costs a failed send per alert.
+    fcmTokens: z
+      .array(z.string().min(20).max(4096))
+      .max(50)
+      .transform((tokens) => [...new Set(tokens)].slice(-10))
+      .optional(),
   })
   .refine((body) => Object.keys(body).length > 0, { message: 'Provide at least one field to update' });
 

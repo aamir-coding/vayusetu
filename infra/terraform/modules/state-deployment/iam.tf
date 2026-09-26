@@ -8,19 +8,19 @@ locals {
   service_accounts = {
     submission-service = {
       roles = [
-        "roles/datastore.user",              # Firestore read/write
-        "roles/pubsub.publisher",             # submission.created
-        "roles/storage.objectAdmin",          # citizen-media bucket
-        "roles/secretmanager.secretAccessor", # Maps API key
+        "roles/datastore.user",                 # Firestore read/write
+        "roles/pubsub.publisher",               # submission.created
+        "roles/storage.objectAdmin",            # citizen-media bucket
+        "roles/secretmanager.secretAccessor",   # Maps API key
         "roles/iam.serviceAccountTokenCreator", # self-sign upload URLs from Cloud Run's metadata credential
       ]
     }
     analysis-service = {
       roles = [
         "roles/datastore.user",
-        "roles/pubsub.subscriber",  # submission.created
-        "roles/pubsub.publisher",   # analysis.completed
-        "roles/aiplatform.user",    # Gemini 3.7 Flash (Pipeline A)
+        "roles/pubsub.subscriber", # submission.created
+        "roles/pubsub.publisher",  # analysis.completed
+        "roles/aiplatform.user",   # Gemini 3.7 Flash (Pipeline A)
         "roles/storage.objectViewer",
         "roles/secretmanager.secretAccessor",
       ]
@@ -47,10 +47,10 @@ locals {
     alert-service = {
       roles = [
         "roles/datastore.user",
-        "roles/pubsub.subscriber", # hotspot.updated + forecast.updated
-        "roles/aiplatform.user",   # Gemini 3.1 Pro (Pipeline C)
+        "roles/pubsub.subscriber",            # hotspot.updated + forecast.updated
+        "roles/aiplatform.user",              # Gemini 3.1 Pro (Pipeline C)
         "roles/secretmanager.secretAccessor", # SMS/WhatsApp gateway creds
-        "roles/firebase.admin",    # FCM dispatch via Firebase Admin SDK
+        "roles/firebase.admin",               # FCM dispatch via Firebase Admin SDK
       ]
     }
     federation-service = {

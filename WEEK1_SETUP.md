@@ -89,7 +89,7 @@ submission-service listening on :8080 (project=vayusetu-ncr-dev, authMode=mock)
 
 ```bash
 # Health check — no auth needed
-curl http://localhost:8080/healthz
+curl http://localhost:8080/health
 
 # Register a citizen
 curl -X POST http://localhost:8080/api/v1/users/register \
@@ -139,7 +139,7 @@ You should see one message per submission you created, with data `{"submissionId
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | Service won't boot: `❌ Invalid environment configuration` | A required env var is missing/malformed | The printed list tells you exactly which key+why (Zod's issue list) — usually `GOOGLE_CLOUD_PROJECT` unset |
-| Every request 401s even with a `mock-token:` header | `.env.local` wasn't loaded, or you're running with realenv vars from a parent shell overriding it, or `AUTH_MODE` isn't actually `mock` | `curl http://localhost:8080/healthz` doesn't need auth — check that first to confirm the server itself is up, then `echo $AUTH_MODE` in the terminal you launched `pnpm dev` from |
+| Every request 401s even with a `mock-token:` header | `.env.local` wasn't loaded, or you're running with realenv vars from a parent shell overriding it, or `AUTH_MODE` isn't actually `mock` | `curl http://localhost:8080/health` doesn't need auth — check that first to confirm the server itself is up, then `echo $AUTH_MODE` in the terminal you launched `pnpm dev` from |
 | `POST /submissions` fails with `Register before submitting a report` | Working as designed — call `POST /users/register` for that uid first, exactly like `citizen-pwa`'s `ensureRegistered()` does before its first real submission |
 | Requests hang, then fail with `Could not load the default credentials` | No Firestore emulator running (or `FIRESTORE_EMULATOR_HOST` not set) and no real ADC either | Start `infra/scripts/dev-emulators.sh`, confirm `.env.local` has `FIRESTORE_EMULATOR_HOST=localhost:8081`; for real GCP instead, run `gcloud auth application-default login` |
 | `publishEvent` throws `Failed to publish to Pub/Sub topic` | Either the emulator has no topics yet (it doesn't persist across restarts) or a real deploy's topic doesn't exist / the service account lacks `roles/pubsub.publisher` | Re-run `pnpm emulator:topics`, or check `terraform output pubsub_topics` / the service account's IAM bindings |

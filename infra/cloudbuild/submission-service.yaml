@@ -1,0 +1,91 @@
+# Cloud Build pipeline -- submission-service.
+# Triggered by infra/terraform/modules/state-deployment/cloudbuild.tf:
+#   PR into main   -> _DEPLOY=false : install, type-check, lint, test
+#   push to main   -> _DEPLOY=true  : the above, then build, push, deploy
+# alert-service.yaml is this file with _SERVICE changed. To onboard
+# another Node Cloud Run service: copy, change _SERVICE, add it to
+# local.ci_apps in cloudbuild.tf.
+#
+# Manual run from the repo root (same SA the triggers use):
+#   gcloud builds submit --config infra/cloudbuild/submission-service.yaml \
+#     --substitutions=_DEPLOY=true,_ENV=ncr-dev,_REGION=asia-south1 \
+#     --service-account="projects/$PROJECT/serviceAccounts/cloudbuild-ncr-dev@$PROJECT.iam.gserviceaccount.com" .
+
+substitutions:
+  _SERVICE: submission-service
+  _ENV: ncr-dev
+  _REGION: asia-south1
+  _AR_REPO: vayusetu
+  _DEPLOY: 'false'
+  _IMAGE: '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE}'
+
+options:
+  dynamicSubstitutions: true
+  substitutionOption: ALLOW_LOOSE
+  logging: CLOUD_LOGGING_ONLY # required with a user-specified service account
+  machineType: E2_HIGHCPU_8
+  env:
+    - COREPACK_HOME=/workspace/.corepack # fetch pnpm once, reuse across steps
+    - CI=true
+
+timeout: 1200s
+
+steps:
+  - id: install
+    name: node:20-slim
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        corepack enable
+        pnpm install --frozen-lockfile --filter "@vayusetu/${_SERVICE}..."
+
+  - id: build-shared-types
+    name: node:20-slim
+    entrypoint: bash
+    args: ['-c', 'corepack enable && pnpm --filter @vayusetu/shared-types build']
+
+  - id: type-check
+    name: node:20-slim
+    waitFor: ['build-shared-types']
+    entrypoint: bash
+    args: ['-c', 'corepack enable && pnpm --filter @vayusetu/gcp-clients --filter "@vayusetu/${_SERVICE}" type-check']
+
+  - id: lint
+    name: node:20-slim
+    waitFor: ['build-shared-types']
+    entrypoint: bash
+    args: ['-c', 'corepack enable && pnpm --filter "@vayusetu/${_SERVICE}" lint']
+
+  - id: test
+    name: node:20-slim
+    waitFor: ['build-shared-types']
+    entrypoint: bash
+    args: ['-c', 'corepack enable && pnpm --filter @vayusetu/gcp-clients --filter "@vayusetu/${_SERVICE}" test']
+
+  # Everything below is a no-op unless _DEPLOY=true (PR builds stop here).
+  - id: image
+    name: gcr.io/cloud-builders/docker
+    waitFor: ['type-check', 'lint', 'test']
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        if [ "${_DEPLOY}" != "true" ]; then echo "_DEPLOY=${_DEPLOY}: validation-only build, skipping image"; exit 0; fi
+        docker build -f "apps/${_SERVICE}/Dockerfile" -t "${_IMAGE}:${BUILD_ID}" -t "${_IMAGE}:latest" .
+        docker push --all-tags "${_IMAGE}"
+
+  # Swaps the image only. Env/secrets are owned by Terraform (cloud_run.tf);
+  # `gcloud run deploy --image` preserves them.
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    waitFor: ['image']
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        if [ "${_DEPLOY}" != "true" ]; then echo "_DEPLOY=${_DEPLOY}: skipping deploy"; exit 0; fi
+        gcloud run deploy "${_SERVICE}-${_ENV}" --image="${_IMAGE}:${BUILD_ID}" --region="${_REGION}" --quiet

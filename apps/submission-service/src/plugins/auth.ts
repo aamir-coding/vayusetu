@@ -29,7 +29,7 @@ function extractBearerToken(request: FastifyRequest): string {
 
 /**
  * Auth applies to every route except ones registered with
- * `{ config: { public: true } }` (only /healthz uses this) --
+ * `{ config: { public: true } }` (only /health uses this) --
  * API_CONTRACTS.md §4.2: "no unauthenticated endpoint exists in this
  * system, including citizen submission, because jurisdiction-correct
  * routing requires a resolvable identity."

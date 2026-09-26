@@ -1,0 +1,60 @@
+# Cloud Build pipeline -- citizen-pwa (VALIDATION ONLY).
+# Firebase Hosting deploy is Engineer 1's Week 4 deliverable; until then
+# every trigger (PR and main) runs install, type-check, lint, test and a
+# real production `vite build`, so a broken bundle fails the PR.
+# admin-dashboard.yaml is this file with _APP changed.
+
+substitutions:
+  _APP: citizen-pwa
+
+options:
+  substitutionOption: ALLOW_LOOSE # triggers also pass _DEPLOY/_ENV/_REGION
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8
+  env:
+    - COREPACK_HOME=/workspace/.corepack
+    - CI=true
+
+timeout: 1200s
+
+steps:
+  - id: install
+    name: node:20-slim
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        corepack enable
+        pnpm install --frozen-lockfile --filter "@vayusetu/${_APP}..."
+
+  - id: build-shared-types
+    name: node:20-slim
+    entrypoint: bash
+    args: ['-c', 'corepack enable && pnpm --filter @vayusetu/shared-types build']
+
+  # --if-present: this pipeline is Engineer 2's, the scripts are Engineer 1's;
+  # a renamed/removed script shouldn't break CI in a way only E2 can fix.
+  - id: type-check
+    name: node:20-slim
+    waitFor: ['build-shared-types']
+    entrypoint: bash
+    args: ['-c', 'corepack enable && pnpm --filter "@vayusetu/${_APP}" run --if-present type-check']
+
+  - id: lint
+    name: node:20-slim
+    waitFor: ['build-shared-types']
+    entrypoint: bash
+    args: ['-c', 'corepack enable && pnpm --filter "@vayusetu/${_APP}" run --if-present lint']
+
+  - id: test
+    name: node:20-slim
+    waitFor: ['build-shared-types']
+    entrypoint: bash
+    args: ['-c', 'corepack enable && pnpm --filter "@vayusetu/${_APP}" run --if-present test']
+
+  - id: build
+    name: node:20-slim
+    waitFor: ['type-check', 'lint', 'test']
+    entrypoint: bash
+    args: ['-c', 'corepack enable && pnpm --filter "@vayusetu/${_APP}" run build']

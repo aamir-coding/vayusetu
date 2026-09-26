@@ -1,2 +1,10 @@
 project_id = "vayusetu-ncr-dev"
 region     = "asia-south1"
+
+# Week 2 -- flip each ONLY after its manual step in WEEK2_SETUP.md:
+# maps_api_key_secret_populated   = true   # after: gcloud secrets versions add google-maps-api-key ...
+# enable_alert_push_subscriptions = true   # after: alert-service's real image is deployed once
+# enable_ci_triggers              = true   # after: Cloud Build GitHub App installed + repo connected
+# github_owner                    = "your-org"
+# github_repo                     = "vayusetu"
+# dashboard_base_url              = "https://vayusetu-ncr-dev.web.app"

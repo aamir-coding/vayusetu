@@ -32,3 +32,34 @@ output "bigquery_datasets" {
 output "artifact_registry_repository" {
   value = google_artifact_registry_repository.containers.name
 }
+
+# ---------------------------------------------------------------- Week 2
+
+output "pubsub_push_service_account" {
+  description = "Identity Pub/Sub signs alert-service push tokens as (alert-service's PUBSUB_PUSH_SA_EMAIL)."
+  value       = google_service_account.pubsub_push.email
+}
+
+output "alert_push_audience" {
+  description = "OIDC audience on push tokens (alert-service's PUBSUB_PUSH_AUDIENCE)."
+  value       = local.alert_push_audience
+}
+
+output "alert_push_subscriptions" {
+  description = "Empty until enable_alert_push_subscriptions = true."
+  value       = [for s in google_pubsub_subscription.alert_service_push : s.name]
+}
+
+output "alert_dead_letter_subscription" {
+  description = "Pull from this to inspect events alert-service failed on repeatedly."
+  value       = google_pubsub_subscription.alert_service_dead_letter_inspect.name
+}
+
+output "cloudbuild_deployer_service_account" {
+  value = google_service_account.cloudbuild_deployer.email
+}
+
+output "ci_triggers" {
+  description = "Empty until enable_ci_triggers = true."
+  value       = concat([for t in google_cloudbuild_trigger.pr : t.name], [for t in google_cloudbuild_trigger.main : t.name])
+}
