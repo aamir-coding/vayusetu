@@ -4,7 +4,9 @@ import type { FastifyBaseLogger } from 'fastify';
 import { env } from '../config/env.js';
 import { usersCollection } from '../lib/collections.js';
 import { jurisdictionResolver } from '../lib/geo.js';
-import { templateBriefingGenerator } from '../domain/briefing.js';
+import { type BriefingGenerator, templateBriefingGenerator } from '../domain/briefing.js';
+import { createGeminiBriefingGenerator } from '../gemini/geminiBriefingGenerator.js';
+import { createPipelineCModelCall } from '../gemini/modelCall.js';
 import { parseHotspotThresholds } from '../domain/severity.js';
 import { createFcmChannel } from '../notifications/fcmChannel.js';
 import { createNotificationGateway, createStubChannel } from '../notifications/gateway.js';
@@ -29,11 +31,21 @@ export function buildPipelineDeps(logger: FastifyBaseLogger): PipelineDeps {
   if (env.WHATSAPP_CHANNEL_MODE === 'stub') adapters.whatsapp = createStubChannel('whatsapp', logger);
 
   const gateway = createNotificationGateway({ adapters, dashboardBaseUrl: env.DASHBOARD_BASE_URL, logger });
-  logger.info({ channels: gateway.describe(), briefing: templateBriefingGenerator.name }, 'notification gateway ready');
+
+  const briefing: BriefingGenerator =
+    env.BRIEFING_GENERATOR === 'gemini'
+      ? createGeminiBriefingGenerator({
+          callModel: createPipelineCModelCall(), // throws at boot until Engineer 3 lands it
+          fallback: templateBriefingGenerator,
+          timeoutMs: env.BRIEFING_TIMEOUT_MS,
+          logger,
+        })
+      : templateBriefingGenerator;
+
+  logger.info({ channels: gateway.describe(), briefing: briefing.name }, 'alert pipeline ready');
 
   return {
-    // Week 3: swap for Engineer 3's Gemini 3.1 Pro generator (Pipeline C).
-    briefing: templateBriefingGenerator,
+    briefing,
     gateway,
     resolveJurisdiction: (geo) => jurisdictionResolver.resolve(geo),
     findRecipients,

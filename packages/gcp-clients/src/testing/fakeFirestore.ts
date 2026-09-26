@@ -65,7 +65,7 @@ export class FakeDocRef {
   }
 }
 
-type Op = '==' | 'in';
+type Op = '==' | 'in' | '<' | '<=' | '>' | '>=';
 interface Filter {
   field: string;
   op: Op;
@@ -111,7 +111,18 @@ export class FakeQuery {
     for (const f of this.filters) {
       rows = rows.filter((r) => {
         const v = getPath(r.data, f.field);
-        return f.op === 'in' ? (f.value as unknown[]).includes(v) : v === f.value;
+        switch (f.op) {
+          case 'in':
+            return (f.value as unknown[]).includes(v);
+          case '==':
+            return v === f.value;
+          default: {
+            // Range filters: like Firestore, a doc lacking the field never matches.
+            if (v === undefined || v === null) return false;
+            const [a, b] = [v as string | number, f.value as string | number];
+            return f.op === '<' ? a < b : f.op === '<=' ? a <= b : f.op === '>' ? a > b : a >= b;
+          }
+        }
       });
     }
     return rows;

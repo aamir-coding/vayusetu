@@ -27,6 +27,9 @@ export const AlertBriefingSchema = z.object({
 });
 export type AlertBriefing = z.infer<typeof AlertBriefingSchema>;
 
+/** Pipeline C: "a hotspot or forecast event, its contributing signals, the
+ *  corridor's configured GRAP/CAQM stage thresholds, and recent history for
+ *  context." History is best-effort: empty if the lookup failed. */
 export type BriefingInput =
   | {
       kind: 'hotspot';
@@ -34,15 +37,20 @@ export type BriefingInput =
       corridor: Corridor;
       jurisdiction: Jurisdiction;
       severity: AlertSeverity;
+      /** Earlier hourly cells for the same h3Index, newest first (<= 24). */
+      history: HotspotCell[];
     }
   | {
+      /** Corridor-level: generated ONCE per forecast run and reused for every
+       *  state's alert (NCR = 1 Gemini call, not 4). */
       kind: 'forecast';
       run: ForecastRun;
       corridor: Corridor;
-      jurisdiction: Jurisdiction;
       severity: AlertSeverity;
       worst: ForecastHorizonPoint;
       impliedGrapStage: GRAPStage;
+      /** Previous runs for the corridor, newest first (<= 3). */
+      history: ForecastRun[];
     };
 
 export interface BriefingGenerator {
@@ -171,7 +179,7 @@ export const templateBriefingGenerator: BriefingGenerator = {
       });
     }
 
-    const { run, corridor, jurisdiction, worst, impliedGrapStage } = input;
+    const { run, corridor, worst, impliedGrapStage } = input;
     const idx = run.horizons.indexOf(worst);
     const cited = [`horizons[${idx}].predictedAQI`, `horizons[${idx}].predictedAQICategory`];
     if (run.keyDrivers.length) cited.push('keyDrivers');
@@ -186,7 +194,7 @@ export const templateBriefingGenerator: BriefingGenerator = {
       .join(' ');
 
     return AlertBriefingSchema.parse({
-      title: `${worst.horizonHours}h forecast: AQI ${worst.predictedAQI}, ${STAGE_LABEL[impliedGrapStage]}, ${where(jurisdiction, corridor)}`,
+      title: `${worst.horizonHours}h forecast: AQI ${worst.predictedAQI}, ${STAGE_LABEL[impliedGrapStage]}, ${corridor.name}`,
       description,
       impliedGrapStage,
       recommendedActions: GRAP_ACTIONS[impliedGrapStage],
