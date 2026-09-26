@@ -23,6 +23,8 @@ locals {
   # secrets: env var name -> Secret Manager secret id
   ingestion_jobs = {
     ingest-migrate          = { args = ["migrate"], schedule = null, timeout = "600s", secrets = {} }
+    ingest-openaq           = { args = ["openaq", "--mode", "latest"], schedule = "40 */6 * * *", timeout = "3600s", secrets = { OPENAQ_API_KEY = "openaq-api-key" } }
+    ingest-openaq-backfill  = { args = ["openaq", "--mode", "backfill", "--days", "365"], schedule = null, timeout = "43200s", secrets = { OPENAQ_API_KEY = "openaq-api-key" } }
     ingest-cpcb             = { args = ["cpcb"], schedule = "15 * * * *", timeout = "900s", secrets = { DATA_GOV_IN_API_KEY = "cpcb-api-key" } }
     ingest-seed             = { args = ["seed"], schedule = "30 2 * * *", timeout = "1800s", secrets = {} }
     ingest-air-quality      = { args = ["air-quality", "--hours", "26"], schedule = "0 3 * * *", timeout = "3600s", secrets = { GOOGLE_MAPS_API_KEY = "google-maps-api-key" } }
@@ -35,6 +37,7 @@ locals {
   # Secrets whose version must exist before a job may reference them.
   ingestion_secret_ready = {
     "cpcb-api-key"        = var.cpcb_api_key_secret_populated
+    "openaq-api-key"      = var.openaq_api_key_secret_populated
     "google-maps-api-key" = var.maps_api_key_secret_populated
   }
 }
@@ -77,7 +80,7 @@ resource "google_storage_bucket_iam_member" "ingestion_reference" {
 }
 
 resource "google_secret_manager_secret_iam_member" "ingestion_secrets" {
-  for_each  = toset(["cpcb-api-key", "google-maps-api-key"])
+  for_each  = toset(["cpcb-api-key", "openaq-api-key", "google-maps-api-key"])
   project   = var.project_id
   secret_id = google_secret_manager_secret.secrets[each.value].secret_id
   role      = "roles/secretmanager.secretAccessor"
@@ -152,7 +155,12 @@ resource "google_cloud_run_v2_job_iam_member" "scheduler_runs_ingestion" {
 }
 
 resource "google_cloud_scheduler_job" "ingestion" {
-  for_each  = { for k, v in local.ingestion_jobs : k => v if v.schedule != null && var.enable_ingestion_schedules }
+  # A job is scheduled only once every secret it needs has a value -- e.g.
+  # ingest-cpcb stays manual until a data.gov.in key exists.
+  for_each = {
+    for k, v in local.ingestion_jobs : k => v
+    if v.schedule != null && var.enable_ingestion_schedules && alltrue([for sec in values(v.secrets) : local.ingestion_secret_ready[sec]])
+  }
   project   = var.project_id
   region    = var.region
   name      = "${each.key}-${var.environment_name}"

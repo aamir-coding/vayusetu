@@ -1,4 +1,7 @@
-"""CPCB real-time AQI (data.gov.in) -> core.ground_truth_aqi + station registry.
+"""CPCB real-time AQI (data.gov.in) -> core.ground_truth_aqi (live, measured).
+
+The station registry itself comes from the `openaq` job; stations here are
+re-keyed onto it by location.
 
 Hourly Cloud Run Job. The feed is a snapshot of every station's latest
 per-pollutant sub-indices, stamped with IST local time.
@@ -152,6 +155,36 @@ def station_doc(row: dict) -> dict:
     }
 
 
+def write_station_docs(settings: Settings, stations: list[dict]) -> None:
+    fs = firestore.Client(project=settings.project)
+    batch = fs.batch()
+    for i, row in enumerate(stations, 1):
+        batch.set(fs.collection("monitoringStations").document(row["station_id"]), station_doc(row), merge=True)
+        if i % 400 == 0:
+            batch.commit()
+            batch = fs.batch()
+    batch.commit()
+
+
+REGISTRY_MATCH_KM = 0.3
+
+
+def align_to_registry(gt_rows: list[dict], stations: list[dict], registry: list[dict]) -> tuple[list[dict], list[dict]]:
+    """data.gov.in and OpenAQ spell station names differently ("Anand Vihar,
+    Delhi - DPCC" vs "Anand Vihar, New Delhi - DPCC"). Re-key a feed station
+    onto the registry station at the same site (< 300 m) so both sources land
+    on one station_id; unmatched stations keep their own slug."""
+    remap = {}
+    for st in stations:
+        best = min(registry, key=lambda r: geo.haversine_km(st["lat"], st["lng"], r["lat"], r["lng"]), default=None)
+        if best and geo.haversine_km(st["lat"], st["lng"], best["lat"], best["lng"]) <= REGISTRY_MATCH_KM:
+            remap[st["station_id"]] = best["station_id"]
+    for row in gt_rows:
+        row["station_id"] = remap.get(row["station_id"], row["station_id"])
+    unmatched = [s for s in stations if s["station_id"] not in remap]
+    return gt_rows, unmatched
+
+
 def run(settings: Settings, **_: object) -> None:
     corridors = geo.load_corridors(settings.corridor_ids)
     records = fetch_all(require_env("DATA_GOV_IN_API_KEY"))
@@ -161,15 +194,11 @@ def run(settings: Settings, **_: object) -> None:
         raise SystemExit("CPCB feed produced no rows for this deployment's corridors -- failing so the scheduler alerts")
 
     bq = bigquery.Client(project=settings.project, location=settings.bq_location)
+    registry = [dict(r) for r in bq.query(
+        f"SELECT station_id, lat, lng FROM `{settings.table('monitoring_stations')}`").result()]
+    gt_rows, new_stations = align_to_registry(gt_rows, stations, registry)
     merge_rows(bq, settings.table("ground_truth_aqi"), gt_rows,
                ["station_id", "observation_date", "observation_hour", "pollutant_id", "source"])
-    merge_rows(bq, settings.table("monitoring_stations"), stations, ["station_id"])
-
-    fs = firestore.Client(project=settings.project)
-    batch = fs.batch()
-    for i, row in enumerate(stations, 1):
-        batch.set(fs.collection("monitoringStations").document(row["station_id"]), station_doc(row), merge=True)
-        if i % 400 == 0:
-            batch.commit()
-            batch = fs.batch()
-    batch.commit()
+    if new_stations:
+        merge_rows(bq, settings.table("monitoring_stations"), new_stations, ["station_id"])
+        write_station_docs(settings, new_stations)

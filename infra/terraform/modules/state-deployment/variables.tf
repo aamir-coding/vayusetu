@@ -121,3 +121,9 @@ variable "enable_ingestion_schedules" {
   default     = false
   description = "Create the Cloud Scheduler triggers. Leave false until the real ingestion image is deployed and migrate/cpcb/seed have run once by hand."
 }
+
+variable "openaq_api_key_secret_populated" {
+  type        = bool
+  default     = false
+  description = "Set true only AFTER adding a version to the openaq-api-key secret."
+}

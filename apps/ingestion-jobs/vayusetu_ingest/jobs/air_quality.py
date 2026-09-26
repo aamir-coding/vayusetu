@@ -118,7 +118,7 @@ def run(settings: Settings, hours: int = 26, **_: object) -> None:
     bq = bigquery.Client(project=settings.project, location=settings.bq_location)
     points = load_points(bq, settings, int(os.getenv("AQ_SAMPLE_CELLS_PER_CORRIDOR", "100")))
     if not points:
-        raise SystemExit("No points: run `cpcb` then `seed` first (stations + h3_cells)")
+        raise SystemExit("No points: run `openaq` then `seed` first (stations + h3_cells)")
     s, now, rows, failures = session(), utc_now_iso(), [], 0
     for p in points:
         try:

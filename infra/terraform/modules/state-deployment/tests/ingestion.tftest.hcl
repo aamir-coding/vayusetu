@@ -33,7 +33,7 @@ run "ingestion_defaults_are_safe" {
   command = plan
 
   assert {
-    condition     = length(google_cloud_run_v2_job.ingestion) == 8
+    condition     = length(google_cloud_run_v2_job.ingestion) == 10
     error_message = "Every ingestion job should exist (on the placeholder image) from the first apply."
   }
   assert {
@@ -59,15 +59,16 @@ run "ingestion_schedules_and_secrets_when_enabled" {
   command = plan
 
   variables {
-    enable_ingestion_schedules    = true
-    cpcb_api_key_secret_populated = true
-    maps_api_key_secret_populated = true
-    corridor_ids                  = ["ncr-airshed"]
+    enable_ingestion_schedules      = true
+    cpcb_api_key_secret_populated   = true
+    openaq_api_key_secret_populated = true
+    maps_api_key_secret_populated   = true
+    corridor_ids                    = ["ncr-airshed"]
   }
 
   assert {
-    condition     = length(google_cloud_scheduler_job.ingestion) == 7
-    error_message = "Every job except migrate should be scheduled."
+    condition     = length(google_cloud_scheduler_job.ingestion) == 8
+    error_message = "Every job except migrate and the one-off OpenAQ backfill should be scheduled."
   }
   assert {
     condition     = !contains(keys(google_cloud_scheduler_job.ingestion), "ingest-migrate")
@@ -86,5 +87,25 @@ run "ingestion_schedules_and_secrets_when_enabled" {
       e.name == "CORRIDOR_IDS" && e.value == "ncr-airshed"
     ])
     error_message = "Jobs must be scoped to this deployment's corridors."
+  }
+}
+
+run "jobs_without_their_secret_stay_unscheduled" {
+  command = plan
+
+  variables {
+    enable_ingestion_schedules      = true
+    openaq_api_key_secret_populated = true
+    maps_api_key_secret_populated   = true
+    # cpcb (data.gov.in) key not available yet
+  }
+
+  assert {
+    condition     = !contains(keys(google_cloud_scheduler_job.ingestion), "ingest-cpcb")
+    error_message = "ingest-cpcb must not be scheduled before its key exists (it would fail every hour)."
+  }
+  assert {
+    condition     = contains(keys(google_cloud_scheduler_job.ingestion), "ingest-openaq")
+    error_message = "ingest-openaq should be scheduled once its key exists."
   }
 }
