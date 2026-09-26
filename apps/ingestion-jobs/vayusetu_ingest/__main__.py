@@ -2,7 +2,9 @@
 
 Jobs (schedule in infra/terraform/modules/state-deployment/ingestion.tf):
   migrate       apply data/schemas DDL + migrations (idempotent)
-  cpcb          CPCB real-time feed -> ground_truth_aqi, monitoring_stations     hourly
+  openaq        OpenAQ (CPCB stations) -> monitoring_stations + measured history
+                (--mode latest 6-hourly | --mode backfill --days 365)
+  cpcb          data.gov.in CPCB live feed -> ground_truth_aqi                  hourly
   seed          corridors (Firestore/GCS) + core.h3_cells                          after cpcb / on change
   air-quality   Air Quality API history -> modeled_aqi   (--hours 26 daily, 720 backfill)
   weather       Weather API -> meteorology_features       (--mode observed hourly | forecast 6-hourly)
@@ -21,6 +23,7 @@ from .config import load_settings
 
 JOBS = {
     "migrate": "migrate",
+    "openaq": "openaq",
     "cpcb": "cpcb",
     "seed": "seed",
     "air-quality": "air_quality",
@@ -34,7 +37,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="vayusetu_ingest")
     parser.add_argument("job", choices=sorted(JOBS))
     parser.add_argument("--hours", type=int)
-    parser.add_argument("--mode", choices=["observed", "forecast"])
+    parser.add_argument("--mode", choices=["observed", "forecast", "latest", "backfill"])
     parser.add_argument("--start", help="YYYY-MM-DD (earth-engine backfill)")
     parser.add_argument("--days", type=int)
     args = parser.parse_args(argv)

@@ -10,7 +10,7 @@ substitutions:
   _AR_REPO: vayusetu
   _DEPLOY: 'false'
   _IMAGE: '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/ingestion-jobs'
-  _JOBS: 'ingest-migrate ingest-cpcb ingest-seed ingest-air-quality ingest-weather ingest-weather-forecast ingest-earth-engine ingest-rollup'
+  _JOBS: 'ingest-migrate ingest-openaq ingest-openaq-backfill ingest-cpcb ingest-seed ingest-air-quality ingest-weather ingest-weather-forecast ingest-earth-engine ingest-rollup'
 
 options:
   dynamicSubstitutions: true

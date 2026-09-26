@@ -13,9 +13,10 @@ module "ncr_dev" {
   dashboard_base_url              = var.dashboard_base_url
 
   # Ingestion (ingestion.tf)
-  corridor_ids                  = ["ncr-airshed"]
-  cpcb_api_key_secret_populated = var.cpcb_api_key_secret_populated
-  enable_ingestion_schedules    = var.enable_ingestion_schedules
+  corridor_ids                    = ["ncr-airshed"]
+  cpcb_api_key_secret_populated   = var.cpcb_api_key_secret_populated
+  openaq_api_key_secret_populated = var.openaq_api_key_secret_populated
+  enable_ingestion_schedules      = var.enable_ingestion_schedules
 
   labels = {
     corridor    = "ncr-airshed"

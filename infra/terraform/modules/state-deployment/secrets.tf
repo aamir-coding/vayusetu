@@ -10,6 +10,7 @@ locals {
     "sms-gateway-credentials",
     "whatsapp-gateway-credentials",
     "cpcb-api-key",
+    "openaq-api-key", # OpenAQ v3: CPCB station registry + measured history
   ]
 }
 
