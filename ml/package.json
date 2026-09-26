@@ -1,0 +1,9 @@
+{
+  "name": "@vayusetu/ml",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vertex AI Pipelines (AutoML Tabular hotspot + AutoML Forecasting AQI) retrain DAGs and training-set SQL. Python; `pnpm test` runs pytest from ml/.venv.",
+  "scripts": {
+    "test": "node ../apps/ingestion-jobs/scripts/pytest.mjs"
+  }
+}
