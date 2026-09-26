@@ -256,6 +256,8 @@ export interface Paginated<T> {
 
 ## 4.2 — REST API Contracts
 
+**Service ownership** (routing: `packages/config/api-routes.json`, same map for the Vite dev proxy and Firebase Hosting rewrites): `submission-service` — Users, Submissions, Analysis, Corridors, Resource Coordination · `alert-service` — Alerts · `hotspot-service` — Hotspots · `forecast-service` — Forecasts · `federation-service` — Federation. `analysis-service` has no public routes (Pub/Sub worker). **24 endpoints** (23 + `POST /submissions/upload-url`).
+
 **Conventions (apply to every endpoint, stated once):**
 - Base path: `https://api.vayusetu.gov.in/api/v1` (per-state deployments use a subdomain, e.g. `api-hr.vayusetu.gov.in`, same contract).
 - Auth: `Authorization: Bearer <Firebase ID token>` on **every** endpoint — no unauthenticated endpoint exists, including citizen submission, because jurisdiction-correct routing requires a resolvable identity.
@@ -269,7 +271,8 @@ export interface Paginated<T> {
 - **`PATCH /users/me`** — Auth: any authenticated user. Request: `Partial<Pick<User, 'displayName' | 'preferredLanguage' | 'fcmTokens'>>`. Response `200`: `User`. Errors: `400`, `401`.
 
 ### Submissions
-- **`POST /submissions`** — Auth: citizen, field_worker. Request: `{ mediaType, photoStorageUrl, audioStorageUrl?, geo, capturedAt, deviceMeta? }` *(media uploads client-side to Cloud Storage via signed URL first; this endpoint registers the resulting metadata)*. Response `202`: `{ submission: Submission }` — `202` because analysis is async, `status` starts `'queued'`. Errors: `400`, `401`, `429`.
+- **`POST /submissions/upload-url`** — Auth: citizen, field_worker (registered). Request: `{ kind: 'photo' | 'audio'; contentType: string }` (photo: image/jpeg, image/png, image/webp; audio: audio/webm, audio/ogg, audio/mp4, audio/mpeg, audio/wav; parameters such as `;codecs=opus` allowed). Response `200`: `{ uploadUrl: string; storageUrl: string; expiresAt: ISODateString }` — client PUTs the blob to `uploadUrl` with the identical `Content-Type` within 15 min, then passes `storageUrl` (`gs://…`) to `POST /submissions`, which rejects URLs not issued to the caller. Errors: `400`, `401`, `403`, `429`.
+- **`POST /submissions`** — Auth: citizen, field_worker. Request: `{ mediaType, photoStorageUrl, audioStorageUrl?, geo, capturedAt, deviceMeta? }` *(media uploads client-side to Cloud Storage via signed URL first; this endpoint registers the resulting metadata)*. Response `202`: `{ submission: Submission }` — `202` because analysis is async, `status` starts `'queued'`. Errors: `400`, `401`, `403` (official callers), `429`, `500` (jurisdiction temporarily unresolvable — client retries).
 - **`GET /submissions/:id`** — Auth: owner, or any official whose jurisdiction contains it. Response `200`: `{ submission: Submission; analysis: AnalysisResult | null }`. Errors: `401`, `403`, `404`.
 - **`GET /submissions`** — Auth: any authenticated user (citizens/field workers see only their own; officials see their jurisdiction). Query: `?userId=&status=&h3Index=&pageSize=&pageToken=`. Response `200`: `Paginated<Submission>`. Errors: `401`.
 - **`POST /submissions/:id/retry-analysis`** — Auth: owner, or district_admin+. Response `202`: `{ submission: Submission }` — `status` reset to `'pending_analysis'`. Errors: `401`, `403`, `404`, `409` (already analyzed and not flagged for review).
@@ -289,7 +292,7 @@ export interface Paginated<T> {
 - **`GET /alerts`** — Auth: district_admin+ (jurisdiction-filtered server-side, never client-filtered). Query: `?status=&severity=&type=&pageSize=&pageToken=`. Response `200`: `Paginated<Alert>`. Errors: `401`, `403`.
 - **`GET /alerts/:id`** — Auth: district_admin+, within jurisdiction. Response `200`: `Alert`. Errors: `401`, `403`, `404`.
 - **`PATCH /alerts/:id/status`** — Auth: district_admin+, within jurisdiction. Request: `{ status: AlertStatus; note?: string }`. Response `200`: `Alert` — server **appends** to `statusHistory`, never overwrites. Errors: `400`, `401`, `403`, `404`, `409` (invalid transition, e.g. `resolved` → `new`).
-- **`POST /alerts/:id/assign`** — Auth: district_admin+, within jurisdiction. Request: `{ officerId: string }`. Response `200`: `Alert`. Errors: `401`, `403`, `404`.
+- **`POST /alerts/:id/assign`** — Auth: district_admin+, within jurisdiction. Request: `{ officerId: string }`. Response `200`: `Alert`. Errors: `400` (officer missing or not covering the alert), `401`, `403`, `404`.
 
 ### Resource Coordination
 - **`POST /resources/requests`** — Auth: district_admin+. Request: `{ resourceType, quantityNeeded, relatedAlertId? }` *(jurisdiction comes from the caller's own `User.jurisdiction`, never client-supplied)*. Response `201`: `ResourceRequest`. Errors: `400`, `401`, `403`.

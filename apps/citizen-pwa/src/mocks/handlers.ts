@@ -42,13 +42,19 @@ export const handlers = [
     return HttpResponse.json(updated);
   }),
 
-  // ---------- Mock storage (signed-URL stand-in for Cloud Storage) ----------
-  http.get('/mock-storage/sign', ({ request }) => {
-    const url = new URL(request.url);
-    const id = url.searchParams.get('id') ?? `obj-${Date.now()}`;
+  // ---------- Signed upload URL (POST /submissions/upload-url) ----------
+  // Same response shape as submission-service; the PUT lands on a mock path
+  // instead of Cloud Storage.
+  http.post('*/api/v1/submissions/upload-url', async ({ request }) => {
+    const uid = extractUid(request.headers.get('authorization'));
+    const body = (await request.json()) as { kind: 'photo' | 'audio'; contentType: string };
+    if (body.kind !== 'photo' && body.kind !== 'audio') return err('VALIDATION_ERROR', 'kind must be photo or audio');
+    const id = `${body.kind}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const day = new Date().toISOString().slice(0, 10);
     return HttpResponse.json({
       uploadUrl: `/mock-storage/put/${id}`,
-      storageUrl: `https://storage.mock.vayusetu.local/citizen-media/${id}`,
+      storageUrl: `gs://mock-citizen-media/submissions/${uid}/${day}/${id}`,
+      expiresAt: new Date(Date.now() + 15 * 60_000).toISOString(),
     });
   }),
   http.put('/mock-storage/put/:id', () => HttpResponse.json({ ok: true })),

@@ -2,10 +2,15 @@
   "name": "@vayusetu/config",
   "version": "0.1.0",
   "private": true,
-  "description": "Shared Tailwind design tokens for every VayuSetu frontend package. citizen-pwa and admin-dashboard both extend tailwind-preset.cjs so brand color, type scale, and the CPCB AQI / GRAP / alert-severity color ramps stay pixel-identical across apps.",
+  "description": "Shared Tailwind design tokens for every VayuSetu frontend package. citizen-pwa and admin-dashboard both extend tailwind-preset.cjs so brand color, type scale, and the CPCB AQI / GRAP / alert-severity color ramps stay pixel-identical across apps. Also the /api/v1 route map (api-routes.json) shared by the Vite dev proxy and Firebase Hosting rewrites.",
   "license": "UNLICENSED",
   "main": "./tailwind-preset.cjs",
   "exports": {
-    "./tailwind-preset": "./tailwind-preset.cjs"
+    "./tailwind-preset": "./tailwind-preset.cjs",
+    "./vite-api-proxy": {
+      "types": "./vite-api-proxy.d.mts",
+      "default": "./vite-api-proxy.mjs"
+    },
+    "./api-routes.json": "./api-routes.json"
   }
 }

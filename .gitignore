@@ -89,3 +89,6 @@ ui-debug.log
 # ---------- Misc ----------
 *.local
 .cache/
+
+# Generated per environment by infra/scripts/gen-firebase-json.mjs
+firebase.json
