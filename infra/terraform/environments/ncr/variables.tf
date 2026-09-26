@@ -61,3 +61,23 @@ variable "enable_analysis_push_subscription" {
   type    = bool
   default = false
 }
+
+variable "enable_hotspot_push_subscription" {
+  type    = bool
+  default = false
+}
+
+variable "enable_model_schedules" {
+  type    = bool
+  default = false
+}
+
+variable "hotspot_scorer" {
+  type    = string
+  default = "heuristic"
+}
+
+variable "hotspot_model" {
+  type    = string
+  default = ""
+}

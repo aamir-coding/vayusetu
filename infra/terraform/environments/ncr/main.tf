@@ -20,6 +20,10 @@ module "ncr_dev" {
 
   # Phase 1 AI layer
   enable_analysis_push_subscription = var.enable_analysis_push_subscription
+  enable_hotspot_push_subscription  = var.enable_hotspot_push_subscription
+  enable_model_schedules            = var.enable_model_schedules
+  hotspot_scorer                    = var.hotspot_scorer
+  hotspot_model                     = var.hotspot_model
 
   labels = {
     corridor    = "ncr-airshed"

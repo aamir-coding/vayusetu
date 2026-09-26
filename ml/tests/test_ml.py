@@ -28,7 +28,7 @@ def test_hotspot_features_exist_in_the_shared_tvf():
 
 def test_hotspot_training_drops_proximity_columns_and_labels():
     sql = training_sql.render("hotspot", "p")
-    assert "EXCEPT (has_monitor_within_radius, nearest_station_distance_km, nearest_station_aqi_d2)" in sql
+    assert "EXCEPT (has_monitor_within_radius, nearest_station_id, nearest_station_distance_km, nearest_station_aqi_d2)" in sql
     assert "IF(sh.aqi >= 201 AND sh.aqi - rn.aqi >= 50, 'hotspot', 'normal') AS is_hotspot" in sql
     assert specs.HOTSPOT.positive_class == "hotspot"
     assert "boundary_layer_height" not in " ".join(specs.HOTSPOT.features)  # ERA5 lags ~5 days: never live
