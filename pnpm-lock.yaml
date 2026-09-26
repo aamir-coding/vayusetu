@@ -276,6 +276,73 @@ importers:
         specifier: ^5.0.1
         version: 5.1.4(typescript@5.9.3)(vite@5.4.21(@types/node@22.20.1)(terser@5.51.2))
 
+  apps/federation-service:
+    dependencies:
+      '@fastify/cors':
+        specifier: ^10.0.1
+        version: 10.1.0
+      '@fastify/rate-limit':
+        specifier: ^10.1.1
+        version: 10.3.0
+      '@google-cloud/aiplatform':
+        specifier: ^3.34.0
+        version: 3.35.0
+      '@google-cloud/bigquery':
+        specifier: ^7.9.1
+        version: 7.9.4
+      '@vayusetu/gcp-clients':
+        specifier: workspace:*
+        version: link:../../packages/gcp-clients
+      '@vayusetu/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
+      fastify:
+        specifier: ^5.1.0
+        version: 5.12.3
+      fastify-plugin:
+        specifier: ^5.0.1
+        version: 5.1.0
+      firebase-admin:
+        specifier: ^12.6.0
+        version: 12.7.0
+      h3-js:
+        specifier: ^4.1.0
+        version: 4.5.0
+      pino:
+        specifier: ^9.4.0
+        version: 9.14.0
+      pino-pretty:
+        specifier: ^11.2.2
+        version: 11.3.0
+      tsx:
+        specifier: ^4.19.1
+        version: 4.23.13
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
+    devDependencies:
+      '@eslint/js':
+        specifier: ^9.13.0
+        version: 9.39.5
+      '@types/node':
+        specifier: ^22.7.5
+        version: 22.20.1
+      eslint:
+        specifier: ^9.13.0
+        version: 9.39.5(jiti@1.21.7)
+      rimraf:
+        specifier: ^6.0.1
+        version: 6.1.3
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+      typescript-eslint:
+        specifier: ^8.15.0
+        version: 8.68.0(eslint@9.39.5(jiti@1.21.7))(typescript@5.9.3)
+      vitest:
+        specifier: ^2.1.3
+        version: 2.1.9(@types/node@22.20.1)(msw@2.15.0(@types/node@22.20.1)(typescript@5.9.3))(terser@5.51.2)
+
   apps/submission-service:
     dependencies:
       '@fastify/cors':
@@ -1734,6 +1801,10 @@ packages:
 
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
+
+  '@google-cloud/aiplatform@3.35.0':
+    resolution: {integrity: sha512-Eo+ckr1KbTxAOew9P+MeeR0aQXeW5PeOzrSM1JyGny/SGKejwX/RcGWSFpeapnlegTfI9N9xJeUeo3M+XBOeFg==}
+    engines: {node: '>=14.0.0'}
 
   '@google-cloud/bigquery@7.9.4':
     resolution: {integrity: sha512-C7jeI+9lnCDYK3cRDujcBsPgiwshWKn/f0BiaJmClplfyosCLfWE83iGQ0eKH113UZzjR9c9q7aZQg0nU388sw==}
@@ -3989,6 +4060,10 @@ packages:
   lodash@4.18.1:
     resolution: {integrity: sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==}
 
+  long@1.1.5:
+    resolution: {integrity: sha512-TU6nAF5SdasnTr28c7e74P4Crbn9o3/zwo1pM22Wvg2i2vlZ4Eelxwu4QT7j21z0sDBlJDEnEZjXTZg2J8WJrg==}
+    engines: {node: '>=0.6'}
+
   long@5.3.2:
     resolution: {integrity: sha512-mNAgZ1GmyNhD7AuqnTG3/VQ26o760+ZYBPKjPvugO8+nLbYfX6TVpJPseBvopbdY+qpZ/lKUnmEc1LeZYS3QAA==}
 
@@ -4360,6 +4435,9 @@ packages:
   proto3-json-serializer@2.0.2:
     resolution: {integrity: sha512-SAzp/O4Yh02jGdRc+uIrGoe87dkN/XtwxfZ4ZyafJHymd79ozp5VG5nyZ7ygqPM5+cpLDjjGnYFUkngonyDPOQ==}
     engines: {node: '>=14.0.0'}
+
+  protobuf.js@1.1.2:
+    resolution: {integrity: sha512-USO7Xus/pzPw549M1TguiyoOrKEhm9VMXv+CkDufcjMC8Rd7EPbxeRQPEjCV8ua1tm0k7z9xHkogcxovZogWdA==}
 
   protobufjs@7.6.6:
     resolution: {integrity: sha512-dYDWdjSl5RNb7SgPxGQcRU+GtvP7s2fpkrY0r432PcOIaZ0/rBcxEZnQN67iJhFuQiVw754JDoPruPCNdGsbjg==}
@@ -6664,6 +6742,14 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
 
   '@floating-ui/utils@0.2.12': {}
+
+  '@google-cloud/aiplatform@3.35.0':
+    dependencies:
+      google-gax: 4.6.1
+      protobuf.js: 1.1.2
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
 
   '@google-cloud/bigquery@7.9.4':
     dependencies:
@@ -9152,6 +9238,8 @@ snapshots:
 
   lodash@4.18.1: {}
 
+  long@1.1.5: {}
+
   long@5.3.2: {}
 
   loose-envify@1.4.0:
@@ -9502,6 +9590,10 @@ snapshots:
   proto3-json-serializer@2.0.2:
     dependencies:
       protobufjs: 7.6.6
+
+  protobuf.js@1.1.2:
+    dependencies:
+      long: 1.1.5
 
   protobufjs@7.6.6:
     dependencies:

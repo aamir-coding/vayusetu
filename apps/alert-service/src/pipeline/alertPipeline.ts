@@ -1,10 +1,12 @@
 import { GeocodingError } from '@vayusetu/gcp-clients';
-import type { Alert, AlertType, GeoPoint, Jurisdiction } from '@vayusetu/shared-types';
+import type { Alert, AlertType, Corridor, ForecastRun, GeoPoint, HotspotCell, Jurisdiction } from '@vayusetu/shared-types';
+import type { z } from 'zod';
 import { alertsCollection, corridorsCollection, forecastsCollection, hotspotsCollection } from '../lib/collections.js';
 import { cellCenter } from '../lib/geo.js';
 import { AlertBriefingSchema, type BriefingGenerator, type BriefingInput } from '../domain/briefing.js';
 import { type HotspotThresholds, SEVERITY_RANK, assessForecast, hotspotSeverity } from '../domain/severity.js';
 import { OPEN_STATUSES } from '../domain/transitions.js';
+import { CorridorSchema, ForecastRunSchema, HotspotCellSchema, describeIssues } from '../domain/docSchemas.js';
 import { type NotificationGateway, toNotificationsSent } from '../notifications/gateway.js';
 import type { Recipient } from '../notifications/types.js';
 
@@ -144,6 +146,60 @@ function buildAlert(args: {
   };
 }
 
+/** Re-read + contract-validate an upstream doc. Missing or malformed are both
+ *  permanent for THIS event -> NonRetryable (acked), with the exact field. */
+async function readValidated<T>(
+  ref: { get: () => Promise<{ exists: boolean; data: () => unknown }> },
+  path: string,
+  schema: z.ZodType<T>,
+): Promise<T> {
+  const snap = await ref.get();
+  if (!snap.exists) throw new NonRetryableEventError(`${path} does not exist`);
+  const parsed = schema.safeParse(snap.data());
+  if (!parsed.success) {
+    throw new NonRetryableEventError(`${path} violates the API_CONTRACTS.md shape: ${describeIssues(parsed.error)}`);
+  }
+  return parsed.data;
+}
+
+/** "Recent history for context" (Pipeline C). Best-effort: a failed lookup
+ *  (e.g. index still building) degrades the briefing, never blocks the alert. */
+async function recentHotspotHistory(cell: HotspotCell, deps: PipelineDeps): Promise<HotspotCell[]> {
+  try {
+    const snap = await hotspotsCollection()
+      .where('h3Index', '==', cell.h3Index)
+      .orderBy('timestampHour', 'desc')
+      .limit(25)
+      .get();
+    return snap.docs
+      .map((d) => HotspotCellSchema.safeParse(d.data()))
+      .flatMap((r) => (r.success ? [r.data] : []))
+      .filter((h) => h.id !== cell.id && h.timestampHour < cell.timestampHour)
+      .slice(0, 24);
+  } catch (error) {
+    deps.logger.warn({ err: error, h3Index: cell.h3Index }, 'Hotspot history lookup failed; briefing without history');
+    return [];
+  }
+}
+
+async function recentForecastHistory(run: ForecastRun, deps: PipelineDeps): Promise<ForecastRun[]> {
+  try {
+    const snap = await forecastsCollection()
+      .where('corridorId', '==', run.corridorId)
+      .orderBy('forecastRunTimestamp', 'desc')
+      .limit(4)
+      .get();
+    return snap.docs
+      .map((d) => ForecastRunSchema.safeParse(d.data()))
+      .flatMap((r) => (r.success ? [r.data] : []))
+      .filter((r) => r.id !== run.id && r.forecastRunTimestamp < run.forecastRunTimestamp)
+      .slice(0, 3);
+  } catch (error) {
+    deps.logger.warn({ err: error, corridorId: run.corridorId }, 'Forecast history lookup failed; briefing without history');
+    return [];
+  }
+}
+
 async function generateBriefing(input: BriefingInput, deps: PipelineDeps) {
   // Validate at the boundary even though the template is schema-checked
   // internally: in Week 3 this is where Gemini output enters the system.
@@ -158,16 +214,20 @@ export async function handleHotspotUpdated(payload: HotspotUpdatedPayload, deps:
   }
 
   // §4.3 design rule: always act on re-read state, never the payload.
-  const cellSnap = await hotspotsCollection().doc(payload.hotspotCellId).get();
-  if (!cellSnap.exists) throw new NonRetryableEventError(`hotspots/${payload.hotspotCellId} does not exist`);
-  const cell = cellSnap.data()!;
+  const cell = await readValidated<HotspotCell>(
+    hotspotsCollection().doc(payload.hotspotCellId),
+    `hotspots/${payload.hotspotCellId}`,
+    HotspotCellSchema,
+  );
 
   const severity = hotspotSeverity(cell.hotspotConfidenceScore, deps.hotspotThresholds);
   if (severity === null) return { result: 'below_threshold' };
 
-  const corridorSnap = await corridorsCollection().doc(cell.corridorId).get();
-  if (!corridorSnap.exists) throw new NonRetryableEventError(`corridors/${cell.corridorId} does not exist`);
-  const corridor = corridorSnap.data()!;
+  const corridor = await readValidated<Corridor>(
+    corridorsCollection().doc(cell.corridorId),
+    `corridors/${cell.corridorId}`,
+    CorridorSchema,
+  );
 
   const alertId = `hotspot_${cell.id}`;
   const existing = await alertsCollection().doc(alertId).get();
@@ -189,7 +249,8 @@ export async function handleHotspotUpdated(payload: HotspotUpdatedPayload, deps:
     deps.logger.warn({ h3Index: cell.h3Index, alertId }, 'Cell centre did not geocode; routed to fallback state');
   }
 
-  const briefing = await generateBriefing({ kind: 'hotspot', cell, corridor, jurisdiction, severity }, deps);
+  const history = await recentHotspotHistory(cell, deps);
+  const briefing = await generateBriefing({ kind: 'hotspot', cell, corridor, jurisdiction, severity, history }, deps);
   const alert = buildAlert({
     id: alertId,
     type: 'hotspot',
@@ -213,13 +274,16 @@ export async function handleHotspotUpdated(payload: HotspotUpdatedPayload, deps:
  * contract doesn't spell it out: flagged in WEEK2_SETUP.md.
  */
 export async function handleForecastUpdated(payload: ForecastUpdatedPayload, deps: PipelineDeps): Promise<EventOutcome[]> {
-  const runSnap = await forecastsCollection().doc(payload.forecastRunId).get();
-  if (!runSnap.exists) throw new NonRetryableEventError(`forecasts/${payload.forecastRunId} does not exist`);
-  const run = runSnap.data()!;
-
-  const corridorSnap = await corridorsCollection().doc(run.corridorId).get();
-  if (!corridorSnap.exists) throw new NonRetryableEventError(`corridors/${run.corridorId} does not exist`);
-  const corridor = corridorSnap.data()!;
+  const run = await readValidated<ForecastRun>(
+    forecastsCollection().doc(payload.forecastRunId),
+    `forecasts/${payload.forecastRunId}`,
+    ForecastRunSchema,
+  );
+  const corridor = await readValidated<Corridor>(
+    corridorsCollection().doc(run.corridorId),
+    `corridors/${run.corridorId}`,
+    CorridorSchema,
+  );
 
   const assessment = assessForecast(run, corridor);
   if (!assessment || assessment.severity === null) return [{ result: 'below_threshold' }];
@@ -230,6 +294,21 @@ export async function handleForecastUpdated(payload: ForecastUpdatedPayload, dep
   ).docs.map((d) => d.data());
 
   const outcomes: EventOutcome[] = [];
+  // ONE corridor-level briefing per run, generated lazily (only if some state
+  // actually needs a new alert) and reused for every state: NCR's 4 states
+  // cost 1 Gemini call, keeping the whole event well inside the ack deadline.
+  let sharedBriefing: Awaited<ReturnType<typeof generateBriefing>> | undefined;
+  const briefingForRun = async () => {
+    sharedBriefing ??= await generateBriefing(
+      {
+        kind: 'forecast', run, corridor, severity, worst, impliedGrapStage,
+        history: await recentForecastHistory(run, deps),
+      },
+      deps,
+    );
+    return sharedBriefing;
+  };
+
   for (const stateCode of corridor.states) {
     const alertId = `forecast_${run.id}_${stateCode}`;
     const existing = await alertsCollection().doc(alertId).get();
@@ -249,10 +328,7 @@ export async function handleForecastUpdated(payload: ForecastUpdatedPayload, dep
     }
 
     const jurisdiction: Jurisdiction = { stateCode };
-    const briefing = await generateBriefing(
-      { kind: 'forecast', run, corridor, jurisdiction, severity, worst, impliedGrapStage },
-      deps,
-    );
+    const briefing = await briefingForRun();
     outcomes.push(
       await createAndDispatch(
         buildAlert({
