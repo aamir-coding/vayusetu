@@ -3,7 +3,7 @@ import {
   DRAFT_ALERT_BRIEFING_FUNCTION,
   PIPELINE_C_SYSTEM_INSTRUCTION,
   buildPipelineCPayload,
-  resolvePath,
+  canonicalizeCitation,
 } from './briefingPrompt.js';
 
 /**
@@ -145,8 +145,18 @@ export function createGeminiBriefingGenerator(opts: GeminiBriefingOptions): Brie
       }
 
       // -- citations must point at data the model was actually given
-      const grounded = briefing.citedSignals.filter((p) => resolvePath(payload, p) !== undefined);
-      const ungrounded = briefing.citedSignals.filter((p) => !grounded.includes(p));
+      const grounded: string[] = [];
+      const ungrounded: string[] = [];
+      const expanded: string[] = [];
+      for (const cite of briefing.citedSignals) {
+        const full = canonicalizeCitation(payload, cite);
+        if (full === undefined) ungrounded.push(cite);
+        else {
+          if (full !== cite) expanded.push(`${cite}->${full}`);
+          if (!grounded.includes(full)) grounded.push(full);
+        }
+      }
+      if (expanded.length > 0) repairs.push(`expanded citations: ${expanded.join(', ')}`);
       if (ungrounded.length > 0) repairs.push(`dropped citations: ${ungrounded.join(', ')}`);
       briefing.citedSignals = grounded;
 

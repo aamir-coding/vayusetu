@@ -44,8 +44,9 @@ const EnvSchema = z
     // equal-or-lower severity for this long (alert-fatigue guard).
     SUPPRESSION_WINDOW_HOURS: z.coerce.number().positive().default(24),
 
-    // Week 3 -- Pipeline C. 'template' until Engineer 3's model call lands
-    // (src/gemini/modelCall.ts). Timeout must stay well under the push
+    // Pipeline C. 'gemini' = Gemini Pro via src/gemini/modelCall.ts (model id
+    // and location: GEMINI_BRIEFING_MODEL / GEMINI_LOCATION, see
+    // @vayusetu/gemini-client). Timeout must stay well under the push
     // subscription's ack deadline (Terraform: 120 s) -- one call per event.
     BRIEFING_GENERATOR: z.enum(['template', 'gemini']).default('template'),
     BRIEFING_TIMEOUT_MS: z.coerce.number().int().min(1000).max(90_000).default(30_000),
