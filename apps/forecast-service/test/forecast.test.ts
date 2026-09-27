@@ -190,3 +190,16 @@ describe('REST', () => {
     expect(res.json().runs).toHaveLength(1);
   });
 });
+
+describe('BigQuery row unwrapping', () => {
+  it('unwraps BigQuery wrapper types but keeps STRUCTs that have a `value` field', async () => {
+    const { isBigQueryWrapper } = await import('../src/adapters/data.js');
+    // Same shape as @google-cloud/bigquery's wrapper classes.
+    class BigQueryTimestamp { constructor(public value: string) {} }
+    expect(isBigQueryWrapper(new BigQueryTimestamp('2026-09-27T18:30:00Z'))).toBe(true);
+    // Live incident: AutoML's predicted_aqi struct was flattened to a bare number.
+    const struct = { value: 85.1, quantile_values: [0.1, 0.5, 0.9], quantile_predictions: [59, 85, 121] };
+    expect(isBigQueryWrapper(struct)).toBe(false);
+    expect(parsePrediction(struct)).toEqual({ value: 85.1, lower: 59, upper: 121 });
+  });
+});
