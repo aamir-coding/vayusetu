@@ -34,7 +34,7 @@ function input(station: string, contextAqi: number, over: Partial<InputRow> = {}
       station_id: station, corridor_id: 'ncr-airshed', ts: hour(h), is_horizon: h >= 0,
       aqi: h >= 0 ? null : contextAqi, target_source: h >= 0 ? 'horizon' : h >= -48 ? 'modeled' : 'measured',
       wind_speed_ms: 1.5, wind_dir_sin: 0, wind_dir_cos: 1, temperature_c: 16, relative_humidity_pct: 85, precipitation_mm: 0,
-      hour_ist: 5, day_of_week: 3, is_harvest_season: true, is_diwali_window: h > 100,
+      day_of_week: 3, is_harvest_season: true, is_diwali_window: h > 100,
       boundary_layer_height_m: h >= 0 ? null : 300, corridor_fire_count_d1: h >= 0 ? null : 140, corridor_mean_aod_d1: null, ...over,
     });
   }
@@ -54,6 +54,17 @@ describe('aggregation', () => {
     expect(h[2]!.predictedAQICategory).toBe('severe');
     expect(h[0]!.confidenceInterval.lower).toBeLessThanOrEqual(h[0]!.predictedAQI);
     expect(h[0]!.confidenceInterval.upper).toBeGreaterThanOrEqual(h[0]!.predictedAQI);
+  });
+
+  it('daily model output (IST midnights of D+1..D+3) lands on +24/+48/+72 h', () => {
+    // The AQI model forecasts IST calendar days (core.forecast_input): one
+    // point per station per day, stamped at that day's IST midnight. The job
+    // runs at :45 IST, so each day falls in exactly one [t0+h-24h, t0+h) window.
+    const run = new Date('2026-11-03T06:15:00.000Z'); // 11:45 IST on D = 3 Nov
+    const istMidnight = (day: number) => new Date(Date.UTC(2026, 10, day, 0, 0) - 330 * 60_000).toISOString();
+    const preds = [4, 5, 6].map((day, i) => ({ stationId: 'a', ts: istMidnight(day), value: [220, 310, 405][i]! }));
+    const h = aggregateHorizons(preds, run, NCR);
+    expect(h.map((p) => [p.horizonHours, p.predictedAQI])).toEqual([[24, 220], [48, 310], [72, 405]]);
   });
 
   it('GRAP only where the corridor has an active framework; CPCB bands everywhere', () => {

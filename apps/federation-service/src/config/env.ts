@@ -30,7 +30,7 @@ const EnvSchema = z
     // model schema version"). Must match Engineer 3's vayusetu-feature-schema labels.
     FEATURE_SCHEMA_VERSIONS: z
       .string()
-      .default('hotspot=hs-v1,forecast=fc-v1')
+      .default('hotspot=hs-v1,forecast=fc-v2')
       .transform((s) => Object.fromEntries(s.split(',').map((kv) => kv.split('=').map((x) => x.trim()))) as Record<string, string>),
 
     SUMMARY_LOOKBACK_WEEKS: z.coerce.number().int().min(1).max(12).default(4),
