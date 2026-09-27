@@ -43,6 +43,18 @@
     "sourceHash": "a4fe65264ef7dbb3",
     "text": "भाषा"
   },
+  "nav.enablePush": {
+    "sourceHash": "dd3f022f999ee78a",
+    "text": "अलर्ट सूचना सक्षम करा"
+  },
+  "nav.pushOn": {
+    "sourceHash": "a70b1ec4f25ba74e",
+    "text": "अलर्ट सूचनांवर"
+  },
+  "nav.pushBlocked": {
+    "sourceHash": "106bc43e5e7cd951",
+    "text": "या ब्राउझरमध्ये सूचना अवरोधित केल्या आहेत."
+  },
   "role.district_admin": {
     "sourceHash": "6addf13f8f74271d",
     "text": "जिल्हा प्रशासन"

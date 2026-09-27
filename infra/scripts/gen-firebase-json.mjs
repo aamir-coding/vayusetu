@@ -28,7 +28,7 @@ const securityHeaders = {
   ],
 };
 // Service worker + manifest must never be cached, or clients pin an old app.
-const noCache = { source: '/@(sw.js|registerSW.js|manifest.webmanifest)', headers: [{ key: 'Cache-Control', value: 'no-cache' }] };
+const noCache = { source: '/@(sw.js|registerSW.js|firebase-messaging-sw.js|manifest.webmanifest)', headers: [{ key: 'Cache-Control', value: 'no-cache' }] };
 const immutableAssets = { source: '/assets/**', headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }] };
 
 const site = (target, app) => ({
