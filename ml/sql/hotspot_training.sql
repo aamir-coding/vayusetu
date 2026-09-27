@@ -12,10 +12,16 @@
 -- Features: core.hotspot_features (identical to hourly scoring). Dropped for
 -- training: the monitor-proximity columns, which are ~0 at monitor cells and
 -- would only teach "distance 0 means monitored".
--- Split: by TIME (last 15% TEST, prior 15% VALIDATE) -- a random split would
--- leak neighbouring hours of the same episode into the test set.
+-- Split: WEEK-BLOCKED, not random and not "last N%". Whole 7-day blocks go
+-- to TEST (block % 7 = 0) or VALIDATE (block % 7 = 3), so one smog episode's
+-- neighbouring hours never straddle train and test (a random split leaks
+-- them) -- and every season is evaluated. A chronological tail split put the
+-- whole test set in the monsoon (3.8% positives vs 19% in training, Sep
+-- 2026 build): it measured the quiet season, not the smog season the
+-- product exists for. ~14% TEST, ~14% VALIDATE, spread across the year.
 --
--- Params: @start_ts, @end_ts, @validate_from, @test_from (TIMESTAMP)
+-- Params: @start_ts, @end_ts (TIMESTAMP); @validate_from/@test_from are
+-- accepted for the shared window API but unused here.
 -- Derived table, rebuilt from scratch every run and owned here (not by
 -- data/schemas): DROP first so a partitioning/clustering change can never
 -- block a rebuild ("Cannot replace a table with a different partitioning spec").
@@ -51,9 +57,9 @@ SELECT
   rn.aqi AS regional_aqi_now,
   sh.aqi - rn.aqi AS actual_aqi_deviation,
   IF(sh.aqi >= 201 AND sh.aqi - rn.aqi >= 50, 'hotspot', 'normal') AS is_hotspot,
-  CASE
-    WHEN f.ts >= @test_from THEN 'TEST'
-    WHEN f.ts >= @validate_from THEN 'VALIDATE'
+  CASE MOD(DIV(UNIX_DATE(DATE(f.ts)), 7), 7)
+    WHEN 0 THEN 'TEST'
+    WHEN 3 THEN 'VALIDATE'
     ELSE 'TRAIN'
   END AS split
 FROM features f
