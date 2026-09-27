@@ -33,7 +33,7 @@ class HotspotSpec:
     )
     categorical_features: tuple[str, ...] = ("hour_ist", "day_of_week", "month", "is_harvest_season", "is_diwali_window")
     optimization_objective: str = "maximize-au-prc"  # positives are rare; AU-PRC is the honest metric
-    # Quality gate on the TIME-held-out test split.
+    # Quality gate on the SPATIALLY held-out test split (whole res-6 regions; ml/sql/hotspot_training.sql).
     gate_metric: str = "auPrc"
     gate_min: float = 0.30
     higher_is_better: bool = True

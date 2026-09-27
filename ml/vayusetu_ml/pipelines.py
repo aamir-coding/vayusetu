@@ -1,7 +1,7 @@
 """Vertex AI Pipelines (KFP v2) retrain DAGs for both models.
 
   build training table (BigQuery) -> AutoML training (new version under the
-  same registry model, federation labels) -> evaluate on the time-held-out
+  same registry model, federation labels) -> evaluate on the held-out
   TEST split -> promote to alias `default` only if it clears the quality gate
   AND beats the current default -> record the evaluation in BigQuery.
 
@@ -182,13 +182,24 @@ def evaluate_and_promote(project: str, location: str, model_version: str, model_
                                  else evals[0].to_dict().get("metrics", {}).get(metric))
     beats_current = current_value is None or (value is not None and better(value, current_value))
     decision = "promoted" if passes_gate and beats_current else "rejected"
-    candidate.update(labels={
+    # Label THIS version. The SDK's Model.update() always writes the
+    # UNVERSIONED name -- i.e. whichever version holds `default` -- so it
+    # labelled the PREVIOUS version (live: v2's passed/0.5503 landed on v1).
+    # UpdateModel on the versioned name with a labels mask edits only this one.
+    from google.cloud.aiplatform_v1.types import Model as ModelProto
+    from google.protobuf import field_mask_pb2
+
+    labels = {
         **(candidate.labels or {}),
         "vayusetu-gate": "passed" if decision == "promoted" else "failed",
         "vayusetu-gate-metric": metric.lower()[:63],
         "vayusetu-gate-value": ("na" if value is None else f"{value:.4f}".replace(".", "_")),
         **({"vayusetu-threshold": f"{best_threshold['threshold']:.3f}".replace(".", "_")} if best_threshold else {}),
-    })
+    }
+    ModelServiceClient(client_options={"api_endpoint": f"{location}-aiplatform.googleapis.com"}).update_model(
+        model=ModelProto(name=candidate.versioned_resource_name, labels=labels),
+        update_mask=field_mask_pb2.FieldMask(paths=["labels"]),
+    )
     if decision == "promoted":
         registry.add_version_aliases(["default"], version=candidate.version_id)
 
