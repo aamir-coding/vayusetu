@@ -163,3 +163,27 @@ describe('runHourly', () => {
     expect(s.modelVersion).toBe('heuristic-v0');
   });
 });
+
+describe('model cadence and per-scorer thresholds', () => {
+  it('runs the model only on hours divisible by N (UTC), heuristic otherwise', async () => {
+    const { everyNHours, heuristicScorer } = await import('../src/scoring/scorers.js');
+    const model = { name: 'batch', score: vi.fn(async (rows: unknown[]) => ({ probabilities: rows.map(() => 0.9), modelVersion: 'model@2' })) };
+    const s = everyNHours(model, 6);
+    const rows: never[] = [];
+    await s.score(rows, { hourIso: '2026-09-27T12:00:00.000Z' });
+    await s.score(rows, { hourIso: '2026-09-27T13:00:00.000Z' });
+    expect(model.score).toHaveBeenCalledTimes(1);
+    expect(everyNHours(model, 1)).toBe(model);
+    expect(heuristicScorer.name).toMatch(/heuristic/);
+  });
+
+  it('hidden-hotspot threshold follows the scorer that produced the score', async () => {
+    const { hiddenThreshold } = await import('../src/domain/fusion.js');
+    const cfg = { hiddenMinConfidence: 0.6, modelHiddenMinConfidence: 0.27 };
+    expect(hiddenThreshold('heuristic-v0', cfg)).toBe(0.6);
+    expect(hiddenThreshold('citizen-evidence', cfg)).toBe(0.6);
+    expect(hiddenThreshold('projects/p/locations/l/models/1@2', cfg)).toBe(0.27);
+    expect(hiddenThreshold('projects/p/locations/l/models/1@2+citizen', cfg)).toBe(0.27);
+    expect(hiddenThreshold('projects/p/locations/l/models/1@2', { hiddenMinConfidence: 0.6 })).toBe(0.6);
+  });
+});

@@ -77,3 +77,17 @@ steps:
         corepack enable
         pnpm install --frozen-lockfile --filter @vayusetu/firestore-rules
         pnpm --filter @vayusetu/firestore-rules test
+
+  # Browser E2E for both frontends against their MSW mock modes (no backend).
+  - id: e2e
+    name: mcr.microsoft.com/playwright:v1.63.0-jammy
+    waitFor: ['-']
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        corepack enable
+        pnpm install --frozen-lockfile --filter @vayusetu/e2e --filter @vayusetu/citizen-pwa... --filter @vayusetu/admin-dashboard...
+        pnpm --filter @vayusetu/shared-types build
+        pnpm --filter @vayusetu/e2e e2e

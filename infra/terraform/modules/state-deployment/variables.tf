@@ -264,3 +264,19 @@ variable "firebase_vapid_public_key" {
   default     = ""
   description = "Web-push VAPID PUBLIC key (Firebase console > Cloud Messaging > Web Push certificates; not Terraform-manageable). Empty = the admin dashboard hides the push opt-in."
 }
+
+variable "hotspot_model_every_hours" {
+  type        = number
+  default     = 1
+  description = "With hotspot_scorer = batch: run the model on hours divisible by this (UTC), heuristic between. 6 = one Vertex batch job per 6 h."
+  validation {
+    condition     = var.hotspot_model_every_hours >= 1 && var.hotspot_model_every_hours <= 24
+    error_message = "hotspot_model_every_hours must be 1..24."
+  }
+}
+
+variable "hotspot_model_hidden_min_confidence" {
+  type        = string
+  default     = ""
+  description = "Hidden-hotspot threshold for MODEL scores (the model's tuned best-F1 threshold, registry label vayusetu-threshold). Empty = same as the heuristic's 0.6."
+}

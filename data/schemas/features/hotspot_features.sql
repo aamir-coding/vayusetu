@@ -18,9 +18,12 @@ CREATE OR REPLACE TABLE FUNCTION `core.hotspot_features`(start_ts TIMESTAMP, end
     FROM UNNEST(GENERATE_TIMESTAMP_ARRAY(TIMESTAMP_TRUNC(start_ts, HOUR), TIMESTAMP_SUB(end_ts, INTERVAL 1 HOUR), INTERVAL 1 HOUR)) AS ts
   ),
   cells AS (
-    SELECT h3_index, corridor_id, h3_res4, nearest_station_id, nearest_station_distance_km, has_monitor_within_radius
-    FROM `core.h3_cells`
-    WHERE ARRAY_LENGTH(only_cells) = 0 OR h3_index IN UNNEST(only_cells)
+    SELECT c.h3_index, c.corridor_id, c.h3_res4, c.h3_res6, c.nearest_station_id, c.nearest_station_distance_km,
+           c.has_monitor_within_radius, c.lat, c.lng,
+           sf.built_frac, sf.crops_frac, sf.trees_frac, sf.bare_frac, sf.night_lights, sf.population_density
+    FROM `core.h3_cells` c
+    LEFT JOIN `core.cell_static_features` sf ON sf.h3_res7 = c.h3_res7
+    WHERE ARRAY_LENGTH(only_cells) = 0 OR c.h3_index IN UNNEST(only_cells)
   ),
   station_daily AS (
     SELECT g.station_id, s.corridor_id, g.observation_date AS d, AVG(g.aqi) AS aqi
@@ -65,6 +68,16 @@ CREATE OR REPLACE TABLE FUNCTION `core.hotspot_features`(start_ts TIMESTAMP, end
     g.has_monitor_within_radius,
     g.nearest_station_id,              -- key, not a model feature
     g.nearest_station_distance_km,
+    g.h3_res6,                         -- key (spatial train/test grouping), not a model feature
+    -- place (static; Earth Engine land cover, night lights, population)
+    g.lat,
+    g.lng,
+    g.built_frac,
+    g.crops_frac,
+    g.trees_frac,
+    g.bare_frac,
+    g.night_lights,
+    g.population_density,
     -- satellite (D-1, else D-2)
     COALESCE(s1.no2_column_mol_m2, s2.no2_column_mol_m2) AS sat_no2,
     COALESCE(s1.aerosol_index, s2.aerosol_index) AS sat_aerosol_index,

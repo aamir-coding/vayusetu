@@ -82,7 +82,7 @@ describe('BigQuery exchange adapter', () => {
 });
 
 describe('Vertex registry adapter', () => {
-  const model = { name: 'projects/ncr/locations/asia-south1/models/123', versionId: '4', labels: { 'vayusetu-model-type': 'hotspot', 'vayusetu-feature-schema': 'hs-v1', 'vayusetu-train-rows': '90210', 'vayusetu-train-start': '2026-06-01' } };
+  const model = { name: 'projects/ncr/locations/asia-south1/models/123', versionId: '4', labels: { 'vayusetu-model-type': 'hotspot', 'vayusetu-feature-schema': 'hs-v1', 'vayusetu-train-rows': '90210', 'vayusetu-train-start': '2026-06-01', 'vayusetu-gate': 'passed', 'vayusetu-gate-metric': 'auprc', 'vayusetu-gate-value': '0_3412' } };
   // Evaluation metrics as the GAPIC client returns them: a protobuf Value tree.
   const protoMetrics = { structValue: { fields: { auPrc: { numberValue: 0.83 }, confusionMatrix: { structValue: { fields: { rows: { listValue: {} } } } }, logLoss: { numberValue: 0.31 } } } };
 
@@ -109,8 +109,16 @@ describe('Vertex registry adapter', () => {
     expect(m).toMatchObject({
       resourceName: `${model.name}@4`, version: 'v4', featureSchemaVersion: 'hs-v1',
       trainingDataSummary: { recordCount: 90210, dateRangeStart: '2026-06-01T00:00:00Z' },
-      performanceMetrics: { auPrc: 0.83, logLoss: 0.31 },
+      performanceMetrics: { auPrc: 0.83, logLoss: 0.31, gate_auprc: 0.3412 },
     });
+  });
+
+  it('never publishes a version that failed its gate, even when it holds `default` (first version)', async () => {
+    const failed = { ...model, labels: { ...model.labels, 'vayusetu-gate': 'failed', 'vayusetu-gate-value': '0_2923' } };
+    const c = client({ getModel: vi.fn(async () => [failed] as never) });
+    expect(await createVertexRegistry(c, cfg).localDefaultModel('hotspot')).toBeNull();
+    const unlabelled = { ...model, labels: { 'vayusetu-model-type': 'hotspot' } };
+    expect(await createVertexRegistry(client({ getModel: vi.fn(async () => [unlabelled] as never) }), cfg).localDefaultModel('hotspot')).toBeNull();
   });
 
   it('copies cross-project into the EXCHANGE, and resumes on ALREADY_EXISTS (copy done, catalog write lost)', async () => {

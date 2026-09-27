@@ -2,11 +2,20 @@ import { getBigQuery, getDb } from '@vayusetu/gcp-clients';
 import type { HotspotCell, PollutionSourceType } from '@vayusetu/shared-types';
 import type { FeatureRow, ScoredCell } from '../domain/fusion.js';
 
-/** BigQuery TIMESTAMP/DATE values arrive as { value } objects. */
+/**
+ * BigQuery TIMESTAMP/DATE/NUMERIC values arrive as BigQuery{Timestamp,...}
+ * wrapper objects with a `.value`. Unwrap ONLY those -- a STRUCT with a
+ * `value` field must stay intact (forecast-service lost every live model
+ * prediction to exactly this).
+ */
+export function isBigQueryWrapper(v: unknown): v is { value: unknown } {
+  return Boolean(v) && typeof v === 'object' && 'value' in (v as object) && /^Big/.test((v as object).constructor?.name ?? '');
+}
+
 function plain<T>(row: Record<string, unknown>): T {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(row)) {
-    out[k] = v && typeof v === 'object' && 'value' in (v as object) ? (v as { value: unknown }).value : v;
+    out[k] = isBigQueryWrapper(v) ? v.value : v;
   }
   return out as T;
 }

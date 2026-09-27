@@ -14,7 +14,7 @@ Object.assign(process.env, { NODE_ENV: 'test', AUTH_MODE: 'mock', GOOGLE_CLOUD_P
 
 const { aggregateHorizons, categoryForAqi, forecastRunId, grapStageFor, keyDrivers } = await import('../src/domain/aggregate.js');
 const { runForecast, driverInputs } = await import('../src/domain/run.js');
-const { parsePrediction, persistenceForecaster, withFallback } = await import('../src/scoring/forecasters.js');
+const { coversAllHorizons, parsePrediction, persistenceForecaster, withFallback } = await import('../src/scoring/forecasters.js');
 const { buildApp } = await import('../src/app.js');
 type InputRow = import('../src/scoring/forecasters.js').InputRow;
 type RunDeps = import('../src/domain/run.js').RunDeps;
@@ -34,7 +34,7 @@ function input(station: string, contextAqi: number, over: Partial<InputRow> = {}
       station_id: station, corridor_id: 'ncr-airshed', ts: hour(h), is_horizon: h >= 0,
       aqi: h >= 0 ? null : contextAqi, target_source: h >= 0 ? 'horizon' : h >= -48 ? 'modeled' : 'measured',
       wind_speed_ms: 1.5, wind_dir_sin: 0, wind_dir_cos: 1, temperature_c: 16, relative_humidity_pct: 85, precipitation_mm: 0,
-      hour_ist: 5, day_of_week: 3, is_harvest_season: true, is_diwali_window: h > 100,
+      day_of_week: 3, is_harvest_season: true, is_diwali_window: h > 100,
       boundary_layer_height_m: h >= 0 ? null : 300, corridor_fire_count_d1: h >= 0 ? null : 140, corridor_mean_aod_d1: null, ...over,
     });
   }
@@ -54,6 +54,17 @@ describe('aggregation', () => {
     expect(h[2]!.predictedAQICategory).toBe('severe');
     expect(h[0]!.confidenceInterval.lower).toBeLessThanOrEqual(h[0]!.predictedAQI);
     expect(h[0]!.confidenceInterval.upper).toBeGreaterThanOrEqual(h[0]!.predictedAQI);
+  });
+
+  it('daily model output (IST midnights of D+1..D+3) lands on +24/+48/+72 h', () => {
+    // The AQI model forecasts IST calendar days (core.forecast_input): one
+    // point per station per day, stamped at that day's IST midnight. The job
+    // runs at :45 IST, so each day falls in exactly one [t0+h-24h, t0+h) window.
+    const run = new Date('2026-11-03T06:15:00.000Z'); // 11:45 IST on D = 3 Nov
+    const istMidnight = (day: number) => new Date(Date.UTC(2026, 10, day, 0, 0) - 330 * 60_000).toISOString();
+    const preds = [4, 5, 6].map((day, i) => ({ stationId: 'a', ts: istMidnight(day), value: [220, 310, 405][i]! }));
+    const h = aggregateHorizons(preds, run, NCR);
+    expect(h.map((p) => [p.horizonHours, p.predictedAQI])).toEqual([[24, 220], [48, 310], [72, 405]]);
   });
 
   it('GRAP only where the corridor has an active framework; CPCB bands everywhere', () => {
@@ -92,6 +103,21 @@ describe('forecasters', () => {
     const res = await withFallback({ name: 'batch', forecast: async () => { throw new Error('quota'); } }, { error }).forecast(input('a', 200), { runTs: RUN });
     expect(res.modelVersion).toBe('persistence-v0');
     expect(error).toHaveBeenCalled();
+  });
+
+  it('falls back when the model returns output that cannot fill every horizon', async () => {
+    const error = vi.fn();
+    // Live incident: the batch job succeeded, but nothing mapped to a horizon.
+    const offGrid = { name: 'batch', forecast: async () => ({ predictions: [{ stationId: 'a', ts: hour(-5), value: 300 }], modelVersion: 'model@1' }) };
+    const res = await withFallback(offGrid, { error }).forecast(input('a', 200), { runTs: RUN });
+    expect(res.modelVersion).toBe('persistence-v0');
+    expect(error).toHaveBeenCalledWith(expect.objectContaining({ predictions: 1 }), expect.stringContaining('does not cover'));
+  });
+
+  it('keeps the model output when it covers +24/+48/+72 h', async () => {
+    const good = { name: 'batch', forecast: async () => ({ predictions: [10, 30, 60].map((h) => ({ stationId: 'a', ts: hour(h), value: 250 })), modelVersion: 'model@1' }) };
+    expect((await withFallback(good, { error: vi.fn() }).forecast(input('a', 200), { runTs: RUN })).modelVersion).toBe('model@1');
+    expect(coversAllHorizons([{ stationId: 'a', ts: hour(10), value: 1 }], RUN)).toBe(false);
   });
 });
 
@@ -162,5 +188,18 @@ describe('REST', () => {
     fakeDb.collection('forecasts').seed('new', run(new Date(now - 3_600_000).toISOString()));
     const res = await (await buildApp()).inject({ method: 'GET', url: '/api/v1/forecasts/ncr-airshed/history?range=30d', headers: auth });
     expect(res.json().runs).toHaveLength(1);
+  });
+});
+
+describe('BigQuery row unwrapping', () => {
+  it('unwraps BigQuery wrapper types but keeps STRUCTs that have a `value` field', async () => {
+    const { isBigQueryWrapper } = await import('../src/adapters/data.js');
+    // Same shape as @google-cloud/bigquery's wrapper classes.
+    class BigQueryTimestamp { constructor(public value: string) {} }
+    expect(isBigQueryWrapper(new BigQueryTimestamp('2026-09-27T18:30:00Z'))).toBe(true);
+    // Live incident: AutoML's predicted_aqi struct was flattened to a bare number.
+    const struct = { value: 85.1, quantile_values: [0.1, 0.5, 0.9], quantile_predictions: [59, 85, 121] };
+    expect(isBigQueryWrapper(struct)).toBe(false);
+    expect(parsePrediction(struct)).toEqual({ value: 85.1, lower: 59, upper: 121 });
   });
 });

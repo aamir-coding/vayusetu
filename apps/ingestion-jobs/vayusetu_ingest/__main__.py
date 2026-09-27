@@ -7,6 +7,7 @@ Jobs (schedule in infra/terraform/modules/state-deployment/ingestion.tf):
   cpcb          data.gov.in CPCB live feed -> ground_truth_aqi                  hourly
   seed          corridors (Firestore/GCS) + core.h3_cells                          after cpcb / on change
   air-quality   Air Quality API history -> modeled_aqi   (--hours 26 daily, 720 backfill)
+  land-cover    Dynamic World + VIIRS lights + WorldPop (EE) -> cell_static_features  yearly
   era5          ERA5 reanalysis (EE) -> meteorology_features incl. boundary layer  daily; --start/--days backfill
   weather       Weather API -> meteorology_features       (--mode observed hourly | forecast 6-hourly)
   earth-engine  EE satellite features -> satellite_features (daily; --start/--days for backfill)
@@ -31,6 +32,7 @@ JOBS = {
     "weather": "weather",
     "era5": "era5",
     "earth-engine": "earth_engine",
+    "land-cover": "land_cover",
     "rollup": "rollup",
 }
 
