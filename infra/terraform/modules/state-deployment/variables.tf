@@ -63,7 +63,7 @@ variable "maps_api_key_secret_populated" {
 variable "dashboard_base_url" {
   type        = string
   default     = null
-  description = "Admin dashboard origin used for alert deep links. Defaults to the Firebase Hosting default domain https://<project_id>.web.app. Must be https in deployed envs (FCM rejects non-https web-push links)."
+  description = "Admin dashboard origin used for alert deep links. Defaults to the admin Hosting site https://<project_id>-admin.web.app (firebase.tf). Must be https in deployed envs (FCM rejects non-https web-push links)."
 }
 
 variable "enable_alert_push_subscriptions" {

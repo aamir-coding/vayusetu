@@ -12,7 +12,10 @@
     "liteMode": "Lite Mode",
     "liteModeToggle": "Toggle low-bandwidth Lite Mode",
     "signOut": "Sign out",
-    "language": "Language"
+    "language": "Language",
+    "enablePush": "Enable alert notifications",
+    "pushOn": "Alert notifications on",
+    "pushBlocked": "Notifications are blocked in this browser"
   },
   "role": {
     "district_admin": "District Admin",
