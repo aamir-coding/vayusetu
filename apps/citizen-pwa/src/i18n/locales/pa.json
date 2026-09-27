@@ -17,7 +17,8 @@
     "back": "ਪਿੱਛੇ",
     "change": "ਬਦਲੋ",
     "verify": "ਤਸਦੀਕ ਕਰੋ",
-    "skipForNow": "ਹੁਣ ਲਈ ਛੱਡੋ"
+    "skipForNow": "ਹੁਣ ਲਈ ਛੱਡੋ",
+    "remove": "ਹਟਾਓ"
   },
   "capture": {
     "title": "ਤੁਹਾਨੂੰ ਕੀ ਦਿਖਾਈ ਦੇ ਰਿਹਾ ਹੈ?",
@@ -59,14 +60,28 @@
     "indeterminate": "ਅਸੀਂ ਇਸ ਫੋਟੋ ਤੋਂ ਪੱਕਾ ਨਹੀਂ ਦੱਸ ਸਕੇ — ਰਿਪੋਰਟ ਕਰਨ ਲਈ ਧੰਨਵਾਦ। ਸਾਡੀ ਟੀਮ ਇਸਨੂੰ ਦੇਖੇਗੀ।",
     "reportAnother": "ਇੱਕ ਹੋਰ ਰਿਪੋਰਟ ਕਰੋ",
     "failed": "ਇਸ ਰਿਪੋਰਟ ਦਾ ਵਿਸ਼ਲੇਸ਼ਣ ਨਹੀਂ ਹੋ ਸਕਿਆ।",
-    "visibility": "ਦਿੱਖ ~{{meters}} ਮੀ"
+    "visibility": "ਦਿੱਖ ~{{meters}} ਮੀ",
+    "clarifyTitle": "ਇੱਕ ਛੋਟਾ ਜਿਹਾ ਸਵਾਲ",
+    "clarifyHint": "ਤੁਹਾਡਾ ਜਵਾਬ ਸਾਨੂੰ ਸਰੋਤ ਲੱਭਣ ਵਿੱਚ ਮਦਦ ਕਰਦਾ ਹੈ। ਕਿਸੇ ਵੀ ਭਾਸ਼ਾ ਵਿੱਚ ਜਵਾਬ ਦਿਓ।",
+    "clarifyPlaceholder": "ਆਪਣਾ ਜਵਾਬ ਟਾਈਪ ਕਰੋ...",
+    "clarifyAddPhoto": "ਇੱਕ ਹੋਰ ਫੋਟੋ ਸ਼ਾਮਲ ਕਰੋ",
+    "clarifySend": "ਜਵਾਬ ਭੇਜੋ",
+    "clarifySent": "ਧੰਨਵਾਦ! ਤੁਹਾਡੀ ਰਿਪੋਰਟ ਦੀ ਦੁਬਾਰਾ ਜਾਂਚ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ।",
+    "clarifyFailed": "ਤੁਹਾਡਾ ਜਵਾਬ ਨਹੀਂ ਭੇਜਿਆ ਜਾ ਸਕਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    "sensorsTitle": "ਸੈਂਸਰ ਕੀ ਕਹਿੰਦੇ ਹਨ",
+    "nearestMonitor": "ਸਭ ਤੋਂ ਨੇੜਲਾ ਮਾਨੀਟਰ: AQI {{aqi}}",
+    "satelliteAod": "ਸੈਟੇਲਾਈਟ ਧੁੰਦ (AOD): {{aod}}",
+    "yourSensorPm25": "ਤੁਹਾਡਾ ਸੈਂਸਰ PM2.5: {{value}} µg/m³",
+    "yourSensorPm10": "ਤੁਹਾਡਾ ਸੈਂਸਰ PM10: {{value}} µg/m³",
+    "agreement": "ਫੋਟੋ ਅਤੇ ਸੈਂਸਰ ਡੇਟਾ ਸਹਿਮਤ ਹਨ {{pct}} %"
   },
   "reports": {
     "title": "ਮੇਰੀਆਂ ਰਿਪੋਰਟਾਂ",
     "titleFieldWorker": "ਮੇਰੇ ਇਲਾਕੇ ਦੀਆਂ ਰਿਪੋਰਟਾਂ",
     "empty": "ਹਾਲੇ ਕੋਈ ਰਿਪੋਰਟ ਨਹੀਂ",
     "emptyHint": "ਤੁਹਾਡੀ ਪਹਿਲੀ ਰਿਪੋਰਟ ਭੇਜਦੇ ਹੀ ਇਹ ਇੱਥੇ ਦਿਖਾਈ ਦੇਵੇਗੀ।",
-    "emptyAction": "ਹੁਣੇ ਰਿਪੋਰਟ ਕਰੋ"
+    "emptyAction": "ਹੁਣੇ ਰਿਪੋਰਟ ਕਰੋ",
+    "awaitingAnswer": "ਜਵਾਬ ਦੀ ਲੋੜ ਹੈ"
   },
   "auth": {
     "verifyTitle": "ਆਪਣਾ ਫ਼ੋਨ ਤਸਦੀਕ ਕਰੋ",
