@@ -31,6 +31,7 @@ locals {
     ingest-aq-stations      = { args = ["air-quality", "--hours", "8", "--scope", "stations"], schedule = "50 5,11,17,23 * * *", timeout = "1800s", secrets = { GOOGLE_MAPS_API_KEY = "google-maps-api-key" } }
     ingest-weather          = { args = ["weather", "--mode", "observed"], schedule = "5 * * * *", timeout = "900s", secrets = { GOOGLE_MAPS_API_KEY = "google-maps-api-key" } }
     ingest-weather-forecast = { args = ["weather", "--mode", "forecast"], schedule = "10 */6 * * *", timeout = "900s", secrets = { GOOGLE_MAPS_API_KEY = "google-maps-api-key" } }
+    ingest-era5             = { args = ["era5"], schedule = "30 4 * * *", timeout = "1800s", secrets = {} }
     ingest-earth-engine     = { args = ["earth-engine"], schedule = "0 4 * * *", timeout = "3600s", secrets = {} }
     ingest-rollup           = { args = ["rollup"], schedule = "20 * * * *", timeout = "900s", secrets = {} }
   }
