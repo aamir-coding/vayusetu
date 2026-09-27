@@ -91,7 +91,7 @@ export const handlers = [
     setTimeout(() => {
       const analyzing = db.submissions.get(submission.id);
       if (analyzing) db.submissions.set(submission.id, { ...analyzing, status: 'pending_analysis' });
-    }, 400);
+    }, 2000); // stays `queued` past the first poll, like a real cold start
     setTimeout(() => {
       const current = db.submissions.get(submission.id);
       if (!current) return;

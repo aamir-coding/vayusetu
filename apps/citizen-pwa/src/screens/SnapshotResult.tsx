@@ -16,6 +16,8 @@ import { useAuth } from '../hooks/useAuth';
 import { analysisApi, submissionsApi } from '../lib/apiClient';
 import { ClarifyCard } from '../components/ClarifyCard';
 
+const IN_FLIGHT = new Set(['queued', 'uploading', 'pending_analysis']);
+
 export function SnapshotResult() {
   const { submissionId = '' } = useParams();
   const { t } = useTranslation();
@@ -28,7 +30,11 @@ export function SnapshotResult() {
     queryKey: ['analysis', submissionId],
     queryFn: async () => analysisApi.get(await getToken(), submissionId),
     enabled: Boolean(submissionId),
-    refetchInterval: (query) => (query.state.data?.status === 'pending_analysis' ? 1500 : false),
+    // Keep polling until analysis is done. A fresh report is `queued` until
+    // analysis-service picks it up (a Cloud Run cold start is ~10 s); polling
+    // only on `pending_analysis` stopped at the first `queued` read and the
+    // screen spun forever (27 Sep rehearsal).
+    refetchInterval: (query) => (IN_FLIGHT.has(query.state.data?.status ?? 'queued') ? 1500 : false),
   });
 
   const status = data?.status;
