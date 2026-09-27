@@ -36,7 +36,10 @@ locals {
     "airquality.googleapis.com", # modeled AQI history/backfill
     "weather.googleapis.com",    # observed + forecast meteorology
     "earthengine.googleapis.com",
-    "firebaserules.googleapis.com", # Firestore security rules release (firestore_rules.tf)
+    "firebaserules.googleapis.com",   # Firestore security rules release (firestore_rules.tf)
+    "maps-backend.googleapis.com",    # Maps JavaScript API (admin HotspotMap, maps.tf)
+    "apikeys.googleapis.com",         # Terraform-managed browser key (maps.tf)
+    "firebasehosting.googleapis.com", # citizen + admin Hosting sites (firebase.tf)
 
   ]
 }

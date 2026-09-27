@@ -7,21 +7,11 @@ import type {
   Jurisdiction,
   ResourceRequest,
 } from '@vayusetu/shared-types';
+import { latLngToCell } from 'h3-js';
 
-/**
- * `HotspotCell` (the canonical contract type) has no lat/lng — position is
- * implied by `h3Index`, resolved via Engineer 4's `packages/h3-utils`
- * (real `h3-js`, not built yet). Reimplementing H3-to-latLng here would be
- * scope creep into another engineer's package for a mock-data concern.
- * Instead this mock-only type pairs each fixture cell with a synthesized
- * lat/lng purely so `HotspotMap` has something to plot; production swaps
- * this for `cellToLatLng()` once `h3-utils` lands, with no change to the
- * component's props shape.
- */
-export interface HotspotCellWithPosition extends HotspotCell {
-  lat: number;
-  lng: number;
-}
+/** Real res-8 H3 cells (the operational grid), so mock and live data render
+ *  through the same `cellToLatLng` / `cellToBoundary` path in HotspotMap. */
+const cellAt = (lat: number, lng: number) => latLngToCell(lat, lng, 8);
 
 const DL_CENTRAL: Jurisdiction = { stateCode: 'DL', districtCode: 'DL-CENTRAL' };
 const DL_STATE: Jurisdiction = { stateCode: 'DL' };
@@ -63,10 +53,10 @@ export const corridors: Corridor[] = [
   },
 ];
 
-export const hotspotCells: HotspotCellWithPosition[] = [
+export const hotspotCells: HotspotCell[] = [
   {
-    id: '8a1fb46622dffff_2026-08-29T06',
-    h3Index: '8a1fb46622dffff',
+    id: `${cellAt(28.671, 77.312)}_2026-08-29T06`,
+    h3Index: cellAt(28.671, 77.312),
     corridorId: 'ncr-airshed',
     timestampHour: '2026-08-29T06:00:00.000Z',
     hotspotConfidenceScore: 0.91,
@@ -75,12 +65,10 @@ export const hotspotCells: HotspotCellWithPosition[] = [
     contributingSignals: { citizenReportCount: 14, avgCitizenSeverity: 4.1, satelliteAOD: 0.71, fireDetectionCount: 2, satelliteNO2: 1.4 },
     modelVersion: 'hotspot-confidence@mock',
     createdAt: '2026-08-29T06:05:00.000Z',
-    lat: 28.671,
-    lng: 77.312,
   },
   {
-    id: '8a1fb466227ffff_2026-08-29T06',
-    h3Index: '8a1fb466227ffff',
+    id: `${cellAt(28.632, 77.219)}_2026-08-29T06`,
+    h3Index: cellAt(28.632, 77.219),
     corridorId: 'ncr-airshed',
     timestampHour: '2026-08-29T06:00:00.000Z',
     hotspotConfidenceScore: 0.64,
@@ -89,12 +77,10 @@ export const hotspotCells: HotspotCellWithPosition[] = [
     contributingSignals: { citizenReportCount: 6, avgCitizenSeverity: 2.8, satelliteAOD: 0.44, nearestMonitorId: 'DL-DPCC-014', nearestMonitorDeltaAQI: 12 },
     modelVersion: 'hotspot-confidence@mock',
     createdAt: '2026-08-29T06:05:00.000Z',
-    lat: 28.632,
-    lng: 77.219,
   },
   {
-    id: '8a1fb4670c7ffff_2026-08-29T06',
-    h3Index: '8a1fb4670c7ffff',
+    id: `${cellAt(28.9, 76.95)}_2026-08-29T06`,
+    h3Index: cellAt(28.9, 76.95),
     corridorId: 'ncr-airshed',
     timestampHour: '2026-08-29T06:00:00.000Z',
     hotspotConfidenceScore: 0.83,
@@ -103,12 +89,10 @@ export const hotspotCells: HotspotCellWithPosition[] = [
     contributingSignals: { citizenReportCount: 3, avgCitizenSeverity: 3.5, satelliteAOD: 0.58, fireDetectionCount: 9 },
     modelVersion: 'hotspot-confidence@mock',
     createdAt: '2026-08-29T06:05:00.000Z',
-    lat: 28.9,
-    lng: 76.95,
   },
   {
-    id: '8a1fb469ab7ffff_2026-08-29T06',
-    h3Index: '8a1fb469ab7ffff',
+    id: `${cellAt(28.55, 77.09)}_2026-08-29T06`,
+    h3Index: cellAt(28.55, 77.09),
     corridorId: 'ncr-airshed',
     timestampHour: '2026-08-29T06:00:00.000Z',
     hotspotConfidenceScore: 0.29,
@@ -117,12 +101,10 @@ export const hotspotCells: HotspotCellWithPosition[] = [
     contributingSignals: { citizenReportCount: 2, avgCitizenSeverity: 1.2, satelliteAOD: 0.18 },
     modelVersion: 'hotspot-confidence@mock',
     createdAt: '2026-08-29T06:05:00.000Z',
-    lat: 28.55,
-    lng: 77.09,
   },
   {
-    id: '8a3f6a1122dffff_2026-08-29T06',
-    h3Index: '8a3f6a1122dffff',
+    id: `${cellAt(19.05, 73.02)}_2026-08-29T06`,
+    h3Index: cellAt(19.05, 73.02),
     corridorId: 'mumbai-pune-corridor',
     timestampHour: '2026-08-29T06:00:00.000Z',
     hotspotConfidenceScore: 0.77,
@@ -131,8 +113,6 @@ export const hotspotCells: HotspotCellWithPosition[] = [
     contributingSignals: { citizenReportCount: 5, avgCitizenSeverity: 3.9, satelliteAOD: 0.52, satelliteNO2: 1.9 },
     modelVersion: 'hotspot-confidence@mock',
     createdAt: '2026-08-29T06:05:00.000Z',
-    lat: 19.05,
-    lng: 73.02,
   },
 ];
 
@@ -255,7 +235,7 @@ export const forecastRuns: Record<string, ForecastRun> = {
     corridorId: 'ncr-airshed',
     forecastRunTimestamp: '2026-08-29T00:00:00.000Z',
     horizons: [
-      { horizonHours: 24, predictedAQI: 232, predictedAQICategory: 'poor', predictedGRAPStage: 'none', confidenceInterval: { lower: 210, upper: 255 } },
+      { horizonHours: 24, predictedAQI: 232, predictedAQICategory: 'poor', predictedGRAPStage: 'stage_1', confidenceInterval: { lower: 210, upper: 255 } },
       { horizonHours: 48, predictedAQI: 268, predictedAQICategory: 'poor', predictedGRAPStage: 'stage_1', confidenceInterval: { lower: 240, upper: 296 } },
       { horizonHours: 72, predictedAQI: 312, predictedAQICategory: 'very_poor', predictedGRAPStage: 'stage_2', confidenceInterval: { lower: 270, upper: 350 } },
     ],

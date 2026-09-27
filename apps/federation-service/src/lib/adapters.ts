@@ -21,10 +21,10 @@ export function createFirestoreAdapters(db: Firestore, stateCode: string): Local
 
   return {
     /**
-     * NOTE: Firestore `hotspots` holds only the TOP cells hotspot-service pushes
-     * (ARCHITECTURE_OVERVIEW: full grid -> BigQuery). Averages are therefore
-     * biased toward hot cells. Swap to the BigQuery grid once Engineer 3's
-     * table name is in DB_SCHEMA.md -- flagged in WEEK3_SETUP.md.
+     * Firestore `hotspots` holds only the TOP cells hotspot-service pushes, so
+     * averages from here are biased toward hot cells. Production wires
+     * createBigQueryLocalData (the full core.hotspot_cells grid) instead; this
+     * stays for the emulator-only local dev loop.
      */
     async hotspotObservations(startUtc, endUtc): Promise<HotspotObservation[]> {
       const snap = await db
@@ -90,6 +90,36 @@ export function createFirestoreAdapters(db: Firestore, stateCode: string): Local
         const current = (snap.data() as { activeModels?: Record<string, ActiveModel> } | undefined)?.activeModels ?? {};
         tx.set(root(), { activeModels: { ...current, [type]: active } }, { merge: true });
       });
+    },
+  };
+}
+
+// ============================================================ BigQuery (state project)
+
+/**
+ * The full hourly grid from core.hotspot_cells (every scored res-8 cell,
+ * written by hotspot-service). Pre-aggregated per cell in BigQuery -- one
+ * row per cell for the week instead of ~168 x 35k hourly rows through Node.
+ * Every cell is scored every hour, so the mean of cell means that
+ * kAnonymizeWeek takes over a res-6 parent equals the hourly mean.
+ */
+export function createBigQueryLocalData(bq: BigQueryLike, cfg: { project: string; location: string }): Pick<LocalDataSource, 'hotspotObservations'> {
+  return {
+    async hotspotObservations(startUtc, endUtc) {
+      const [rows] = await bq.query({
+        query: `SELECT h3_index, AVG(hotspot_confidence_score) AS score,
+                       APPROX_TOP_COUNT(model_version, 1)[OFFSET(0)].value AS model_version
+                FROM \`${cfg.project}.core.hotspot_cells\`
+                WHERE timestamp_hour >= TIMESTAMP(@start) AND timestamp_hour < TIMESTAMP(@end)
+                GROUP BY h3_index`,
+        params: { start: startUtc.toISOString(), end: endUtc.toISOString() },
+        location: cfg.location,
+      });
+      return (rows as Array<{ h3_index: string; score: number; model_version: string | null }>).map((r) => ({
+        h3Index: r.h3_index,
+        hotspotConfidenceScore: Number(r.score),
+        ...(r.model_version ? { modelVersion: r.model_version } : {}),
+      }));
     },
   };
 }

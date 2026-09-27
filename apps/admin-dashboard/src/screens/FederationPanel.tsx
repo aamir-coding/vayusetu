@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Download, Network, PackagePlus, ShieldAlert } from 'lucide-react';
+import { CheckCircle2, Download, Map as MapIcon, Network, PackagePlus, ShieldAlert } from 'lucide-react';
 import {
   Button,
   Card,
@@ -26,6 +26,9 @@ import type { ResourceType } from '@vayusetu/shared-types';
 import { RESOURCE_TYPE_LABEL } from '@vayusetu/ui-components';
 import { useAuth } from '../hooks/useAuth';
 import { federationApi, resourcesApi } from '../lib/apiClient';
+import { corridorView, DEFAULT_CORRIDORS } from '../lib/corridors';
+import type { HexDatum } from '../lib/hexGeo';
+import { HexMap } from '../components/HexMap';
 
 const RESOURCE_TYPES: ResourceType[] = [
   'inspection_team',
@@ -51,9 +54,13 @@ export function FederationPanel() {
     queryFn: async () => resourcesApi.list(await getToken(), { pageSize: 50 }),
   });
 
+  const canImport = session?.role === 'super_admin';
   const importModel = useMutation({
     mutationFn: async (modelId: string) => federationApi.importModel(await getToken(), modelId),
-    onSuccess: () => push({ tone: 'success', title: 'Model imported and activated' }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['federation-models'] });
+      push({ tone: 'success', title: 'Model imported and activated' });
+    },
     onError: (error: unknown) =>
       push({
         tone: 'error',
@@ -85,10 +92,19 @@ export function FederationPanel() {
       <Tabs defaultValue="models">
         <TabsList>
           <TabsTrigger value="models">Shared Models</TabsTrigger>
+          <TabsTrigger value="exchange">Cross-state View</TabsTrigger>
           <TabsTrigger value="resources">Resource Coordination</TabsTrigger>
         </TabsList>
 
         <TabsContent value="models">
+          {modelsData?.currentlyActive && (
+            <Card className="mb-3 border-emerald-200 bg-emerald-50/50">
+              <CardContent className="flex items-center gap-2 py-3 text-sm">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                Active imported model: <span className="font-semibold">{modelsData.currentlyActive.sourceStateCode} · {modelsData.currentlyActive.modelType} v{modelsData.currentlyActive.version}</span>
+              </CardContent>
+            </Card>
+          )}
           {!modelsData?.available.length ? (
             <EmptyState icon={Network} title="No shared models available yet" description="Other states publish nightly — check back after the next sync." />
           ) : (
@@ -117,6 +133,8 @@ export function FederationPanel() {
                     <Button
                       size="sm"
                       variant="outline"
+                      disabled={!canImport}
+                      title={canImport ? undefined : 'Importing into production is super_admin only (the highest-blast-radius action).'}
                       onClick={() => importModel.mutate(model.id)}
                       loading={importModel.isPending && importModel.variables === model.id}
                     >
@@ -127,6 +145,10 @@ export function FederationPanel() {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="exchange">
+          <CrossStateView />
         </TabsContent>
 
         <TabsContent value="resources">
@@ -179,6 +201,84 @@ export function FederationPanel() {
           </ul>
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+/** PRODUCT_SPEC Feature 4: corridors that span state lines (NCR = DL, HR, UP,
+ *  RJ) get one aggregated view -- built only from what each state published
+ *  to the Exchange (res-6, weekly, k-anonymized), never another state's grid. */
+function CrossStateView() {
+  const { getToken } = useAuth();
+  const [corridorId, setCorridorId] = React.useState('ncr-airshed');
+  const view = corridorView(corridorId);
+  const { data, isLoading } = useQuery({
+    queryKey: ['federation-summary', corridorId],
+    queryFn: async () => federationApi.hotspotSummary(await getToken(), view.bbox),
+  });
+  const rows = data?.summary ?? [];
+  const latestWeek = rows.reduce((w, r) => (r.weekStartDate > w ? r.weekStartDate : w), '');
+  const latest = rows.filter((r) => r.weekStartDate === latestWeek);
+  const hexes = React.useMemo<HexDatum[]>(
+    () =>
+      latest.map((r) => ({
+        h3Index: r.h3IndexGeneralized,
+        score: r.avgHotspotConfidence,
+        label: `${r.sourceStateCode} · ${Math.round(r.avgHotspotConfidence * 100)}% avg confidence`,
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [data, latestWeek],
+  );
+  const byState = Object.entries(
+    latest.reduce<Record<string, number[]>>((acc, r) => ({ ...acc, [r.sourceStateCode]: [...(acc[r.sourceStateCode] ?? []), r.avgHotspotConfidence] }), {}),
+  ).sort(([a], [b]) => a.localeCompare(b));
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-slate-500">
+          {latestWeek ? `Week of ${latestWeek} · ${latest.length} generalized cells (res 6) across ${byState.length} states` : 'Weekly k-anonymized summaries from every state on the Exchange'}
+        </p>
+        <Select value={corridorId} onValueChange={setCorridorId}>
+          <SelectTrigger className="w-56">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {DEFAULT_CORRIDORS.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      {isLoading ? null : latest.length === 0 ? (
+        <EmptyState icon={MapIcon} title="No shared summaries for this area yet" description="States publish last week's aggregates nightly, once enough citizens have reported (k-anonymity floor)." />
+      ) : (
+        <div className="grid gap-3 lg:grid-cols-[1fr_16rem]">
+          <div className="overflow-hidden rounded-xl2 border border-slate-200 bg-white">
+            <HexMap cells={hexes} center={view.center} zoom={8} height="26rem" mapKey={`x-${corridorId}`} />
+          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">By contributing state</CardTitle>
+              <CardDescription>Mean of cell averages, latest week</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-1.5 text-sm">
+                {byState.map(([state, scores]) => (
+                  <li key={state} className="flex justify-between">
+                    <span className="font-medium text-ink">{state}</span>
+                    <span className="text-slate-500">
+                      {scores.length} cells · {Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 100)}%
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

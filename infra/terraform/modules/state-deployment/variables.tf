@@ -229,3 +229,32 @@ variable "deploy_firestore_rules" {
   default     = false
   description = "Release packages/firestore-rules/firestore.rules to the project's Firestore (jurisdiction-scoped reads, no client writes)."
 }
+
+# ---- Federation Exchange (federation.tf)
+variable "federation_state_code" {
+  type        = string
+  description = "This deployment's identity on the National Exchange (NCR -> DL, Mumbai-Pune -> MH)."
+}
+
+variable "federation_owned_states" {
+  type        = list(string)
+  description = "States whose summary rows this deployment may publish/replace (NCR spans DL, HR, UP, RJ)."
+}
+
+variable "exchange_project_id" {
+  type        = string
+  default     = ""
+  description = "The National Exchange project (modules/exchange). Empty = sync job not scheduled."
+}
+
+variable "exchange_project_number" {
+  type        = string
+  default     = ""
+  description = "Exchange project NUMBER, for its Vertex AI service agent's cross-project model read."
+}
+
+variable "enable_federation_sync" {
+  type        = bool
+  default     = false
+  description = "Nightly federation-sync schedule (also needs exchange_project_id)."
+}

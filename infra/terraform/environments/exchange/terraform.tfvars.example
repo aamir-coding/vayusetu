@@ -1,0 +1,10 @@
+project_id = "vayusetu-exchange-dev"
+region     = "asia-south1"
+
+# One entry per state deployment. `terraform output federation_identity` in
+# that environment gives the service account; the project NUMBER comes from
+# `gcloud projects describe <project> --format="value(projectNumber)"`.
+member_states = {
+  DL = { service_account = "federation-service-ncr-dev@vayusetu-ncr-dev.iam.gserviceaccount.com", project_number = "<ncr project number>" }
+  MH = { service_account = "federation-service-mh-dev@vayusetu-mh-dev.iam.gserviceaccount.com", project_number = "<mh project number>" }
+}
