@@ -177,13 +177,26 @@ describe('model cadence and per-scorer thresholds', () => {
     expect(heuristicScorer.name).toMatch(/heuristic/);
   });
 
-  it('hidden-hotspot threshold follows the scorer that produced the score', async () => {
-    const { hiddenThreshold } = await import('../src/domain/fusion.js');
-    const cfg = { hiddenMinConfidence: 0.6, modelHiddenMinConfidence: 0.27 };
-    expect(hiddenThreshold('heuristic-v0', cfg)).toBe(0.6);
-    expect(hiddenThreshold('citizen-evidence', cfg)).toBe(0.6);
-    expect(hiddenThreshold('projects/p/locations/l/models/1@2', cfg)).toBe(0.27);
-    expect(hiddenThreshold('projects/p/locations/l/models/1@2+citizen', cfg)).toBe(0.27);
-    expect(hiddenThreshold('projects/p/locations/l/models/1@2', { hiddenMinConfidence: 0.6 })).toBe(0.6);
+  it('model probabilities are calibrated onto the heuristic scale (tuned threshold -> 0.6)', async () => {
+    const { calibrate, isModelVersion } = await import('../src/domain/fusion.js');
+    expect(isModelVersion('heuristic-v0')).toBe(false);
+    expect(isModelVersion('citizen-evidence')).toBe(false);
+    expect(isModelVersion(undefined)).toBe(false);
+    expect(isModelVersion('projects/p/locations/l/models/1@2')).toBe(true);
+    expect(calibrate(0.27, 0.27, 0.6)).toBeCloseTo(0.6);
+    expect(calibrate(0, 0.27, 0.6)).toBe(0);
+    expect(calibrate(1, 0.27, 0.6)).toBeCloseTo(1);
+    expect(calibrate(0.2239, 0.27, 0.6)).toBeCloseTo(0.4976, 3); // the live 27 Sep max: now on the map
+    expect(calibrate(0.5, 0.27, 0.6)).toBeGreaterThan(0.6);
+    expect(calibrate(0.3, undefined, 0.6)).toBe(0.3); // no tuned threshold: unchanged
+    // monotone: ranking is preserved
+    const xs = [0, 0.05, 0.1, 0.27, 0.28, 0.6, 1].map((p) => calibrate(p, 0.27, 0.6));
+    expect([...xs].sort((a, b) => a - b)).toEqual(xs);
+  });
+
+  it('the map is never empty: the top cells publish even below the score floor', () => {
+    const cells = [0.05, 0.1, 0.02, 0.3].map((score, i) => ({ score, row: { corridor_id: 'c', h3_index: `h${i}` } })) as never[];
+    const { firestore } = selectForPublication(cells, { firestoreMinScore: 0.25, firestoreMinCells: 2, firestoreMaxCells: 10, alertMinScore: 0.6, alertMaxPerCorridor: 2 });
+    expect((firestore as Array<{ score: number }>).map((c) => c.score)).toEqual([0.3, 0.1]);
   });
 });

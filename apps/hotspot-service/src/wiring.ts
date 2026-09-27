@@ -53,6 +53,7 @@ export function buildHourlyDeps(log: Log): HourlyDeps {
       hiddenMinConfidence: env.HIDDEN_MIN_CONFIDENCE,
       modelHiddenMinConfidence: env.MODEL_HIDDEN_MIN_CONFIDENCE,
       firestoreMinScore: env.FIRESTORE_MIN_SCORE,
+      firestoreMinCells: env.FIRESTORE_MIN_CELLS,
       firestoreMaxCells: env.FIRESTORE_MAX_CELLS,
       alertMinScore: env.ALERT_MIN_SCORE,
       alertMaxPerCorridor: env.ALERT_MAX_PER_CORRIDOR,
