@@ -1,69 +1,50 @@
-# One service account per Cloud Run service, each granted only the roles
-# that service's own documented job needs (ARCHITECTURE_OVERVIEW.md's GCP
-# Service Map + each service's repo-map entry). submission-service is the
-# only one with real code behind it in Week 1; the rest are provisioned
-# ahead of need so Week 2/3 engineers land into a working IAM setup
-# instead of each requesting their own grants ad hoc.
+# One service account per Cloud Run service. PROJECT-level roles here are
+# only those with no narrower resource to bind to (Firestore, BigQuery job
+# execution, Vertex AI, Speech, FCM). Everything that CAN be scoped -- buckets,
+# secrets, topics, the core dataset, the signing identity -- is granted on
+# that resource in iam_scoped.tf. Audit + rationale: docs/security/IAM_AUDIT.md.
 locals {
   service_accounts = {
     submission-service = {
       roles = [
-        "roles/datastore.user",                 # Firestore read/write
-        "roles/pubsub.publisher",               # submission.created
-        "roles/storage.objectAdmin",            # citizen-media bucket
-        "roles/secretmanager.secretAccessor",   # Maps API key
-        "roles/iam.serviceAccountTokenCreator", # self-sign upload URLs from Cloud Run's metadata credential
+        "roles/datastore.user", # Firestore read/write
       ]
     }
     analysis-service = {
       roles = [
         "roles/datastore.user",
-        "roles/pubsub.subscriber", # submission.created
-        "roles/pubsub.publisher",  # analysis.completed
-        "roles/aiplatform.user",   # Gemini 3.7 Flash (Pipeline A)
-        "roles/storage.objectViewer",
-        "roles/secretmanager.secretAccessor",      # Maps key (Air Quality API context)
+        "roles/aiplatform.user",                   # Gemini 3.7 Flash (Pipeline A)
         "roles/speech.client",                     # Speech-to-Text v2 (voice notes)
         "roles/serviceusage.serviceUsageConsumer", # Text-to-Speech has no finer-grained role
         "roles/bigquery.jobUser",                  # context query (h3_cells, ground truth, satellite)
-        "roles/bigquery.dataViewer",
       ]
     }
     hotspot-service = {
       roles = [
         "roles/datastore.user",
-        "roles/pubsub.subscriber", # analysis.completed
-        "roles/pubsub.publisher",  # hotspot.updated
-        "roles/bigquery.dataEditor",
         "roles/bigquery.jobUser",
-        "roles/aiplatform.user", # Hotspot Confidence Model
+        "roles/aiplatform.user", # Hotspot Confidence Model (batch prediction)
       ]
     }
     forecast-service = {
       roles = [
         "roles/datastore.user",
-        "roles/pubsub.publisher", # forecast.updated
-        "roles/bigquery.dataEditor",
         "roles/bigquery.jobUser",
-        "roles/aiplatform.user", # AQI Forecast Model
+        "roles/aiplatform.user", # AQI Forecast Model (batch prediction)
       ]
     }
     alert-service = {
       roles = [
         "roles/datastore.user",
-        "roles/pubsub.subscriber",            # hotspot.updated + forecast.updated
         "roles/aiplatform.user",              # Gemini 3.1 Pro (Pipeline C)
-        "roles/secretmanager.secretAccessor", # SMS/WhatsApp gateway creds
-        "roles/firebase.admin",               # FCM dispatch via Firebase Admin SDK
+        "roles/firebasecloudmessaging.admin", # FCM send only (was roles/firebase.admin)
       ]
     }
     federation-service = {
       roles = [
         "roles/datastore.user", # submissions (contributions), federationExchange mirror + active pointers
-        "roles/bigquery.dataEditor",
         "roles/bigquery.jobUser",
-        "roles/aiplatform.admin", # publish to / import from Model Registry -- a step above .user
-        "roles/storage.objectAdmin",
+        "roles/aiplatform.user", # Model Registry get/list/upload/export/update (was aiplatform.admin)
       ]
     }
   }
