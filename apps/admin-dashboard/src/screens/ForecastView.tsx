@@ -31,7 +31,23 @@ export function ForecastView() {
   const { data: run, isLoading } = useQuery({
     queryKey: ['forecast', corridorId],
     queryFn: async () => forecastsApi.latest(await getToken(), corridorId),
+    refetchInterval: 15 * 60_000, // runs land every 6 h; poll cheaply so an open tab catches them
   });
+
+  // How the +24h call has moved across recent runs -- a forecast that keeps
+  // climbing run after run is a stronger GRAP signal than any single run.
+  const { data: history } = useQuery({
+    queryKey: ['forecast-history', corridorId],
+    queryFn: async () => forecastsApi.history(await getToken(), corridorId, '7d'),
+    enabled: Boolean(run),
+  });
+  const trend = [...(history?.runs ?? [])]
+    .sort((a, b) => a.forecastRunTimestamp.localeCompare(b.forecastRunTimestamp))
+    .map((r) => ({
+      run: r.forecastRunTimestamp.slice(5, 13).replace('T', ' '),
+      aqi24: r.horizons.find((h) => h.horizonHours === 24)?.predictedAQI,
+    }))
+    .filter((p) => p.aqi24 !== undefined);
 
   const chartData = (run?.horizons ?? []).map((h) => ({
     horizon: `${h.horizonHours}h`,
@@ -123,6 +139,27 @@ export function ForecastView() {
                     </div>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <p className="text-xs text-slate-400">
+            Run {new Date(run.forecastRunTimestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST · model {run.modelVersion}
+          </p>
+
+          {!liteMode && trend.length >= 2 && (
+            <Card>
+              <CardContent className="pt-5">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">+24h prediction across the last 7 days of runs</p>
+                <ResponsiveContainer width="100%" height={140}>
+                  <ComposedChart data={trend} margin={{ top: 4, right: 16, bottom: 0, left: -16 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                    <XAxis dataKey="run" tick={{ fontSize: 10, fill: '#64748B' }} minTickGap={24} />
+                    <YAxis tick={{ fontSize: 11, fill: '#64748B' }} />
+                    <Tooltip formatter={(v) => [v, '+24h AQI']} labelFormatter={(l) => `Run ${l} UTC`} />
+                    <Line type="monotone" dataKey="aqi24" stroke="#157B76" strokeWidth={2} dot={false} isAnimationActive={false} />
+                  </ComposedChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           )}

@@ -11,3 +11,10 @@ output "alert_push_subscriptions" { value = module.ncr_dev.alert_push_subscripti
 output "alert_dead_letter_subscription" { value = module.ncr_dev.alert_dead_letter_subscription }
 output "cloudbuild_deployer_service_account" { value = module.ncr_dev.cloudbuild_deployer_service_account }
 output "ci_triggers" { value = module.ncr_dev.ci_triggers }
+output "firebase_web_config" { value = module.ncr_dev.firebase_web_config }
+output "hosting_sites" { value = module.ncr_dev.hosting_sites }
+output "maps_browser_key" {
+  value     = module.ncr_dev.maps_browser_key
+  sensitive = true
+}
+output "federation_identity" { value = module.ncr_dev.federation_identity }
