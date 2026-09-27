@@ -37,7 +37,7 @@ variable "labels" {
 variable "allowed_upload_origins" {
   type        = list(string)
   default     = ["http://localhost:5173", "http://localhost:5174"]
-  description = "Origins allowed to PUT directly to the citizen-media bucket via signed URL -- the Citizen PWA and Admin Dashboard dev servers by default; add production Firebase Hosting domains once those exist."
+  description = "EXTRA origins allowed to PUT to the citizen-media bucket via signed URL (dev servers by default). The project's own citizen Hosting origins are always added (storage.tf)."
 }
 
 # ---------------------------------------------------------------- Week 2

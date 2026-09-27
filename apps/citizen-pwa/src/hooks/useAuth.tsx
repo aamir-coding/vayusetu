@@ -133,11 +133,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           : navigator.language?.startsWith('mr')
             ? 'mr-IN'
             : 'en-IN';
-      const created = await usersApi.register(token, {
-        displayName: opts?.displayName?.trim() || 'Citizen Reporter',
-        preferredLanguage: opts?.preferredLanguage ?? detectedLang,
-        role: opts?.role ?? 'citizen',
-      });
+      let created: User;
+      try {
+        created = await usersApi.register(token, {
+          displayName: opts?.displayName?.trim() || 'Citizen Reporter',
+          preferredLanguage: opts?.preferredLanguage ?? detectedLang,
+          role: opts?.role ?? 'citizen',
+        });
+      } catch (err) {
+        // 409 = the profile exists (e.g. a stale "not found" earlier, or a
+        // registration that raced another tab): registration is idempotent.
+        if (!(err instanceof ApiClientError) || err.status !== 409) throw err;
+        created = await usersApi.me(token);
+      }
       setUser(created);
       return created;
     },
