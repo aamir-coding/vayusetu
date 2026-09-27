@@ -144,8 +144,12 @@ resource "google_cloud_run_v2_service" "service" {
   depends_on = [google_project_service.required]
 }
 
+# Public invoke is required where Firebase Hosting rewrites /api/v1/** to the
+# service (Hosting calls Cloud Run unauthenticated; the app verifies the
+# Firebase ID token). analysis-service has no public routes -- only Pub/Sub
+# pushes, which carry an OIDC token for the push SA (analysis.tf).
 resource "google_cloud_run_v2_service_iam_member" "public_invoker" {
-  for_each = local.cloud_run_services
+  for_each = { for k, v in local.cloud_run_services : k => v if k != "analysis-service" }
   project  = var.project_id
   location = var.region
   name     = google_cloud_run_v2_service.service[each.key].name
