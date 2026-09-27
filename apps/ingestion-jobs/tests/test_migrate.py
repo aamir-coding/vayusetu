@@ -29,3 +29,18 @@ def test_earth_engine_one_day_export():
     from vayusetu_ingest.jobs import earth_engine
 
     earth_engine.run(load_settings(), start="2026-09-20", days=1)
+
+
+def test_ci_deploys_every_terraform_job():
+    """infra/cloudbuild/ingestion-jobs.yaml must update the image of EVERY job
+    Terraform creates -- a job left out keeps running stale code."""
+    import re
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[3]
+    tf = (root / "infra/terraform/modules/state-deployment/ingestion.tf").read_text(encoding="utf-8")
+    block = tf.split("ingestion_jobs = {")[1].split("\n  }\n")[0]
+    tf_jobs = set(re.findall(r"^\s{4}(ingest-[a-z0-9-]+)\s*=", block, re.M))
+    ci = (root / "infra/cloudbuild/ingestion-jobs.yaml").read_text(encoding="utf-8")
+    ci_jobs = set(re.search(r"_JOBS: '([^']+)'", ci).group(1).split())
+    assert tf_jobs and tf_jobs == ci_jobs
