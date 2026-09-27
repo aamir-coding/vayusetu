@@ -1,4 +1,4 @@
-import { getDb, NonRetryableEventError } from '@vayusetu/gcp-clients';
+import { getDb, NonRetryableEventError, normalizeLanguage } from '@vayusetu/gcp-clients';
 import {
   MAX_CLARIFICATION_TURNS,
   type AskClarifyingQuestion,
@@ -42,7 +42,6 @@ export type AnalysisOutcome =
   | 'failed_model_output'
   | 'skipped_duplicate';
 
-const DEFAULT_LANGUAGE = 'en-IN';
 const UNCLASSIFIED_NOTE = 'Recorded as unclassified; will be reviewed.';
 
 function mimeFromUrl(url: string): string {
@@ -83,7 +82,8 @@ export async function analyzeSubmission(submissionId: string, deps: AnalysisDeps
   const log = { submissionId };
 
   const userSnap = await users().doc(sub.userId).get();
-  const language = (userSnap.exists ? (userSnap.data() as User).preferredLanguage : undefined) || DEFAULT_LANGUAGE;
+  // Canonical tag: Gemini, Speech-to-Text and TTS voices all need e.g. en-IN, not en.
+  const language = normalizeLanguage(userSnap.exists ? (userSnap.data() as User).preferredLanguage : undefined);
 
   // ---- voice note (non-fatal: triage proceeds on the photo alone) ----
   let transcript = sub.transcript;

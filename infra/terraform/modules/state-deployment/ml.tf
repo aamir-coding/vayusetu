@@ -51,3 +51,12 @@ resource "google_project_iam_member" "aiplatform_agent_bigquery" {
   role     = each.value
   member   = "serviceAccount:${google_project_service_identity.aiplatform_agent.email}"
 }
+
+# Gemini reads citizen photos by gs:// URI (Pipeline A fileData) AS the Vertex
+# AI service agent -- not as analysis-service's own account. Read-only, on
+# the media bucket only. Found by the first live report: 403 from Gemini.
+resource "google_storage_bucket_iam_member" "aiplatform_agent_reads_media" {
+  bucket = google_storage_bucket.citizen_media.name
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${google_project_service_identity.aiplatform_agent.email}"
+}

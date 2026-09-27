@@ -157,6 +157,18 @@ describe('Pipeline A happy path', () => {
   });
 });
 
+describe('language normalisation (found live: bare "en" broke TTS)', () => {
+  it('a user stored as "en" gets en-IN for Gemini, TTS and the advisory', async () => {
+    fakeDb.collection('users').seed('rina', { uid: 'rina', role: 'citizen', preferredLanguage: 'en', displayName: 'Rina', fcmTokens: [] });
+    seed();
+    const { deps, triage, synthesize } = makeDeps([assessment({ recommendedAdvisory: 'Avoid outdoor exercise.' })]);
+    await push(await appWith(deps), { submissionId: 'sub1' });
+    expect(triage.mock.calls[0]![0]).toMatchObject({ advisoryLanguage: 'en-IN' });
+    expect(synthesize).toHaveBeenCalledWith('Avoid outdoor exercise.', 'en-IN');
+    expect((await analysis())!.advisory.language).toBe('en-IN');
+  });
+});
+
 describe('resilience', () => {
   it('Speech-to-Text and context failures degrade instead of failing the report', async () => {
     seed({ mediaType: 'photo_audio', audioStorageUrl: 'gs://m/a.webm' });
