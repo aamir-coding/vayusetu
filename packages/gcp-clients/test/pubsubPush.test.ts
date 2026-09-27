@@ -59,3 +59,16 @@ describe('parseGsUrl', () => {
     expect(parseGsUrl('https://x/y')).toBeUndefined();
   });
 });
+
+describe('normalizeLanguage', () => {
+  it('canonicalises tags every Google API in the chain accepts', async () => {
+    const { normalizeLanguage } = await import('../src/languages.js');
+    expect(normalizeLanguage('en')).toBe('en-IN');
+    expect(normalizeLanguage('hi')).toBe('hi-IN');
+    expect(normalizeLanguage('pa_IN')).toBe('pa-IN');
+    expect(normalizeLanguage('MR-in')).toBe('mr-IN');
+    expect(normalizeLanguage('bgc')).toBe('hi-IN'); // Haryanvi -> Hindi
+    expect(normalizeLanguage('fr-FR')).toBe('en-IN');
+    expect(normalizeLanguage(undefined)).toBe('en-IN');
+  });
+});

@@ -36,6 +36,7 @@ locals {
     "airquality.googleapis.com", # modeled AQI history/backfill
     "weather.googleapis.com",    # observed + forecast meteorology
     "earthengine.googleapis.com",
+    "firebaserules.googleapis.com", # Firestore security rules release (firestore_rules.tf)
 
   ]
 }
