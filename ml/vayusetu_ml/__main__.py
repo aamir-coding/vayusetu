@@ -75,7 +75,7 @@ def parameters(kind: str) -> dict:
             "available_at_forecast": list(f.available_at_forecast),
             "unavailable_at_forecast": list(f.unavailable_at_forecast),
             "attribute_columns": list(f.attribute_columns), "horizon_steps": f.horizon_steps,
-            "context_steps": f.context_steps, "granularity_hours": f.granularity_hours,
+            "context_steps": f.context_steps, "granularity_unit": f.granularity_unit,
             "quantiles": list(f.quantiles)}
 
 
