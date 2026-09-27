@@ -53,6 +53,28 @@ def test_forecast_columns_exist_in_training_sql():
     assert f.horizon_hours == 72  # PRODUCT_SPEC Feature 3
 
 
+def test_forecast_fits_automl_series_cap():
+    # AutoML Forecasting rejects series longer than 3000 steps (first live run:
+    # 8078 hourly steps). A full year at 3-hourly steps must fit.
+    f = specs.FORECAST
+    assert f.granularity_hours == 3 and 72 % f.granularity_hours == 0 and 168 % f.granularity_hours == 0
+    assert (f.horizon_steps, f.context_steps) == (24, 56)
+    assert f.max_train_days * 24 // f.granularity_hours <= f.max_series_steps
+    assert f.max_train_days >= 365  # every season stays in training
+    sql = training_sql.render("forecast", "p")
+    scoring = (REPO / "data/schemas/features/forecast_input.sql").read_text(encoding="utf-8")
+    bucket = "DIV(UNIX_SECONDS("
+    assert "10800" in sql and bucket in sql and "10800" in scoring and bucket in scoring  # same step, both sides
+    assert "INTERVAL 3 HOUR" in scoring
+
+
+def test_hotspot_training_allows_missing_numeric_values():
+    import inspect
+    from vayusetu_ml import pipelines
+    src = inspect.getsource(pipelines.train_hotspot_model.python_func)
+    assert '"invalid_values_allowed": True' in src
+
+
 def test_time_split_is_chronological():
     w = training_sql.time_split_window(datetime(2026, 9, 26, 17, 42, tzinfo=timezone.utc), 100)
     assert w.start < w.validate_from < w.test_from < w.end
@@ -62,7 +84,7 @@ def test_time_split_is_chronological():
 
 def test_specs_json_is_serializable():
     data = json.loads(json.dumps(specs.as_json()))
-    assert data["hotspot"]["feature_schema"] == "hs-v1" and data["forecast"]["feature_schema"] == "fc-v1"
+    assert data["hotspot"]["feature_schema"] == "hs-v1" and data["forecast"]["feature_schema"] == "fc-v2"
     assert data["hotspot"]["features"] == list(specs.HOTSPOT.features)
 
 
@@ -90,7 +112,7 @@ def test_parameters_cover_every_pipeline_input(kind, monkeypatch):
     fn = pipelines.hotspot_pipeline if kind == "hotspot" else pipelines.forecast_pipeline
     expected = set(fn.component_spec.inputs.keys())
     assert set(params) == expected
-    assert params["labels"]["vayusetu-feature-schema"] in {"hs-v1", "fc-v1"}
+    assert params["labels"]["vayusetu-feature-schema"] in {"hs-v1", "fc-v2"}
     assert all(re.fullmatch(r"[a-z0-9_-]{1,63}", v) for v in params["labels"].values())
 
 

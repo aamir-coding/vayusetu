@@ -41,6 +41,7 @@ resource "google_service_account" "cloudbuild_deployer" {
   account_id   = "cloudbuild-${var.environment_name}"
   display_name = "Cloud Build deployer (${var.environment_name})"
   description  = "Runs CI builds and deploys Cloud Run images. Can act as ONLY the runtime SAs of services it deploys."
+  depends_on   = [google_project_service.required] # iam.googleapis.com on a fresh project
 }
 
 resource "google_project_iam_member" "cloudbuild_deployer" {

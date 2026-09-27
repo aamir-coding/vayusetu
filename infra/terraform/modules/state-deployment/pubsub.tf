@@ -78,6 +78,7 @@ resource "google_service_account" "pubsub_push" {
   account_id   = "pubsub-push-${var.environment_name}"
   display_name = "Pub/Sub push identity (${var.environment_name})"
   description  = "Identity Pub/Sub signs push OIDC tokens as. Holds no data-plane roles."
+  depends_on   = [google_project_service.required] # iam.googleapis.com on a fresh project
 }
 
 resource "google_service_account_iam_member" "pubsub_agent_mints_push_tokens" {

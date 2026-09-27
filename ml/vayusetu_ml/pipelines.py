@@ -46,12 +46,19 @@ def train_hotspot_model(project: str, location: str, table: str, display_name: s
 
     aiplatform.init(project=project, location=location)
     dataset = aiplatform.TabularDataset.create(display_name=f"{display_name}-data", bq_source=f"bq://{table}")
-    specs = {c: "numeric" for c in numeric_features} | {c: "categorical" for c in categorical_features}
+    # invalid_values_allowed: missing values are data here (cloud-covered
+    # satellite pixels, hours with no citizen report) -- AutoML learns a
+    # "missing" indicator. Without it every row with ANY null numeric is
+    # discarded; citizen_avg_severity_3h is null on every historical row, so
+    # the first run rejected all 540k rows ("0 were valid").
+    transformations = [{"numeric": {"column_name": c, "invalid_values_allowed": True}} for c in numeric_features] + [
+        {"categorical": {"column_name": c}} for c in categorical_features
+    ]
     job = aiplatform.AutoMLTabularTrainingJob(
         display_name=f"{display_name}-train",
         optimization_prediction_type="classification",
         optimization_objective=optimization_objective,
-        column_specs=specs,
+        column_transformations=transformations,
     )
     parents = aiplatform.Model.list(filter=f'display_name="{display_name}"')
     model = job.run(
@@ -71,7 +78,7 @@ def train_hotspot_model(project: str, location: str, table: str, display_name: s
 def train_forecast_model(project: str, location: str, table: str, display_name: str, target: str,
                          time_column: str, series_column: str, available_at_forecast: list,
                          unavailable_at_forecast: list, attribute_columns: list, split_column: str,
-                         horizon_hours: int, context_hours: int, quantiles: list,
+                         horizon_steps: int, context_steps: int, granularity_hours: int, quantiles: list,
                          optimization_objective: str, budget_milli_node_hours: int, labels: dict,
                          stats: dict) -> str:
     from google.cloud import aiplatform
@@ -92,10 +99,10 @@ def train_forecast_model(project: str, location: str, table: str, display_name: 
         available_at_forecast_columns=[time_column, *available_at_forecast],
         unavailable_at_forecast_columns=list(unavailable_at_forecast),
         time_series_attribute_columns=list(attribute_columns),
-        forecast_horizon=horizon_hours,
-        context_window=context_hours,
+        forecast_horizon=horizon_steps,   # in steps of granularity_hours
+        context_window=context_steps,
         data_granularity_unit="hour",
-        data_granularity_count=1,
+        data_granularity_count=granularity_hours,
         predefined_split_column_name=split_column,
         quantiles=[float(q) for q in quantiles],
         holiday_regions=["IN"],
@@ -174,7 +181,7 @@ def hotspot_pipeline(project: str, location: str, sql: str, table: str, start_ts
 def forecast_pipeline(project: str, location: str, sql: str, table: str, start_ts: str, end_ts: str,
                       validate_from: str, test_from: str, display_name: str, target: str, time_column: str,
                       series_column: str, available_at_forecast: list, unavailable_at_forecast: list,
-                      attribute_columns: list, split_column: str, horizon_hours: int, context_hours: int,
+                      attribute_columns: list, split_column: str, horizon_steps: int, context_steps: int, granularity_hours: int,
                       quantiles: list, optimization_objective: str, budget_milli_node_hours: int, labels: dict,
                       gate_metric: str, gate: float, eval_table: str):
     stats = build_training_table(project=project, location=location, sql=sql, table=table, label_sql="FALSE",
@@ -184,7 +191,7 @@ def forecast_pipeline(project: str, location: str, sql: str, table: str, start_t
                                    available_at_forecast=available_at_forecast,
                                    unavailable_at_forecast=unavailable_at_forecast,
                                    attribute_columns=attribute_columns, split_column=split_column,
-                                   horizon_hours=horizon_hours, context_hours=context_hours, quantiles=quantiles,
+                                   horizon_steps=horizon_steps, context_steps=context_steps, granularity_hours=granularity_hours, quantiles=quantiles,
                                    optimization_objective=optimization_objective,
                                    budget_milli_node_hours=budget_milli_node_hours, labels=labels, stats=stats.output)
     evaluate_and_promote(project=project, location=location, model_version=version.output, model_type="forecast",
