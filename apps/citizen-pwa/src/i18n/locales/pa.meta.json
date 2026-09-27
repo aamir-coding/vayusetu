@@ -1,0 +1,62 @@
+{
+  "common.remove": {
+    "sourceHash": "c3812fc4acb861d5",
+    "text": "ਹਟਾਓ"
+  },
+  "result.clarifyTitle": {
+    "sourceHash": "5ed5854e252b567c",
+    "text": "ਇੱਕ ਛੋਟਾ ਜਿਹਾ ਸਵਾਲ"
+  },
+  "result.clarifyHint": {
+    "sourceHash": "83397ae4b4f0deca",
+    "text": "ਤੁਹਾਡਾ ਜਵਾਬ ਸਾਨੂੰ ਸਰੋਤ ਲੱਭਣ ਵਿੱਚ ਮਦਦ ਕਰਦਾ ਹੈ। ਕਿਸੇ ਵੀ ਭਾਸ਼ਾ ਵਿੱਚ ਜਵਾਬ ਦਿਓ।"
+  },
+  "result.clarifyPlaceholder": {
+    "sourceHash": "8666026a31fa7dea",
+    "text": "ਆਪਣਾ ਜਵਾਬ ਟਾਈਪ ਕਰੋ..."
+  },
+  "result.clarifyAddPhoto": {
+    "sourceHash": "fef05d42a999d1c9",
+    "text": "ਇੱਕ ਹੋਰ ਫੋਟੋ ਸ਼ਾਮਲ ਕਰੋ"
+  },
+  "result.clarifySend": {
+    "sourceHash": "18737070e41c09dd",
+    "text": "ਜਵਾਬ ਭੇਜੋ"
+  },
+  "result.clarifySent": {
+    "sourceHash": "a0a6a743f2306cce",
+    "text": "ਧੰਨਵਾਦ! ਤੁਹਾਡੀ ਰਿਪੋਰਟ ਦੀ ਦੁਬਾਰਾ ਜਾਂਚ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ।"
+  },
+  "result.clarifyFailed": {
+    "sourceHash": "abd1b97203b76f47",
+    "text": "ਤੁਹਾਡਾ ਜਵਾਬ ਨਹੀਂ ਭੇਜਿਆ ਜਾ ਸਕਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।"
+  },
+  "result.sensorsTitle": {
+    "sourceHash": "5777c624b4fe068c",
+    "text": "ਸੈਂਸਰ ਕੀ ਕਹਿੰਦੇ ਹਨ"
+  },
+  "result.nearestMonitor": {
+    "sourceHash": "c50c6b9a3d3c02e2",
+    "text": "ਸਭ ਤੋਂ ਨੇੜਲਾ ਮਾਨੀਟਰ: AQI {{aqi}}"
+  },
+  "result.satelliteAod": {
+    "sourceHash": "685798eb802a166b",
+    "text": "ਸੈਟੇਲਾਈਟ ਧੁੰਦ (AOD): {{aod}}"
+  },
+  "result.yourSensorPm25": {
+    "sourceHash": "106fe469f5497e13",
+    "text": "ਤੁਹਾਡਾ ਸੈਂਸਰ PM2.5: {{value}} µg/m³"
+  },
+  "result.yourSensorPm10": {
+    "sourceHash": "f9c14716493bb94c",
+    "text": "ਤੁਹਾਡਾ ਸੈਂਸਰ PM10: {{value}} µg/m³"
+  },
+  "result.agreement": {
+    "sourceHash": "08aabf8812e02122",
+    "text": "ਫੋਟੋ ਅਤੇ ਸੈਂਸਰ ਡੇਟਾ ਸਹਿਮਤ ਹਨ {{pct}} %"
+  },
+  "reports.awaitingAnswer": {
+    "sourceHash": "1a6227e081977c7d",
+    "text": "ਜਵਾਬ ਦੀ ਲੋੜ ਹੈ"
+  }
+}

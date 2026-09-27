@@ -1,0 +1,62 @@
+{
+  "common.remove": {
+    "sourceHash": "c3812fc4acb861d5",
+    "text": "निकालना"
+  },
+  "result.clarifyTitle": {
+    "sourceHash": "5ed5854e252b567c",
+    "text": "एक छोटा सा सवाल"
+  },
+  "result.clarifyHint": {
+    "sourceHash": "83397ae4b4f0deca",
+    "text": "आपके उत्तर से हमें स्रोत का पता लगाने में मदद मिलेगी। आप किसी भी भाषा में उत्तर दे सकते हैं।"
+  },
+  "result.clarifyPlaceholder": {
+    "sourceHash": "8666026a31fa7dea",
+    "text": "अपना उत्तर लिखें…"
+  },
+  "result.clarifyAddPhoto": {
+    "sourceHash": "fef05d42a999d1c9",
+    "text": "एक और फ़ोटो जोड़ें"
+  },
+  "result.clarifySend": {
+    "sourceHash": "18737070e41c09dd",
+    "text": "उत्तर भेजें"
+  },
+  "result.clarifySent": {
+    "sourceHash": "a0a6a743f2306cce",
+    "text": "धन्यवाद! मैं आपकी रिपोर्ट दोबारा जांच रहा हूँ।"
+  },
+  "result.clarifyFailed": {
+    "sourceHash": "abd1b97203b76f47",
+    "text": "आपका उत्तर भेजा नहीं जा सका। कृपया पुनः प्रयास करें।"
+  },
+  "result.sensorsTitle": {
+    "sourceHash": "5777c624b4fe068c",
+    "text": "सेंसर क्या कहते हैं"
+  },
+  "result.nearestMonitor": {
+    "sourceHash": "c50c6b9a3d3c02e2",
+    "text": "निकटतम मॉनिटर: AQI {{aqi}}"
+  },
+  "result.satelliteAod": {
+    "sourceHash": "685798eb802a166b",
+    "text": "उपग्रह धुंध (एओडी): {{aod}}"
+  },
+  "result.yourSensorPm25": {
+    "sourceHash": "106fe469f5497e13",
+    "text": "आपके सेंसर का PM2.5 मान: {{value}} µg/m³"
+  },
+  "result.yourSensorPm10": {
+    "sourceHash": "f9c14716493bb94c",
+    "text": "आपके सेंसर का PM10 मान: {{value}} µg/m³"
+  },
+  "result.agreement": {
+    "sourceHash": "08aabf8812e02122",
+    "text": "फोटो और सेंसर डेटा {{pct}} % तक मेल खाते हैं"
+  },
+  "reports.awaitingAnswer": {
+    "sourceHash": "1a6227e081977c7d",
+    "text": "उत्तर की आवश्यकता है"
+  }
+}
