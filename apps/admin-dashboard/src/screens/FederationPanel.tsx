@@ -22,6 +22,7 @@ import {
   TabsTrigger,
   useToast,
 } from '@vayusetu/ui-components';
+import { useTranslation } from 'react-i18next';
 import type { ResourceType } from '@vayusetu/shared-types';
 import { RESOURCE_TYPE_LABEL } from '@vayusetu/ui-components';
 import { useAuth } from '../hooks/useAuth';
@@ -40,6 +41,7 @@ const RESOURCE_TYPES: ResourceType[] = [
 ];
 
 export function FederationPanel() {
+  const { t } = useTranslation();
   const { getToken, session } = useAuth();
   const { push } = useToast();
   const queryClient = useQueryClient();
@@ -59,12 +61,12 @@ export function FederationPanel() {
     mutationFn: async (modelId: string) => federationApi.importModel(await getToken(), modelId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['federation-models'] });
-      push({ tone: 'success', title: 'Model imported and activated' });
+      push({ tone: 'success', title: t('federation.imported') });
     },
     onError: (error: unknown) =>
       push({
         tone: 'error',
-        title: 'Import blocked',
+        title: t('federation.importBlocked'),
         description: error instanceof Error ? error.message : 'super_admin required — the highest-blast-radius action in the system.',
       }),
   });
@@ -76,24 +78,22 @@ export function FederationPanel() {
     mutationFn: async () => resourcesApi.create(await getToken(), { resourceType, quantityNeeded: Number(quantity) || 1 }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resource-requests'] });
-      push({ tone: 'success', title: 'Resource request posted' });
+      push({ tone: 'success', title: t('federation.posted') });
     },
   });
 
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-xl font-bold text-ink">Federation</h1>
-        <p className="text-sm text-slate-500">
-          Batch export/import of trained model artifacts and k-anonymized aggregates — not gradient-level federated learning.
-        </p>
+        <h1 className="text-xl font-bold text-ink">{t('federation.title')}</h1>
+        <p className="text-sm text-slate-500">{t('federation.subtitle')}</p>
       </div>
 
       <Tabs defaultValue="models">
         <TabsList>
-          <TabsTrigger value="models">Shared Models</TabsTrigger>
-          <TabsTrigger value="exchange">Cross-state View</TabsTrigger>
-          <TabsTrigger value="resources">Resource Coordination</TabsTrigger>
+          <TabsTrigger value="models">{t('federation.tabModels')}</TabsTrigger>
+          <TabsTrigger value="exchange">{t('federation.tabExchange')}</TabsTrigger>
+          <TabsTrigger value="resources">{t('federation.tabResources')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="models">
@@ -101,12 +101,12 @@ export function FederationPanel() {
             <Card className="mb-3 border-emerald-200 bg-emerald-50/50">
               <CardContent className="flex items-center gap-2 py-3 text-sm">
                 <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                Active imported model: <span className="font-semibold">{modelsData.currentlyActive.sourceStateCode} · {modelsData.currentlyActive.modelType} v{modelsData.currentlyActive.version}</span>
+                {t('federation.active')} <span className="font-semibold">{modelsData.currentlyActive.sourceStateCode} · {modelsData.currentlyActive.modelType} v{modelsData.currentlyActive.version}</span>
               </CardContent>
             </Card>
           )}
           {!modelsData?.available.length ? (
-            <EmptyState icon={Network} title="No shared models available yet" description="Other states publish nightly — check back after the next sync." />
+            <EmptyState icon={Network} title={t('federation.noModels')} description={t('federation.noModelsHint')} />
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {modelsData.available.map((model) => (
@@ -119,7 +119,7 @@ export function FederationPanel() {
                       {session?.role !== 'super_admin' && <ShieldAlert className="h-4 w-4 text-slate-300" aria-hidden="true" />}
                     </div>
                     <CardDescription>
-                      {model.trainingDataSummary.recordCount.toLocaleString()} records · shared {new Date(model.sharedAt).toLocaleDateString()}
+                      {t('federation.records', { count: model.trainingDataSummary.recordCount, date: new Date(model.sharedAt).toLocaleDateString() })}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="flex flex-col gap-3">
@@ -134,11 +134,11 @@ export function FederationPanel() {
                       size="sm"
                       variant="outline"
                       disabled={!canImport}
-                      title={canImport ? undefined : 'Importing into production is super_admin only (the highest-blast-radius action).'}
+                      title={canImport ? undefined : t('federation.importSuperOnly')}
                       onClick={() => importModel.mutate(model.id)}
                       loading={importModel.isPending && importModel.variables === model.id}
                     >
-                      <Download className="h-3.5 w-3.5" /> Import
+                      <Download className="h-3.5 w-3.5" /> {t('federation.import')}
                     </Button>
                   </CardContent>
                 </Card>
@@ -154,11 +154,11 @@ export function FederationPanel() {
         <TabsContent value="resources">
           <Card className="mb-4">
             <CardHeader>
-              <CardTitle className="text-sm">Post a resource request</CardTitle>
+              <CardTitle className="text-sm">{t('federation.postRequest')}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-wrap items-end gap-3">
               <div className="flex flex-col gap-1.5">
-                <Label>Resource type</Label>
+                <Label>{t('federation.resourceType')}</Label>
                 <Select value={resourceType} onValueChange={(v) => setResourceType(v as ResourceType)}>
                   <SelectTrigger className="w-56">
                     <SelectValue />
@@ -173,11 +173,11 @@ export function FederationPanel() {
                 </Select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label>Quantity</Label>
+                <Label>{t('federation.quantity')}</Label>
                 <Input type="number" min={1} className="w-24" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
               </div>
               <Button onClick={() => createRequest.mutate()} loading={createRequest.isPending}>
-                <PackagePlus className="h-4 w-4" /> Post Request
+                <PackagePlus className="h-4 w-4" /> {t('federation.post')}
               </Button>
             </CardContent>
           </Card>
@@ -209,6 +209,7 @@ export function FederationPanel() {
  *  RJ) get one aggregated view -- built only from what each state published
  *  to the Exchange (res-6, weekly, k-anonymized), never another state's grid. */
 function CrossStateView() {
+  const { t } = useTranslation();
   const { getToken } = useAuth();
   const [corridorId, setCorridorId] = React.useState('ncr-airshed');
   const view = corridorView(corridorId);
@@ -237,7 +238,7 @@ function CrossStateView() {
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-slate-500">
-          {latestWeek ? `Week of ${latestWeek} · ${latest.length} generalized cells (res 6) across ${byState.length} states` : 'Weekly k-anonymized summaries from every state on the Exchange'}
+          {latestWeek ? t('federation.weekSummary', { week: latestWeek, cells: latest.length, states: byState.length }) : t('federation.exchangeIntro')}
         </p>
         <Select value={corridorId} onValueChange={setCorridorId}>
           <SelectTrigger className="w-56">
@@ -246,14 +247,14 @@ function CrossStateView() {
           <SelectContent>
             {DEFAULT_CORRIDORS.map((c) => (
               <SelectItem key={c.id} value={c.id}>
-                {c.name}
+                {t(`corridor.${c.id}`, { defaultValue: c.name })}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
       {isLoading ? null : latest.length === 0 ? (
-        <EmptyState icon={MapIcon} title="No shared summaries for this area yet" description="States publish last week's aggregates nightly, once enough citizens have reported (k-anonymity floor)." />
+        <EmptyState icon={MapIcon} title={t('federation.noSummaries')} description={t('federation.noSummariesHint')} />
       ) : (
         <div className="grid gap-3 lg:grid-cols-[1fr_16rem]">
           <div className="overflow-hidden rounded-xl2 border border-slate-200 bg-white">
@@ -261,8 +262,8 @@ function CrossStateView() {
           </div>
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">By contributing state</CardTitle>
-              <CardDescription>Mean of cell averages, latest week</CardDescription>
+              <CardTitle className="text-sm">{t('federation.byState')}</CardTitle>
+              <CardDescription>{t('federation.byStateHint')}</CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-1.5 text-sm">
@@ -270,7 +271,7 @@ function CrossStateView() {
                   <li key={state} className="flex justify-between">
                     <span className="font-medium text-ink">{state}</span>
                     <span className="text-slate-500">
-                      {scores.length} cells · {Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 100)}%
+                      {t('federation.stateCells', { count: scores.length, pct: Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 100) })}
                     </span>
                   </li>
                 ))}

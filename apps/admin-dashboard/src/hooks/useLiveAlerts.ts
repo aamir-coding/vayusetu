@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { collection, limit, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import type { Alert } from '@vayusetu/shared-types';
+import { useTranslation } from 'react-i18next';
 import { useToast } from '@vayusetu/ui-components';
 import { firebaseDb } from '../lib/firebase';
 import { alertListenerFilters } from '../lib/alertListenerQuery';
@@ -20,6 +21,7 @@ export function useLiveAlerts(): boolean {
   const { session, isMockMode } = useAuth();
   const queryClient = useQueryClient();
   const { push } = useToast();
+  const { t } = useTranslation();
   const [live, setLive] = React.useState(false);
 
   React.useEffect(() => {
@@ -44,7 +46,7 @@ export function useLiveAlerts(): boolean {
           const a = change.doc.data() as Alert;
           push({
             tone: a.severity === 'critical' || a.severity === 'warning' ? 'error' : 'info',
-            title: `New ${a.severity} alert`,
+            title: t('alerts.newAlert', { severity: a.severity }),
             description: a.title,
           });
         }
@@ -56,7 +58,7 @@ export function useLiveAlerts(): boolean {
       unsubscribe();
       setLive(false);
     };
-  }, [isMockMode, session, queryClient, push]);
+  }, [isMockMode, session, queryClient, push, t]);
 
   return live;
 }

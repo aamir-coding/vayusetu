@@ -13,12 +13,14 @@ import {
   SelectValue,
   Skeleton,
 } from '@vayusetu/ui-components';
+import { useTranslation } from 'react-i18next';
 import type { CorridorId } from '@vayusetu/shared-types';
 import { useAuth } from '../hooks/useAuth';
 import { useLiteMode } from '../hooks/useLiteMode';
 import { corridorsApi, forecastsApi } from '../lib/apiClient';
 
 export function ForecastView() {
+  const { t } = useTranslation();
   const { getToken } = useAuth();
   const { liteMode } = useLiteMode();
   const [corridorId, setCorridorId] = React.useState<CorridorId>('ncr-airshed');
@@ -61,8 +63,8 @@ export function ForecastView() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-ink">72-Hour Forecast</h1>
-          <p className="text-sm text-slate-500">Corridor AQI trajectory, scored every 6 hours</p>
+          <h1 className="text-xl font-bold text-ink">{t('forecast.title')}</h1>
+          <p className="text-sm text-slate-500">{t('forecast.subtitle')}</p>
         </div>
         <Select value={corridorId} onValueChange={(v) => setCorridorId(v)}>
           <SelectTrigger className="w-56">
@@ -72,7 +74,7 @@ export function ForecastView() {
             {(corridorsData?.corridors ?? [{ id: 'ncr-airshed', name: 'Delhi-NCR Airshed' }, { id: 'mumbai-pune-corridor', name: 'Mumbai–Pune Industrial Corridor' }]).map(
               (c) => (
                 <SelectItem key={c.id} value={c.id}>
-                  {c.name}
+                  {t(`corridor.${c.id}`, { defaultValue: c.name })}
                 </SelectItem>
               ),
             )}
@@ -83,7 +85,7 @@ export function ForecastView() {
       {isLoading ? (
         <Skeleton className="h-80 w-full" />
       ) : !run ? (
-        <p className="text-sm text-slate-400">No forecast available for this corridor.</p>
+        <p className="text-sm text-slate-400">{t('forecast.none')}</p>
       ) : (
         <>
           {liteMode ? (
@@ -91,10 +93,10 @@ export function ForecastView() {
               <table className="w-full text-sm">
                 <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   <tr>
-                    <th className="px-4 py-2.5">Horizon</th>
-                    <th className="px-4 py-2.5">Predicted AQI</th>
-                    <th className="px-4 py-2.5">Range</th>
-                    <th className="px-4 py-2.5">GRAP Stage</th>
+                    <th className="px-4 py-2.5">{t('forecast.horizon')}</th>
+                    <th className="px-4 py-2.5">{t('forecast.predictedAqi')}</th>
+                    <th className="px-4 py-2.5">{t('forecast.range')}</th>
+                    <th className="px-4 py-2.5">{t('forecast.grapStage')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -122,7 +124,7 @@ export function ForecastView() {
                     <XAxis dataKey="horizon" tick={{ fontSize: 12, fill: '#64748B' }} />
                     <YAxis tick={{ fontSize: 12, fill: '#64748B' }} />
                     <Tooltip
-                      formatter={(value, name) => (name === 'range' ? undefined : [value, 'Predicted AQI'])}
+                      formatter={(value, name) => (name === 'range' ? undefined : [value, t('forecast.predictedAqi')])}
                       labelFormatter={(label) => `+${label}`}
                     />
                     <Area dataKey="range" stroke="none" fill="#1F948C" fillOpacity={0.15} isAnimationActive={false} />
@@ -144,13 +146,13 @@ export function ForecastView() {
           )}
 
           <p className="text-xs text-slate-400">
-            Run {new Date(run.forecastRunTimestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST · model {run.modelVersion}
+            {t('forecast.runInfo', { time: new Date(run.forecastRunTimestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }), model: run.modelVersion })}
           </p>
 
           {!liteMode && trend.length >= 2 && (
             <Card>
               <CardContent className="pt-5">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">+24h prediction across the last 7 days of runs</p>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{t('forecast.trendTitle')}</p>
                 <ResponsiveContainer width="100%" height={140}>
                   <ComposedChart data={trend} margin={{ top: 4, right: 16, bottom: 0, left: -16 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
@@ -167,7 +169,7 @@ export function ForecastView() {
           <Card>
             <CardContent className="flex flex-col gap-2 pt-5">
               <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                <Compass className="h-3.5 w-3.5" /> Key drivers
+                <Compass className="h-3.5 w-3.5" /> {t('forecast.keyDrivers')}
               </p>
               <ul className="list-inside list-disc space-y-1 text-sm text-slate-700">
                 {run.keyDrivers.map((driver) => (

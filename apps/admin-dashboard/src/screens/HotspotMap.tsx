@@ -10,6 +10,7 @@ import {
   SelectValue,
   Skeleton,
 } from '@vayusetu/ui-components';
+import { useTranslation } from 'react-i18next';
 import type { CorridorId, HotspotCell } from '@vayusetu/shared-types';
 import { useAuth } from '../hooks/useAuth';
 import { useLiteMode } from '../hooks/useLiteMode';
@@ -20,6 +21,7 @@ import { HexMap } from '../components/HexMap';
 import { LiteModeTable } from './LiteModeTable';
 
 function CellDetail({ cell, onClose }: { cell: HotspotCell; onClose: () => void }) {
+  const { t } = useTranslation();
   const { getToken } = useAuth();
   const { data, isLoading } = useQuery({
     queryKey: ['hotspot-history', cell.h3Index],
@@ -34,26 +36,26 @@ function CellDetail({ cell, onClose }: { cell: HotspotCell; onClose: () => void 
   );
   const s = cell.contributingSignals;
   const rows: Array<[string, string | number | undefined]> = [
-    ['Citizen reports', s.citizenReportCount],
-    ['Avg citizen severity', s.avgCitizenSeverity?.toFixed(1)],
-    ['Satellite AOD', s.satelliteAOD?.toFixed(2)],
-    ['Satellite NO₂', s.satelliteNO2?.toFixed(2)],
-    ['Fire detections', s.fireDetectionCount],
-    ['Nearest monitor', s.nearestMonitorId],
-    ['Δ AQI vs monitor', s.nearestMonitorDeltaAQI],
+    [t('hotspots.signals.citizenReports'), s.citizenReportCount],
+    [t('hotspots.signals.avgSeverity'), s.avgCitizenSeverity?.toFixed(1)],
+    [t('hotspots.signals.aod'), s.satelliteAOD?.toFixed(2)],
+    [t('hotspots.signals.no2'), s.satelliteNO2?.toFixed(2)],
+    [t('hotspots.signals.fires'), s.fireDetectionCount],
+    [t('hotspots.signals.nearestMonitor'), s.nearestMonitorId],
+    [t('hotspots.signals.deltaAqi'), s.nearestMonitorDeltaAQI],
   ];
   return (
-    <aside className="flex flex-col gap-3 rounded-xl2 border border-slate-200 bg-white p-4" aria-label="Selected cell">
+    <aside className="flex flex-col gap-3 rounded-xl2 border border-slate-200 bg-white p-4">
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="font-mono text-xs text-slate-500">{cell.h3Index}</p>
-          <p className="text-lg font-bold capitalize text-ink">{cell.classification.replace(/_/g, ' ')}</p>
+          <p className="text-lg font-bold text-ink">{t(`source.${cell.classification}`)}</p>
           <p className="text-sm text-slate-600">
-            {Math.round(cell.hotspotConfidenceScore * 100)}% confidence
-            {cell.isHidden && <span className="ml-2 font-semibold text-accent-600">· hidden hotspot</span>}
+            {t('hotspots.confidence', { pct: Math.round(cell.hotspotConfidenceScore * 100) })}
+            {cell.isHidden && <span className="ml-2 font-semibold text-accent-600">· {t('hotspots.hiddenHotspot')}</span>}
           </p>
         </div>
-        <button type="button" onClick={onClose} aria-label="Close" className="rounded p-1 text-slate-400 hover:bg-slate-100">
+        <button type="button" onClick={onClose} aria-label={t('common.close')} className="rounded p-1 text-slate-400 hover:bg-slate-100">
           <X className="h-4 w-4" />
         </button>
       </div>
@@ -68,11 +70,11 @@ function CellDetail({ cell, onClose }: { cell: HotspotCell; onClose: () => void 
           ))}
       </dl>
       <div>
-        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Last 7 days</p>
+        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">{t('hotspots.last7Days')}</p>
         {isLoading ? (
           <Skeleton className="h-28 w-full" />
         ) : series.length < 2 ? (
-          <p className="text-sm text-slate-500">Not enough scored hours yet.</p>
+          <p className="text-sm text-slate-500">{t('hotspots.notEnoughHistory')}</p>
         ) : (
           <ResponsiveContainer width="100%" height={112}>
             <LineChart data={series}>
@@ -84,12 +86,13 @@ function CellDetail({ cell, onClose }: { cell: HotspotCell; onClose: () => void 
           </ResponsiveContainer>
         )}
       </div>
-      <p className="text-xs text-slate-400">Model {cell.modelVersion} · hour {cell.timestampHour.slice(0, 13).replace('T', ' ')} UTC</p>
+      <p className="text-xs text-slate-400">{t('hotspots.modelHour', { model: cell.modelVersion, hour: cell.timestampHour.slice(0, 13).replace('T', ' ') })}</p>
     </aside>
   );
 }
 
 export function HotspotMap() {
+  const { t } = useTranslation();
   const { getToken } = useAuth();
   const { liteMode } = useLiteMode();
   const [corridorId, setCorridorId] = React.useState<CorridorId>('ncr-airshed');
@@ -116,18 +119,18 @@ export function HotspotMap() {
         h3Index: c.h3Index,
         score: c.hotspotConfidenceScore,
         highlight: c.isHidden,
-        label: `${c.classification.replace(/_/g, ' ')} · ${Math.round(c.hotspotConfidenceScore * 100)}% confidence${c.isHidden ? ' · HIDDEN HOTSPOT' : ''}`,
+        label: `${t(`source.${c.classification}`)} · ${t('hotspots.confidence', { pct: Math.round(c.hotspotConfidenceScore * 100) })}${c.isHidden ? ` · ${t('hotspots.hiddenHotspot')}` : ''}`,
       })),
-    [cells],
+    [cells, t],
   );
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-ink">Hotspot Map</h1>
+          <h1 className="text-xl font-bold text-ink">{t('hotspots.title')}</h1>
           <p className="text-sm text-slate-500">
-            Fused hourly confidence grid · {cells.length} cells · {hiddenCount} hidden (no monitor within 3&nbsp;km)
+            {t('hotspots.subtitle', { cells: cells.length, hidden: hiddenCount })}
           </p>
         </div>
         <Select
@@ -144,7 +147,7 @@ export function HotspotMap() {
             {(corridorsData?.corridors ?? DEFAULT_CORRIDORS).map(
               (c) => (
                 <SelectItem key={c.id} value={c.id}>
-                  {c.name}
+                  {t(`corridor.${c.id}`, { defaultValue: c.name })}
                 </SelectItem>
               ),
             )}
@@ -162,7 +165,7 @@ export function HotspotMap() {
             <HexMap cells={hexes} onSelect={setSelected} center={view.center} zoom={view.zoom} mapKey={corridorId} />
             <div className="flex flex-wrap items-center gap-4 border-t border-slate-100 px-4 py-3 text-xs text-slate-500">
               <span className="flex items-center gap-1.5">
-                <EyeOff className="h-3.5 w-3.5 text-accent-600" /> Amber outline = hidden hotspot
+                <EyeOff className="h-3.5 w-3.5 text-accent-600" /> {t('hotspots.hiddenLegend')}
               </span>
               {[0.9, 0.6, 0.3, 0.1].map((v) => (
                 <span key={v} className="flex items-center gap-1.5">
@@ -175,7 +178,7 @@ export function HotspotMap() {
             <CellDetail cell={selectedCell} onClose={() => setSelected(null)} />
           ) : (
             <aside className="rounded-xl2 border border-dashed border-slate-200 p-4 text-sm text-slate-500">
-              Select a cell to see its signals and the last 7 days of scores.
+              {t('hotspots.selectCell')}
             </aside>
           )}
         </div>
