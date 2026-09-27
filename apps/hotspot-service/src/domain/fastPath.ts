@@ -1,6 +1,6 @@
 import { getDb, NonRetryableEventError } from '@vayusetu/gcp-clients';
 import type { AnalysisResult, HotspotCell, PollutionSourceType, Submission } from '@vayusetu/shared-types';
-import { citizenProbability, fuse, hourIso, hourKey } from './fusion.js';
+import { hiddenThreshold, citizenProbability, fuse, hourIso, hourKey } from './fusion.js';
 
 /**
  * analysis.completed fast path: a verified citizen report re-scores its cell
@@ -16,7 +16,7 @@ export interface FastPathDeps {
   publishHotspotUpdated(p: { hotspotCellId: string; corridorId: string; hotspotConfidenceScore: number }): Promise<void>;
   now(): Date;
   logger: { info(obj: object, msg: string): void };
-  config: { hiddenMinConfidence: number; alertMinScore: number; minConfidence: number; minAgreement: number };
+  config: { hiddenMinConfidence: number; modelHiddenMinConfidence?: number; alertMinScore: number; minConfidence: number; minAgreement: number };
 }
 
 export function qualifies(r: AnalysisResult, minConfidence: number, minAgreement: number): boolean {
@@ -78,7 +78,7 @@ export async function handleAnalysisCompleted(
     corridorId: cell.corridorId,
     timestampHour,
     hotspotConfidenceScore: score,
-    isHidden: score >= deps.config.hiddenMinConfidence && !cell.hasMonitorWithinRadius,
+    isHidden: score >= hiddenThreshold(fresh ? latest.modelVersion : undefined, deps.config) && !cell.hasMonitorWithinRadius,
     classification: mode,
     contributingSignals: signals,
     modelVersion: fresh ? `${latest.modelVersion}+citizen` : 'citizen-evidence',

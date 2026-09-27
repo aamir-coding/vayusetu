@@ -129,8 +129,24 @@ export function createBatchScorer(cfg: {
       const table = `${outDataset}.${out}`;
       const results = await cfg.readRows(`SELECT h3_index, predicted_is_hotspot FROM \`${table}\``);
       const byCell = new Map(results.map((r) => [String(r.h3_index), positiveProbability(r.predicted_is_hotspot)]));
+      // Guard like forecast-service's: output that maps to no cell must fall
+      // back to the heuristic, not silently score every cell 0.
+      if (!rows.some((r) => byCell.has(r.h3_index))) {
+        throw new Error(`batch prediction ${table}: ${results.length} rows, none matched a cell; sample=${JSON.stringify(results.slice(0, 2))}`);
+      }
       await cfg.readRows(`DROP TABLE IF EXISTS \`${table}\``);
       return { probabilities: rows.map((r) => byCell.get(r.h3_index) ?? 0), modelVersion: versioned };
+    },
+  };
+}
+
+/** Model on hours divisible by `everyHours` (UTC), heuristic otherwise -- caps Vertex batch jobs. */
+export function everyNHours(model: ModelScorer, everyHours: number): ModelScorer {
+  if (everyHours <= 1) return model;
+  return {
+    name: `${model.name}/every-${everyHours}h`,
+    score(rows, ctx) {
+      return new Date(ctx.hourIso).getUTCHours() % everyHours === 0 ? model.score(rows, ctx) : heuristicScorer.score(rows, ctx);
     },
   };
 }
