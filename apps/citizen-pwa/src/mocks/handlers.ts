@@ -97,9 +97,12 @@ export const handlers = [
       if (!current) return;
       const result = fabricateAnalysis(current);
       db.analysisResults.set(submission.id, result);
+      const q = result.pendingClarification;
       db.submissions.set(submission.id, {
         ...current,
         status: result.needsHumanReview ? 'flagged_for_review' : 'analyzed',
+        // Like analysis-service: Pipeline D's question is recorded on the submission too.
+        ...(q ? { clarifications: [{ turn: q.turn, question: q.question, language: q.language, askedAt: new Date().toISOString() }] } : {}),
       });
     }, 3200);
 

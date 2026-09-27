@@ -22,6 +22,15 @@ export interface FeatureRow {
   has_monitor_within_radius: boolean;
   nearest_station_id: string | null;
   nearest_station_distance_km: number | null;
+  h3_res6?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  built_frac?: number | null;
+  crops_frac?: number | null;
+  trees_frac?: number | null;
+  bare_frac?: number | null;
+  night_lights?: number | null;
+  population_density?: number | null;
   sat_no2: number | null;
   sat_aerosol_index: number | null;
   sat_aod: number | null;
@@ -89,6 +98,16 @@ export function classify(
   if (citizenMode && citizenMode !== 'indeterminate' && citizenMode !== 'no_visible_pollution') return citizenMode;
   if ((r.sat_fire_count ?? 0) > 0) return r.is_harvest_season ? 'crop_residue_burning' : 'mixed';
   return 'unknown';
+}
+
+/**
+ * The "hidden hotspot" threshold for a score, by what produced it: the
+ * heuristic (and pure citizen evidence) use HIDDEN_MIN_CONFIDENCE; model
+ * scores use the model's tuned threshold (different scale).
+ */
+export function hiddenThreshold(modelVersion: string | undefined, cfg: { hiddenMinConfidence: number; modelHiddenMinConfidence?: number }): number {
+  const heuristic = !modelVersion || modelVersion.startsWith('heuristic') || modelVersion === 'citizen-evidence';
+  return heuristic ? cfg.hiddenMinConfidence : (cfg.modelHiddenMinConfidence ?? cfg.hiddenMinConfidence);
 }
 
 /** `${h3Index}_${YYYY-MM-DDTHH}` -- the id alert-service and the dashboard expect. */
