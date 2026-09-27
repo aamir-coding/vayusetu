@@ -1,8 +1,11 @@
 -- AQI Forecast Model training set (AutoML Forecasting, one series per
--- official monitor, hourly; forecast-service averages station forecasts into
--- the corridor's 24/48/72 h horizons).
+-- official monitor, DAILY steps = IST calendar days). AutoML caps a series at
+-- 3000 steps and supports only 1-hour/1-day granularity; NAQI is a 24 h
+-- average and the product outputs +24/+48/+72 h = D+1..D+3. core.forecast_input
+-- uses the same IST-day bucket.
 --
--- Target: station NAQI (hourly, from CPCB via OpenAQ / data.gov.in).
+-- Target: daily mean station NAQI, only for days with >= 16 hourly readings
+-- (CPCB's completeness rule for a 24 h average).
 -- Covariates:
 --   AVAILABLE at forecast time -- calendar (hour, weekday, harvest window,
 --     Diwali window) + weather (wind, temperature, humidity, rain). History
@@ -31,17 +34,36 @@ WITH station_hourly AS (
     AND g.observation_date BETWEEN DATE(@start_ts) AND DATE(@end_ts)
   GROUP BY 1, 2, 3, 4
 ),
-met AS (
+station_daily AS (
+  SELECT station_id, corridor_id, h3_index, TIMESTAMP(DATE(ts, 'Asia/Kolkata'), 'Asia/Kolkata') AS ts, AVG(aqi) AS aqi
+  FROM station_hourly
+  GROUP BY 1, 2, 3, 4
+  HAVING COUNT(*) >= 16
+),
+met_hourly AS (
   SELECT h3_index AS h3_res4,
          TIMESTAMP_ADD(TIMESTAMP(observation_date), INTERVAL observation_hour HOUR) AS ts,
          wind_speed_ms, wind_direction_deg, temperature_c, relative_humidity_pct, precipitation_mm,
          boundary_layer_height_m
   FROM `{dataset}.meteorology_features`
-  WHERE observation_date BETWEEN DATE(@start_ts) AND DATE(@end_ts)
+  WHERE observation_date BETWEEN DATE_SUB(DATE(@start_ts), INTERVAL 1 DAY) AND DATE_ADD(DATE(@end_ts), INTERVAL 1 DAY)
   QUALIFY ROW_NUMBER() OVER (
     PARTITION BY h3_index, observation_date, observation_hour
     ORDER BY IF(source = 'ERA5', 0, 1)   -- ERA5 carries boundary-layer height
   ) = 1
+),
+-- Direction is averaged as a unit vector (sin/cos), never as degrees (359 and 1 average to 0, not 180).
+met AS (
+  SELECT h3_res4, TIMESTAMP(DATE(ts, 'Asia/Kolkata'), 'Asia/Kolkata') AS ts,
+         AVG(wind_speed_ms) AS wind_speed_ms,
+         AVG(SIN(wind_direction_deg * ACOS(-1) / 180)) AS wind_dir_sin,
+         AVG(COS(wind_direction_deg * ACOS(-1) / 180)) AS wind_dir_cos,
+         AVG(temperature_c) AS temperature_c,
+         AVG(relative_humidity_pct) AS relative_humidity_pct,
+         SUM(precipitation_mm) AS precipitation_mm,
+         AVG(boundary_layer_height_m) AS boundary_layer_height_m
+  FROM met_hourly
+  GROUP BY 1, 2
 ),
 -- Satellite rows are res-7 values fanned out to res-8 children: aggregate over
 -- DISTINCT res-7 cells or every fire is counted ~7 times.
@@ -63,12 +85,11 @@ SELECT
   sh.aqi,
   -- available at forecast
   m.wind_speed_ms,
-  SIN(m.wind_direction_deg * ACOS(-1) / 180) AS wind_dir_sin,
-  COS(m.wind_direction_deg * ACOS(-1) / 180) AS wind_dir_cos,
+  m.wind_dir_sin,
+  m.wind_dir_cos,
   m.temperature_c,
   m.relative_humidity_pct,
   m.precipitation_mm,
-  EXTRACT(HOUR FROM DATETIME(sh.ts, 'Asia/Kolkata')) AS hour_ist,
   EXTRACT(DAYOFWEEK FROM DATETIME(sh.ts, 'Asia/Kolkata')) AS day_of_week,
   `{dataset}.is_harvest_season`(DATE(sh.ts, 'Asia/Kolkata')) AS is_harvest_season,
   `{dataset}.is_diwali_window`(DATE(sh.ts, 'Asia/Kolkata')) AS is_diwali_window,
@@ -81,7 +102,7 @@ SELECT
     WHEN sh.ts >= @validate_from THEN 'VALIDATE'
     ELSE 'TRAIN'
   END AS split
-FROM station_hourly sh
+FROM station_daily sh
 JOIN `{dataset}.h3_cells` c ON c.h3_index = sh.h3_index
 LEFT JOIN met m ON m.h3_res4 = c.h3_res4 AND m.ts = sh.ts
-LEFT JOIN sat_daily sd ON sd.corridor_id = sh.corridor_id AND sd.d = DATE_SUB(DATE(sh.ts), INTERVAL 1 DAY)
+LEFT JOIN sat_daily sd ON sd.corridor_id = sh.corridor_id AND sd.d = DATE_SUB(DATE(sh.ts, 'Asia/Kolkata'), INTERVAL 1 DAY)

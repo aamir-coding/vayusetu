@@ -312,6 +312,13 @@ export interface VertexModelClientLike {
  * Vertex AI service agent must hold model-export permission on the SOURCE
  * project -- Terraform (Week 3 part 2) grants this in both directions.
  */
+/** `vayusetu-gate-metric=auprc`, `vayusetu-gate-value=0_2923` -> { gate_auprc: 0.2923 }. */
+export function gateMetric(labels: Record<string, string>): Record<string, number> {
+  const name = labels['vayusetu-gate-metric'];
+  const value = Number((labels['vayusetu-gate-value'] ?? '').replace('_', '.'));
+  return name && Number.isFinite(value) && labels['vayusetu-gate-value'] !== 'na' ? { [`gate_${name}`]: value } : {};
+}
+
 export function createVertexRegistry(
   client: VertexModelClientLike,
   cfg: { localProject: string; exchangeProject: string; location: string },
@@ -328,6 +335,10 @@ export function createVertexRegistry(
       if (!name) return null;
       const [model] = await client.getModel({ name }); // resolves the 'default' alias version
       const labels = model.labels ?? {};
+      // Only share what passed its quality gate (ml evaluate_and_promote). A
+      // model's first version holds `default` even when it FAILED, so the
+      // alias alone is not a promotion signal.
+      if (labels['vayusetu-gate'] !== 'passed') return null;
       const [evals] = await client.listModelEvaluations({ parent: `${name}@${model.versionId}` });
       return {
         modelType: type,
@@ -339,7 +350,12 @@ export function createVertexRegistry(
           dateRangeStart: labels['vayusetu-train-start'] ? `${labels['vayusetu-train-start']}T00:00:00Z` : '1970-01-01T00:00:00Z',
           dateRangeEnd: labels['vayusetu-train-end'] ? `${labels['vayusetu-train-end']}T00:00:00Z` : '1970-01-01T00:00:00Z',
         },
-        performanceMetrics: evals[0] ? flattenMetrics(evals[0].metrics) : {},
+        performanceMetrics: {
+          ...(evals[0] ? flattenMetrics(evals[0].metrics) : {}),
+          // The metric the gate actually used (positive class for classifiers),
+          // so importers never judge a model by the micro-averaged headline.
+          ...gateMetric(labels),
+        },
       } satisfies LocalModelInfo;
     },
 

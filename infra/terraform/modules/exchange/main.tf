@@ -113,16 +113,18 @@ resource "google_bigquery_dataset_iam_member" "state_writes" {
 
 # copyModel INTO this registry (publish) and read from it (import).
 resource "google_project_iam_member" "state_registry_user" {
-  for_each = var.member_states
-  project  = var.project_id
-  role     = "roles/aiplatform.user"
-  member   = "serviceAccount:${each.value.service_account}"
+  for_each   = var.member_states
+  project    = var.project_id
+  role       = "roles/aiplatform.user"
+  member     = "serviceAccount:${each.value.service_account}"
+  depends_on = [google_project_service.required] # cloudresourcemanager on a fresh project
 }
 
 # Import direction: the importing state's Vertex agent reads models here.
 resource "google_project_iam_member" "state_vertex_agent_reads_models" {
-  for_each = var.member_states
-  project  = var.project_id
-  role     = "roles/aiplatform.viewer"
-  member   = "serviceAccount:service-${each.value.project_number}@gcp-sa-aiplatform.iam.gserviceaccount.com"
+  for_each   = var.member_states
+  project    = var.project_id
+  role       = "roles/aiplatform.viewer"
+  member     = "serviceAccount:service-${each.value.project_number}@gcp-sa-aiplatform.iam.gserviceaccount.com"
+  depends_on = [google_project_service.required] # cloudresourcemanager on a fresh project
 }

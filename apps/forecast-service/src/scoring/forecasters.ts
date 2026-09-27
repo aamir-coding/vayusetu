@@ -15,7 +15,6 @@ export interface InputRow {
   temperature_c: number | null;
   relative_humidity_pct: number | null;
   precipitation_mm: number | null;
-  hour_ist: number;
   day_of_week: number;
   is_harvest_season: boolean;
   is_diwali_window: boolean;
