@@ -17,8 +17,16 @@ SATELLITE_SAMPLE_RES = 7  # Earth Engine samples at res-7 centroids (~5 km2, fin
 MET_H3_RES = 4  # one weather point per ~1,770 km2 cell (ERA5 is ~9-31 km)
 HIDDEN_HOTSPOT_MONITOR_RADIUS_KM = 3.0  # PRODUCT_SPEC Feature 2 default
 
-# Repo-relative in dev; copied to /app/data in the image (see Dockerfile).
-DATA_DIR = Path(os.getenv("VAYUSETU_DATA_DIR", Path(__file__).resolve().parents[3] / "data"))
+def _data_dir() -> Path:
+    """Repo-relative in dev; /app/data in the image (VAYUSETU_DATA_DIR, see
+    Dockerfile). The env var must win WITHOUT computing the repo path first:
+    in the image this file sits at /app/vayusetu_ingest/, which has no
+    third parent -- an eager default crashed every job at import."""
+    env = os.getenv("VAYUSETU_DATA_DIR")
+    return Path(env) if env else Path(__file__).resolve().parents[3] / "data"
+
+
+DATA_DIR = _data_dir()
 
 
 @dataclass(frozen=True)

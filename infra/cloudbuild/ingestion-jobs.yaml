@@ -36,6 +36,10 @@ steps:
         set -euo pipefail
         if [ "${_DEPLOY}" != "true" ]; then echo "validation-only build"; exit 0; fi
         docker build -f apps/ingestion-jobs/Dockerfile -t "${_IMAGE}:${BUILD_ID}" -t "${_IMAGE}:latest" .
+        # Smoke-test the IMAGE (not the source tree): imports and data paths
+        # differ inside /app -- a config.py path bug once passed every unit
+        # test and crashed every deployed job at import.
+        docker run --rm -e GOOGLE_CLOUD_PROJECT=smoke "${_IMAGE}:${BUILD_ID}" --help > /dev/null
         docker push --all-tags "${_IMAGE}"
 
   - id: deploy
