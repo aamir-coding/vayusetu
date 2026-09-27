@@ -79,3 +79,13 @@ class TestMerge:
     def test_dedupe_last_wins(self):
         rows = [{"k": 1, "v": "a"}, {"k": 1, "v": "b"}, {"k": 2, "v": "c"}]
         assert sorted(r["v"] for r in dedupe(rows, ["k"])) == ["b", "c"]
+
+
+def test_data_dir_env_wins_without_touching_the_repo_path(monkeypatch, tmp_path):
+    # Regression: in the container config.py lives at /app/vayusetu_ingest/,
+    # which has no parents[3]; the default must not be computed when the env is set.
+    import vayusetu_ingest.config as config
+
+    monkeypatch.setenv("VAYUSETU_DATA_DIR", str(tmp_path))
+    monkeypatch.setattr(config, "__file__", "/app/vayusetu_ingest/config.py")
+    assert config._data_dir() == tmp_path
