@@ -124,6 +124,31 @@ export function createBigQueryLocalData(bq: BigQueryLike, cfg: { project: string
   };
 }
 
+// ============================================================ Exchange not provisioned yet
+
+/** The sentinel Terraform sets while exchange_project_id is empty. */
+export const EXCHANGE_UNSET = 'unset';
+
+/**
+ * A state deployment can run before the National Exchange project exists:
+ * the dashboard's Federation screens then show "nothing shared yet" instead
+ * of 500s from a BigQuery query against a project that isn't there, and the
+ * sync job fails loudly on its first write.
+ */
+export function createDisconnectedExchange(): ExchangeStore {
+  const notConnected = async (): Promise<never> => {
+    throw new Error('National Exchange not configured (EXCHANGE_PROJECT_ID is unset)');
+  };
+  return {
+    publishHotspotSummary: notConnected,
+    insertSharedModel: notConnected,
+    recordImport: notConnected,
+    hotspotSummarySince: async () => [],
+    getSharedModel: async () => null,
+    listSharedModels: async () => [],
+  };
+}
+
 // ============================================================ BigQuery (exchange project)
 
 /** Typed with the SDK's own `Query` options (tsc caught a hand-written
