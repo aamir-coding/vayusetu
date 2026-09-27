@@ -100,6 +100,16 @@ export function classify(
   return 'unknown';
 }
 
+/**
+ * The "hidden hotspot" threshold for a score, by what produced it: the
+ * heuristic (and pure citizen evidence) use HIDDEN_MIN_CONFIDENCE; model
+ * scores use the model's tuned threshold (different scale).
+ */
+export function hiddenThreshold(modelVersion: string | undefined, cfg: { hiddenMinConfidence: number; modelHiddenMinConfidence?: number }): number {
+  const heuristic = !modelVersion || modelVersion.startsWith('heuristic') || modelVersion === 'citizen-evidence';
+  return heuristic ? cfg.hiddenMinConfidence : (cfg.modelHiddenMinConfidence ?? cfg.hiddenMinConfidence);
+}
+
 /** `${h3Index}_${YYYY-MM-DDTHH}` -- the id alert-service and the dashboard expect. */
 export function hourKey(ts: string | Date): string {
   return new Date(ts).toISOString().slice(0, 13);

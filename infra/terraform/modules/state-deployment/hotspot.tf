@@ -8,18 +8,20 @@ locals {
   hotspot_push_audience = "vayusetu-hotspot-service-${var.environment_name}"
 
   hotspot_env = {
-    NODE_ENV              = "production"
-    AUTH_MODE             = "firebase"
-    PUBSUB_PUSH_AUTH      = "oidc"
-    PUBSUB_PUSH_AUDIENCE  = local.hotspot_push_audience
-    PUBSUB_PUSH_SA_EMAIL  = google_service_account.pubsub_push.email
-    BQ_DATASET            = google_bigquery_dataset.core.dataset_id
-    BQ_LOCATION           = var.bigquery_location
-    VERTEX_LOCATION       = var.vertex_location
-    HOTSPOT_SCORER        = var.hotspot_scorer
-    HOTSPOT_ENDPOINT_ID   = var.hotspot_endpoint_id
-    HOTSPOT_MODEL         = var.hotspot_model
-    HIDDEN_MIN_CONFIDENCE = "0.6"
+    NODE_ENV                    = "production"
+    AUTH_MODE                   = "firebase"
+    PUBSUB_PUSH_AUTH            = "oidc"
+    PUBSUB_PUSH_AUDIENCE        = local.hotspot_push_audience
+    PUBSUB_PUSH_SA_EMAIL        = google_service_account.pubsub_push.email
+    BQ_DATASET                  = google_bigquery_dataset.core.dataset_id
+    BQ_LOCATION                 = var.bigquery_location
+    VERTEX_LOCATION             = var.vertex_location
+    HOTSPOT_SCORER              = var.hotspot_scorer
+    HOTSPOT_ENDPOINT_ID         = var.hotspot_endpoint_id
+    HOTSPOT_MODEL               = var.hotspot_model
+    HIDDEN_MIN_CONFIDENCE       = "0.6"
+    MODEL_HIDDEN_MIN_CONFIDENCE = var.hotspot_model_hidden_min_confidence
+    HOTSPOT_MODEL_EVERY_HOURS   = tostring(var.hotspot_model_every_hours)
   }
 }
 
