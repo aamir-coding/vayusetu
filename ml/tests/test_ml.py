@@ -16,8 +16,18 @@ def test_training_sql_renders_fully():
         sql = training_sql.render(kind, "proj")
         assert "{dataset}" not in sql
         assert f"`proj.core.{kind}_training_dataset`" in sql
-        for param in ("@start_ts", "@end_ts", "@validate_from", "@test_from"):
+        for param in ("@start_ts", "@end_ts"):
             assert param in sql
+    # Forecasting is evaluated on the most recent period (chronological tail).
+    assert "@test_from" in training_sql.render("forecast", "proj")
+
+
+def test_hotspot_split_is_week_blocked_across_seasons():
+    # A chronological tail put the whole TEST set in the monsoon (3.8% vs 19%
+    # positives). Whole weeks, spread over the year, instead.
+    sql = training_sql.render("hotspot", "p")
+    assert "MOD(DIV(UNIX_DATE(DATE(f.ts)), 7), 7)" in sql
+    assert ">= @test_from" not in sql
 
 
 def test_hotspot_features_exist_in_the_shared_tvf():
