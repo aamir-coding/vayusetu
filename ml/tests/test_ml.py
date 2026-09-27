@@ -125,3 +125,15 @@ def test_forecast_scoring_input_matches_training_columns():
     f = specs.FORECAST
     for col in (*f.available_at_forecast, *f.unavailable_at_forecast, *f.attribute_columns, f.series_column, f.time_column):
         assert re.search(rf"\b{col}\b", scoring), col
+
+
+def test_gate_labels_the_evaluated_version_not_the_default():
+    # Model.update() writes the unversioned name (= the version holding
+    # `default`); live, v2's gate labels landed on v1. Must use the versioned name.
+    import inspect
+
+    from vayusetu_ml import pipelines
+
+    src = inspect.getsource(pipelines.evaluate_and_promote.python_func)
+    assert "candidate.update(" not in src
+    assert "versioned_resource_name" in src and 'paths=["labels"]' in src
