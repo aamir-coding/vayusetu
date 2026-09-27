@@ -746,6 +746,8 @@ importers:
         specifier: ^1.0.0
         version: 1.6.1(@types/node@22.20.1)(terser@5.51.2)
 
+  packages/loadtest: {}
+
   packages/shared-types:
     devDependencies:
       '@apidevtools/swagger-parser':
