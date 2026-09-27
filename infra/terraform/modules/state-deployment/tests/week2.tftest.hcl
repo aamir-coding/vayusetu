@@ -34,9 +34,11 @@ mock_provider "google-beta" {
 }
 
 variables {
-  project_id       = "vayusetu-test"
-  region           = "asia-south1"
-  environment_name = "ncr-test"
+  project_id              = "vayusetu-test"
+  region                  = "asia-south1"
+  environment_name        = "ncr-test"
+  federation_state_code   = "DL"
+  federation_owned_states = ["DL", "HR", "UP", "RJ"]
 }
 
 run "defaults_are_safe" {
@@ -96,10 +98,12 @@ run "alert_service_env_matches_push_config" {
     condition     = google_pubsub_subscription.alert_service_push["forecast.updated"].dead_letter_policy[0].max_delivery_attempts == 10
     error_message = "Push subscriptions must dead-letter after bounded retries."
   }
-  # Other engineers' services get no Engineer-2 env injected.
+  # Env is per-service: federation-service gets its own block, never alert-service's push config.
   assert {
-    condition     = length(google_cloud_run_v2_service.service["federation-service"].template[0].containers[0].env) == 1
-    error_message = "Only GOOGLE_CLOUD_PROJECT should be set on services Engineer 2 doesn't own."
+    condition = !contains(
+      [for e in google_cloud_run_v2_service.service["federation-service"].template[0].containers[0].env : e.name], "PUBSUB_PUSH_AUDIENCE",
+    )
+    error_message = "alert-service's push config must not leak into other services."
   }
 }
 
@@ -140,8 +144,8 @@ run "ci_triggers_path_filtered_and_deploy_gated" {
   }
 
   assert {
-    condition     = length(google_cloudbuild_trigger.pr) == 7 && length(google_cloudbuild_trigger.main) == 7
-    error_message = "Expected a PR and a main trigger for each of the 7 apps."
+    condition     = length(google_cloudbuild_trigger.pr) == 8 && length(google_cloudbuild_trigger.main) == 8
+    error_message = "Expected a PR and a main trigger for each of the 8 apps."
   }
   assert {
     condition     = alltrue([for t in google_cloudbuild_trigger.pr : t.substitutions["_DEPLOY"] == "false"])
@@ -164,8 +168,8 @@ run "ci_triggers_path_filtered_and_deploy_gated" {
   }
   # actAs only on the runtime SAs CI deploys -- never project-wide.
   assert {
-    condition     = length(google_service_account_iam_member.cloudbuild_act_as_runtime) == 5
-    error_message = "Deployer should act as exactly the 5 deployable services' runtime SAs."
+    condition     = length(google_service_account_iam_member.cloudbuild_act_as_runtime) == 6
+    error_message = "Deployer should act as exactly the 6 deployable services' runtime SAs."
   }
 }
 

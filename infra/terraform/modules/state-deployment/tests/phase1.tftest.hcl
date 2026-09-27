@@ -23,9 +23,11 @@ mock_provider "google-beta" {
 }
 
 variables {
-  project_id       = "vayusetu-test"
-  region           = "asia-south1"
-  environment_name = "ncr-test"
+  project_id              = "vayusetu-test"
+  region                  = "asia-south1"
+  environment_name        = "ncr-test"
+  federation_state_code   = "DL"
+  federation_owned_states = ["DL", "HR", "UP", "RJ"]
 }
 
 
@@ -173,5 +175,72 @@ run "firestore_rules_release_the_tested_file" {
   assert {
     condition     = google_firebaserules_release.firestore[0].name == "cloud.firestore"
     error_message = "Firestore rules are released under the cloud.firestore release name."
+  }
+}
+
+run "firebase_frontends_are_managed" {
+  command = plan
+
+  assert {
+    condition     = length(google_firebase_web_app.frontend) == 2 && contains(keys(google_firebase_web_app.frontend), "admin")
+    error_message = "Citizen and admin web apps are Terraform-managed so Mumbai-Pune gets them for free."
+  }
+  assert {
+    condition     = google_firebase_hosting_site.admin.site_id == "${var.project_id}-admin"
+    error_message = "The admin dashboard deploys to its own Hosting site."
+  }
+}
+
+run "maps_key_is_locked_to_maps_and_our_origins" {
+  command = plan
+
+  assert {
+    condition     = one(google_apikeys_key.maps_browser.restrictions[0].api_targets).service == "maps-backend.googleapis.com"
+    error_message = "The browser key may call the Maps JavaScript API only."
+  }
+  assert {
+    condition = alltrue([for r in google_apikeys_key.maps_browser.restrictions[0].browser_key_restrictions[0].allowed_referrers :
+    startswith(r, "https://${var.project_id}") || startswith(r, "http://localhost:")])
+    error_message = "Referrers must be this project's Hosting sites or local dev only."
+  }
+}
+
+run "federation_sync_needs_an_exchange" {
+  command = plan
+
+  variables {
+    enable_federation_sync = true
+  }
+
+  assert {
+    condition     = length(google_cloud_scheduler_job.federation_sync) == 0
+    error_message = "No exchange_project_id -> nothing to sync to; the schedule must stay off."
+  }
+  assert {
+    condition     = contains([for e in google_cloud_run_v2_job.federation_sync.template[0].template[0].containers[0].env : e.name], "FEDERATION_OWNED_STATES")
+    error_message = "The sync job carries the federation env."
+  }
+  assert {
+    condition     = contains(local.service_accounts["federation-service"].roles, "roles/datastore.user")
+    error_message = "federation-service reads submissions and writes the federationExchange mirror in Firestore."
+  }
+}
+
+run "federation_sync_scheduled_with_exchange" {
+  command = plan
+
+  variables {
+    enable_federation_sync  = true
+    exchange_project_id     = "vayusetu-exchange-test"
+    exchange_project_number = "123456789"
+  }
+
+  assert {
+    condition     = google_cloud_scheduler_job.federation_sync[0].time_zone == "Asia/Kolkata"
+    error_message = "Sync runs nightly in IST (weeks are IST weeks)."
+  }
+  assert {
+    condition     = google_project_iam_member.exchange_vertex_agent_reads_models[0].member == "serviceAccount:service-123456789@gcp-sa-aiplatform.iam.gserviceaccount.com"
+    error_message = "The Exchange's Vertex agent must be able to read our models to copy them."
   }
 }

@@ -23,9 +23,11 @@ mock_provider "google-beta" {
 }
 
 variables {
-  project_id       = "vayusetu-test"
-  region           = "asia-south1"
-  environment_name = "ncr-test"
+  project_id              = "vayusetu-test"
+  region                  = "asia-south1"
+  environment_name        = "ncr-test"
+  federation_state_code   = "DL"
+  federation_owned_states = ["DL", "HR", "UP", "RJ"]
 }
 
 

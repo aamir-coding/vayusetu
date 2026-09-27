@@ -5,6 +5,7 @@ import {
   type BigQueryLike,
   type VertexModelClientLike,
   createBigQueryExchange,
+  createBigQueryLocalData,
   createFirestoreAdapters,
   createVertexRegistry,
   flattenMetrics,
@@ -143,5 +144,25 @@ describe('helpers', () => {
     const long = exchangeModelId('DL', 'forecast', `v${'9'.repeat(80)}.RC/1`);
     expect(long.length).toBeLessThanOrEqual(63);
     expect(long).toMatch(/^[a-z][a-z0-9_-]*[a-z0-9_]$/);
+  });
+});
+
+describe('BigQuery local grid', () => {
+  it('aggregates core.hotspot_cells per cell over [start, end) in the state project', async () => {
+    const query = vi.fn().mockResolvedValue([[
+      { h3_index: '881f1d4a8bfffff', score: 0.42, model_version: 'heuristic-v0' },
+      { h3_index: '881f1d4a8dfffff', score: 0.1, model_version: null },
+    ]]);
+    const local = createBigQueryLocalData({ query } as BigQueryLike, { project: 'vayusetu-ncr-dev', location: 'asia-south1' });
+    const obs = await local.hotspotObservations(new Date('2026-09-13T18:30:00Z'), new Date('2026-09-20T18:30:00Z'));
+    expect(obs).toEqual([
+      { h3Index: '881f1d4a8bfffff', hotspotConfidenceScore: 0.42, modelVersion: 'heuristic-v0' },
+      { h3Index: '881f1d4a8dfffff', hotspotConfidenceScore: 0.1 },
+    ]);
+    const opts = query.mock.calls[0]![0];
+    expect(opts.query).toContain('`vayusetu-ncr-dev.core.hotspot_cells`');
+    expect(opts.query).toContain('GROUP BY h3_index');
+    expect(opts.params).toEqual({ start: '2026-09-13T18:30:00.000Z', end: '2026-09-20T18:30:00.000Z' });
+    expect(opts.location).toBe('asia-south1');
   });
 });

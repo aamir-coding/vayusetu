@@ -63,3 +63,36 @@ output "ci_triggers" {
   description = "Empty until enable_ci_triggers = true."
   value       = concat([for t in google_cloudbuild_trigger.pr : t.name], [for t in google_cloudbuild_trigger.main : t.name])
 }
+
+# VITE_FIREBASE_* values for each frontend build (public identifiers).
+output "firebase_web_config" {
+  value = {
+    for app, cfg in data.google_firebase_web_app_config.frontend : app => {
+      apiKey            = cfg.api_key
+      authDomain        = cfg.auth_domain
+      projectId         = var.project_id
+      storageBucket     = cfg.storage_bucket
+      messagingSenderId = cfg.messaging_sender_id
+      appId             = google_firebase_web_app.frontend[app].app_id
+    }
+  }
+}
+
+output "hosting_sites" {
+  value = { citizen = var.project_id, admin = google_firebase_hosting_site.admin.site_id }
+}
+
+# VITE_GOOGLE_MAPS_API_KEY. Marked sensitive only because the provider marks
+# key_string so; read it with `terraform output -raw maps_browser_key`.
+output "maps_browser_key" {
+  value     = google_apikeys_key.maps_browser.key_string
+  sensitive = true
+}
+
+# The Exchange module grants these identities access (environments/exchange).
+output "federation_identity" {
+  value = {
+    service_account = google_service_account.service["federation-service"].email
+    state_code      = var.federation_state_code
+  }
+}

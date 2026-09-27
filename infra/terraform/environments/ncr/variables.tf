@@ -106,3 +106,18 @@ variable "deploy_firestore_rules" {
   type    = bool
   default = false
 }
+
+variable "exchange_project_id" {
+  type    = string
+  default = ""
+}
+
+variable "exchange_project_number" {
+  type    = string
+  default = ""
+}
+
+variable "enable_federation_sync" {
+  type    = bool
+  default = false
+}
