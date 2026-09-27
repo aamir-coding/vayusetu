@@ -1,4 +1,3 @@
-/* global importScripts, firebase */
 // FCM background handler for the officials' dashboard. alert-service sends
 // `notification` + `data.link`; the SDK shows the notification itself, and a
 // click opens the alert (webpush.fcmOptions.link, or data.link as fallback).
