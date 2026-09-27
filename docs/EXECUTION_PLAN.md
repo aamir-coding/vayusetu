@@ -68,6 +68,26 @@ Endpoint ownership (fixes the "unowned endpoints" gap): `submission-service` ser
 7. `forecast-service`: every 6 h, AutoML batch forecast → `ForecastRun` → `forecast.updated`. Serves `GET /forecasts/:c/latest|history`.
 
 ### Phase 2 — Integrate, secure, deploy
+
+**Status (27 Sep 2026, branch `phase1/ai-layer`):**
+- Done in code, tested:
+  - Firestore rules + emulator tests (release gated by `deploy_firestore_rules`).
+  - Admin: H3 hexagons on Google Maps (Data layer, not the deprecated HeatmapLayer), cell detail with 7-day history; real-time AlertQueue (rules-scoped `onSnapshot`); ForecastView trend; FederationPanel active model, super_admin-only import, Cross-state View; web push (FCM + VAPID); en/hi/pa/mr.
+  - PWA: Pipeline D clarify card, Cloud TTS playback, sensor panel (monitor, AOD, field-worker PM), "Answer needed" in My Reports.
+  - `translate-locales` (Cloud Translation v3, human edits win).
+  - Terraform:
+    - Firebase web apps + admin Hosting site; Maps browser key (Terraform, restricted).
+    - `frontend-env-<app>` secrets → Hosting deploys from Cloud Build.
+    - federation-service env + nightly `federation-sync` job.
+    - `modules/exchange` + `environments/exchange`; `environments/mh` (Mumbai-Pune).
+  - federation-service reads the full BigQuery grid and runs cleanly before the Exchange exists.
+- Waiting on apply/deploy approval: the NCR plan (20 add / 2 change / 0 destroy), the federation-service image, the first Hosting deploys.
+- Waiting on Chirag: VAPID key, Auth providers, the two new projects (see below).
+- Still to build:
+  - Playwright E2E and contract tests.
+  - Private ingress for Pub/Sub/Scheduler-only services.
+  - Data-freshness monitoring.
+
 - Firestore security rules (jurisdiction-scoped, with emulator tests); tighten Cloud Run ingress (Pub/Sub/Scheduler-only services private).
 - Frontends:
   - HotspotMap on the Maps JS heatmap with real endpoints; ForecastView and FederationPanel with real data.
@@ -93,13 +113,13 @@ Numbered in the order they unblock work. ✅ = done.
 3. **Earth Engine:** register `vayusetu-ncr-dev` for noncommercial use at code.earthengine.google.com/register, if not already done (Anjan's sample worked, so likely yes). Confirm in the console.
 4. **Maps Platform:** enable the *Air Quality API*, *Weather API* and *Maps JavaScript API*.
    - Server key (existing `google-maps-api-key` secret): add Air Quality + Weather to its API restrictions.
-   - Create a separate **browser key** restricted to Maps JavaScript API and HTTP referrers `https://vayusetu-ncr-dev.web.app/*`, `http://localhost:517*/*`.
+   - ~~Browser key~~ now Terraform-managed (`maps.tf`, restricted to Maps JS + our Hosting origins). Nothing to do.
 5. **data.gov.in:** register and get an API key → `gcloud secrets versions add cpcb-api-key --data-file=-` (after the Terraform apply creates the secret).
 6. **Vertex AI:** in Model Garden, confirm which Gemini Flash / Pro ids are enabled in `asia-south1` (Claude can check once #1 is done).
 7. **Firebase console:**
    - Enable Phone and Email/Password sign-in.
-   - Add a Web app and send the config values.
-   - Cloud Messaging → Web Push certificate (VAPID key).
+   - ~~Add a Web app~~ now Terraform-managed (`firebase.tf`). Nothing to do.
+   - Cloud Messaging → Web Push certificates → **Generate key pair**, then send Claude the **public** key. It goes in `terraform.tfvars` as `firebase_vapid_public_key`.
    - Add authorized domains for Hosting.
 8. **Cloud Build ↔ GitHub:** install the Google Cloud Build GitHub App on `aamir-coding/vayusetu` and connect the repo (Cloud Build → Triggers → Connect repository, region global). Aamir owns the repo, so he may need to approve.
 9. **Two new projects** (billing linked): `vayusetu-mh-dev` (Mumbai-Pune) and `vayusetu-exchange-dev` (National Exchange). Grant chiraggk53@gmail.com Owner on both.
