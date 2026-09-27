@@ -143,12 +143,27 @@ def evaluate_and_promote(project: str, location: str, model_version: str, model_
     evaluation = candidate.list_model_evaluations()[0]
     metrics = evaluation.to_dict().get("metrics", {})
 
-    def slice_metric(resource_name: str, label: str):
+    def positive_slice(resource_name: str, label: str) -> dict:
         client = ModelServiceClient(client_options={"api_endpoint": f"{location}-aiplatform.googleapis.com"})
         for s in client.list_model_evaluation_slices(parent=resource_name):
             if s.slice_.dimension == "annotationSpec" and s.slice_.value == label:
-                return dict(s.metrics).get(metric)
-        return None
+                return dict(s.metrics)
+        return {}
+
+    def slice_metric(resource_name: str, label: str):
+        return positive_slice(resource_name, label).get(metric)
+
+    # Classifiers: the confidence threshold with the best F1 on the TEST
+    # split -- hotspot-service's HIDDEN_MIN_CONFIDENCE is set from it when the
+    # model goes live (a fixed 0.6 on a 15%-base-rate model flags ~nothing).
+    best_threshold = None
+    if positive_class:
+        curve = [dict(c) for c in positive_slice(evaluation.resource_name, positive_class).get("confidenceMetrics", [])]
+        scored = [c for c in curve if c.get("f1Score") is not None and 0 < c.get("confidenceThreshold", 0) < 1]
+        if scored:
+            best = max(scored, key=lambda c: c["f1Score"])
+            best_threshold = {"threshold": best["confidenceThreshold"], "f1": best["f1Score"],
+                              "precision": best.get("precision"), "recall": best.get("recall")}
 
     value = slice_metric(evaluation.resource_name, positive_class) if positive_class else metrics.get(metric)
     better = (lambda a, b: a > b) if higher_is_better else (lambda a, b: a < b)
@@ -172,6 +187,7 @@ def evaluate_and_promote(project: str, location: str, model_version: str, model_
         "vayusetu-gate": "passed" if decision == "promoted" else "failed",
         "vayusetu-gate-metric": metric.lower()[:63],
         "vayusetu-gate-value": ("na" if value is None else f"{value:.4f}".replace(".", "_")),
+        **({"vayusetu-threshold": f"{best_threshold['threshold']:.3f}".replace(".", "_")} if best_threshold else {}),
     })
     if decision == "promoted":
         registry.add_version_aliases(["default"], version=candidate.version_id)
@@ -183,7 +199,9 @@ def evaluate_and_promote(project: str, location: str, model_version: str, model_
         "value": value,
         "previous_default_value": current_value,
         "decision": decision,
-        "all_metrics": json.dumps({k: v for k, v in metrics.items() if isinstance(v, (int, float))}),
+        "all_metrics": json.dumps({**{k: v for k, v in metrics.items() if isinstance(v, (int, float))},
+                                   **({f"gate_{metric}": value} if positive_class else {}),
+                                   **({"best_f1_threshold": best_threshold} if best_threshold else {})}),
         "training_rows": stats.get("rows"),
         "training_positives": stats.get("positives"),
         "evaluated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),

@@ -11,8 +11,8 @@ from dataclasses import asdict, dataclass, field
 
 # Bumped whenever a feature is added/removed/redefined. federation-service
 # refuses to import a model whose schema version this deployment can't serve
-# (FEATURE_SCHEMA_VERSIONS=hotspot=hs-v1,forecast=fc-v2).
-HOTSPOT_FEATURE_SCHEMA = "hs-v1"
+# (FEATURE_SCHEMA_VERSIONS=hotspot=hs-v2,forecast=fc-v2).
+HOTSPOT_FEATURE_SCHEMA = "hs-v2"  # v2: place features (lat/lng, land cover, lights, population)
 FORECAST_FEATURE_SCHEMA = "fc-v2"  # v2: daily (IST) steps -- AutoML Forecasting 3000-step cap
 
 
@@ -29,6 +29,7 @@ class HotspotSpec:
         "wind_speed_ms", "wind_dir_sin", "wind_dir_cos", "temperature_c", "relative_humidity_pct", "precipitation_mm",
         "citizen_report_count_3h", "citizen_avg_severity_3h",
         "regional_aqi_d2", "regional_station_count_d2",
+        "lat", "lng", "built_frac", "crops_frac", "trees_frac", "bare_frac", "night_lights", "population_density",
     )
     categorical_features: tuple[str, ...] = ("hour_ist", "day_of_week", "month", "is_harvest_season", "is_diwali_window")
     optimization_objective: str = "maximize-au-prc"  # positives are rare; AU-PRC is the honest metric

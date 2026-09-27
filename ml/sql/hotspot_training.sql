@@ -12,13 +12,13 @@
 -- Features: core.hotspot_features (identical to hourly scoring). Dropped for
 -- training: the monitor-proximity columns, which are ~0 at monitor cells and
 -- would only teach "distance 0 means monitored".
--- Split: WEEK-BLOCKED, not random and not "last N%". Whole 7-day blocks go
--- to TEST (block % 7 = 0) or VALIDATE (block % 7 = 3), so one smog episode's
--- neighbouring hours never straddle train and test (a random split leaks
--- them) -- and every season is evaluated. A chronological tail split put the
--- whole test set in the monsoon (3.8% positives vs 19% in training, Sep
--- 2026 build): it measured the quiet season, not the smog season the
--- product exists for. ~14% TEST, ~14% VALIDATE, spread across the year.
+-- Split: SPATIAL, by res-6 region (~36 km2) of the monitor. The model's job
+-- is scoring places WITHOUT a monitor, so TEST/VALIDATE hold out whole
+-- regions the model never trains on (~15% / ~15% of regions, stable hash).
+-- With place features (lat/lng, land cover), a time-based split would let
+-- the model memorize "this station runs hot" and score well without
+-- generalizing. History: v1 used week blocks; a chronological tail before
+-- that put the whole test set in the monsoon (3.8% vs 19% positives).
 --
 -- Params: @start_ts, @end_ts (TIMESTAMP); @validate_from/@test_from are
 -- accepted for the shared window API but unused here.
@@ -52,14 +52,14 @@ features AS (
     ARRAY(SELECT DISTINCT h3_index FROM `{dataset}.monitoring_stations` WHERE is_official))
 )
 SELECT
-  f.* EXCEPT (has_monitor_within_radius, nearest_station_id, nearest_station_distance_km, nearest_station_aqi_d2),
+  f.* EXCEPT (has_monitor_within_radius, nearest_station_id, nearest_station_distance_km, nearest_station_aqi_d2, h3_res6),
   sh.aqi AS station_aqi,
   rn.aqi AS regional_aqi_now,
   sh.aqi - rn.aqi AS actual_aqi_deviation,
   IF(sh.aqi >= 201 AND sh.aqi - rn.aqi >= 50, 'hotspot', 'normal') AS is_hotspot,
-  CASE MOD(DIV(UNIX_DATE(DATE(f.ts)), 7), 7)
-    WHEN 0 THEN 'TEST'
-    WHEN 3 THEN 'VALIDATE'
+  CASE
+    WHEN MOD(ABS(FARM_FINGERPRINT(f.h3_res6)), 100) < 15 THEN 'TEST'
+    WHEN MOD(ABS(FARM_FINGERPRINT(f.h3_res6)), 100) < 30 THEN 'VALIDATE'
     ELSE 'TRAIN'
   END AS split
 FROM features f
