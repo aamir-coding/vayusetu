@@ -1,0 +1,446 @@
+{
+  "app.console": {
+    "sourceHash": "104bfb7a21182419",
+    "text": "ਐਡਮਿਨ ਕੰਸੋਲ"
+  },
+  "app.loginTitle": {
+    "sourceHash": "e8b441426df5cbdc",
+    "text": "ਵਾਯੂਸੇਤੂ ਐਡਮਿਨ ਕੰਸੋਲ"
+  },
+  "app.loginSubtitle": {
+    "sourceHash": "9bc2a5de96d52091",
+    "text": "ਅਧਿਕਾਰ ਖੇਤਰ-ਫਿਲਟਰ ਕੀਤੇ ਅਲਰਟ, ਹੌਟਸਪੌਟ, ਅਤੇ ਪੂਰਵ-ਅਨੁਮਾਨ।"
+  },
+  "nav.alerts": {
+    "sourceHash": "0e1a919f914cb467",
+    "text": "ਚੇਤਾਵਨੀ ਕਤਾਰ"
+  },
+  "nav.hotspots": {
+    "sourceHash": "2075df611438810b",
+    "text": "ਹੌਟਸਪੌਟ ਨਕਸ਼ਾ"
+  },
+  "nav.forecast": {
+    "sourceHash": "75205de8b342f506",
+    "text": "ਪੂਰਵ ਅਨੁਮਾਨ"
+  },
+  "nav.federation": {
+    "sourceHash": "f8c6e8016cfb9bea",
+    "text": "ਫੈਡਰੇਸ਼ਨ"
+  },
+  "nav.liteMode": {
+    "sourceHash": "5a6705a841815cd3",
+    "text": "ਲਾਈਟ ਮੋਡ"
+  },
+  "nav.liteModeToggle": {
+    "sourceHash": "b4819d67913bbe76",
+    "text": "ਘੱਟ-ਬੈਂਡਵਿਡਥ ਲਾਈਟ ਮੋਡ ਨੂੰ ਟੌਗਲ ਕਰੋ"
+  },
+  "nav.signOut": {
+    "sourceHash": "48f0d3d397d49f13",
+    "text": "ਸਾਇਨ ਆਉਟ"
+  },
+  "nav.language": {
+    "sourceHash": "a4fe65264ef7dbb3",
+    "text": "ਭਾਸ਼ਾ"
+  },
+  "role.district_admin": {
+    "sourceHash": "6addf13f8f74271d",
+    "text": "ਜ਼ਿਲ੍ਹਾ ਪ੍ਰਸ਼ਾਸਕ"
+  },
+  "role.state_admin": {
+    "sourceHash": "20d295b1a1a47efe",
+    "text": "ਰਾਜ ਪ੍ਰਸ਼ਾਸਕ"
+  },
+  "role.super_admin": {
+    "sourceHash": "cd55f733e210a64a",
+    "text": "ਸੁਪਰ ਐਡਮਿਨ"
+  },
+  "login.mockHint": {
+    "sourceHash": "729697cd3c6b8946",
+    "text": "ਮੌਕ ਮੋਡ — ਖਾਤਿਆਂ ਨੂੰ ਆਮ ਤੌਰ 'ਤੇ ਇੱਕ ਸੁਪਰ_ਐਡਮਿਨ ਦੁਆਰਾ ਬੈਂਡ ਤੋਂ ਬਾਹਰ ਪ੍ਰੋਵਿਜ਼ਨ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। ਕੰਸੋਲ ਦੀ ਪੜਚੋਲ ਕਰਨ ਲਈ ਇੱਕ ਵਿਅਕਤੀ ਚੁਣੋ।"
+  },
+  "login.email": {
+    "sourceHash": "969ccbd3cf6300ec",
+    "text": "ਈਮੇਲ"
+  },
+  "login.password": {
+    "sourceHash": "e7cf3ef4f17c3999",
+    "text": "ਪਾਸਵਰਡ"
+  },
+  "login.signIn": {
+    "sourceHash": "bcc0bcc9140b0c97",
+    "text": "ਸਾਈਨ - ਇਨ"
+  },
+  "login.failed": {
+    "sourceHash": "5ee01ca9e679b23b",
+    "text": "ਸਾਈਨ-ਇਨ ਅਸਫਲ ਰਿਹਾ"
+  },
+  "common.loading": {
+    "sourceHash": "dc380888c4e2c776",
+    "text": "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ"
+  },
+  "common.close": {
+    "sourceHash": "7d9eb7acb13e2462",
+    "text": "ਬੰਦ ਕਰੋ"
+  },
+  "corridor.ncr-airshed": {
+    "sourceHash": "058e25c2aec0d13c",
+    "text": "ਦਿੱਲੀ-ਐਨਸੀਆਰ ਏਅਰਸ਼ੈੱਡ"
+  },
+  "corridor.mumbai-pune-corridor": {
+    "sourceHash": "4762728dfcad497f",
+    "text": "ਮੁੰਬਈ-ਪੁਣੇ ਉਦਯੋਗਿਕ ਕੋਰੀਡੋਰ"
+  },
+  "source.crop_residue_burning": {
+    "sourceHash": "483402046ed3ae28",
+    "text": "ਫ਼ਸਲਾਂ ਦੀ ਰਹਿੰਦ-ਖੂੰਹਦ ਨੂੰ ਸਾੜਨਾ"
+  },
+  "source.construction_dust": {
+    "sourceHash": "9a38aa13276f41dd",
+    "text": "ਉਸਾਰੀ ਦੀ ਧੂੜ"
+  },
+  "source.vehicular_smog": {
+    "sourceHash": "db3a3e11e4ef7426",
+    "text": "ਵਾਹਨਾਂ ਦੀ ਧੁੰਦ"
+  },
+  "source.industrial_emission": {
+    "sourceHash": "8f0aee14d16f8193",
+    "text": "ਉਦਯੋਗਿਕ ਨਿਕਾਸ"
+  },
+  "source.open_waste_burning": {
+    "sourceHash": "adb9da8acb6b99b7",
+    "text": "ਖੁੱਲ੍ਹੇ ਵਿੱਚ ਕੂੜਾ ਸਾੜਨਾ"
+  },
+  "source.no_visible_pollution": {
+    "sourceHash": "e65eab6be6965eae",
+    "text": "ਕੋਈ ਦਿਖਾਈ ਦੇਣ ਵਾਲਾ ਪ੍ਰਦੂਸ਼ਣ ਨਹੀਂ"
+  },
+  "source.indeterminate": {
+    "sourceHash": "d5db1eba726dd542",
+    "text": "ਅਨਿਸ਼ਚਿਤ"
+  },
+  "source.mixed": {
+    "sourceHash": "906167c9502514f9",
+    "text": "ਮਿਸ਼ਰਤ ਸਰੋਤ"
+  },
+  "source.unknown": {
+    "sourceHash": "b764cdc0eab71374",
+    "text": "ਅਣਜਾਣ"
+  },
+  "alerts.title": {
+    "sourceHash": "0e1a919f914cb467",
+    "text": "ਚੇਤਾਵਨੀ ਕਤਾਰ"
+  },
+  "alerts.subtitle": {
+    "sourceHash": "fb315adf070ee2fe",
+    "text": "ਅਧਿਕਾਰ ਖੇਤਰ-ਫਿਲਟਰ ਕੀਤਾ ਗਿਆ · ਗੰਭੀਰਤਾ ਅਨੁਸਾਰ ਕ੍ਰਮਬੱਧ, ਫਿਰ ਸਭ ਤੋਂ ਪਹਿਲਾਂ ਨਵੀਨਤਮ"
+  },
+  "alerts.live": {
+    "sourceHash": "b64ac05f17e64d03",
+    "text": "ਲਾਈਵ"
+  },
+  "alerts.polling": {
+    "sourceHash": "78736a93bedae5ca",
+    "text": "ਪੋਲਿੰਗ"
+  },
+  "alerts.all": {
+    "sourceHash": "a52ace420f2175d0",
+    "text": "ਸਾਰੇ"
+  },
+  "alerts.status.new": {
+    "sourceHash": "18fdd549b2ed367a",
+    "text": "ਨਵਾਂ"
+  },
+  "alerts.status.acknowledged": {
+    "sourceHash": "d87cdf8aa30447b1",
+    "text": "ਸਵੀਕਾਰ ਕੀਤਾ ਗਿਆ"
+  },
+  "alerts.status.in_progress": {
+    "sourceHash": "b4cc4b07c300103a",
+    "text": "ਤਰੱਕੀ ਹੋ ਰਹੀ ਹੈ"
+  },
+  "alerts.status.resolved": {
+    "sourceHash": "5be3c2c8354e1eb9",
+    "text": "ਹੱਲ ਕੀਤਾ ਗਿਆ"
+  },
+  "alerts.status.dismissed": {
+    "sourceHash": "9d74727714dba768",
+    "text": "ਖਾਰਜ ਕੀਤਾ ਗਿਆ"
+  },
+  "alerts.loading": {
+    "sourceHash": "4246f49e52b34ad1",
+    "text": "ਸੁਚੇਤਨਾਵਾਂ ਲੋਡ ਕੀਤੀਆਂ ਜਾ ਰਹੀਆਂ ਹਨ…"
+  },
+  "alerts.emptyTitle": {
+    "sourceHash": "4d79b562ed3f1c5b",
+    "text": "ਇਸ ਦ੍ਰਿਸ਼ ਵਿੱਚ ਕੋਈ ਚੇਤਾਵਨੀਆਂ ਨਹੀਂ ਹਨ"
+  },
+  "alerts.emptyHint": {
+    "sourceHash": "6f437aeeee7cf35c",
+    "text": "ਤੁਹਾਡੇ ਅਧਿਕਾਰ ਖੇਤਰ ਲਈ ਮੌਜੂਦਾ ਫਿਲਟਰ ਨਾਲ ਕੁਝ ਵੀ ਮੇਲ ਨਹੀਂ ਖਾਂਦਾ।"
+  },
+  "alerts.recommendedActions": {
+    "sourceHash": "d67b993f2b46a805",
+    "text": "ਸਿਫ਼ਾਰਸ਼ੀ ਕਾਰਵਾਈਆਂ"
+  },
+  "alerts.publicAdvisory": {
+    "sourceHash": "01ad4099b306c83c",
+    "text": "ਜਨਤਕ ਸਲਾਹਕਾਰ"
+  },
+  "alerts.auditTrail": {
+    "sourceHash": "c1ada08ce13857e4",
+    "text": "ਆਡਿਟ ਟ੍ਰੇਲ"
+  },
+  "alerts.markAs": {
+    "sourceHash": "14e4b89b68b52045",
+    "text": "{{status}} ਨੂੰ ਚਿੰਨ੍ਹਿਤ ਕਰੋ"
+  },
+  "alerts.newAlert": {
+    "sourceHash": "f5d766efba20aced",
+    "text": "ਨਵੀਂ {{severity}} ਚੇਤਾਵਨੀ"
+  },
+  "alerts.justNow": {
+    "sourceHash": "7ddb44d8a533a753",
+    "text": "ਹੁਣੇ"
+  },
+  "alerts.minutesAgo": {
+    "sourceHash": "96da0d6c543c29bd",
+    "text": "{{count}} ਮਿੰਟ ਪਹਿਲਾਂ"
+  },
+  "alerts.hoursAgo": {
+    "sourceHash": "f9fd95fe176ea25b",
+    "text": "{{count}} ਘੰਟੇ ਪਹਿਲਾਂ"
+  },
+  "alerts.daysAgo": {
+    "sourceHash": "477879d991b4f84f",
+    "text": "{{count}} ਦਿਨ ਪਹਿਲਾਂ"
+  },
+  "hotspots.title": {
+    "sourceHash": "2075df611438810b",
+    "text": "ਹੌਟਸਪੌਟ ਨਕਸ਼ਾ"
+  },
+  "hotspots.subtitle": {
+    "sourceHash": "fdb66a039fa310f5",
+    "text": "ਫਿਊਜ਼ਡ ਘੰਟਾਵਾਰ ਵਿਸ਼ਵਾਸ ਗਰਿੱਡ · {{cells}} ਸੈੱਲ · {{hidden}} ਲੁਕਿਆ ਹੋਇਆ (3 ਕਿਲੋਮੀਟਰ ਦੇ ਅੰਦਰ ਕੋਈ ਮਾਨੀਟਰ ਨਹੀਂ)"
+  },
+  "hotspots.hiddenLegend": {
+    "sourceHash": "a0f05e6e8f0b3635",
+    "text": "ਅੰਬਰ ਰੂਪਰੇਖਾ = ਲੁਕਿਆ ਹੋਇਆ ਹੌਟਸਪੌਟ"
+  },
+  "hotspots.selectCell": {
+    "sourceHash": "6c936c7bd92389cc",
+    "text": "ਕਿਸੇ ਸੈੱਲ ਦੇ ਸਿਗਨਲ ਅਤੇ ਪਿਛਲੇ 7 ਦਿਨਾਂ ਦੇ ਸਕੋਰ ਦੇਖਣ ਲਈ ਉਸਨੂੰ ਚੁਣੋ।"
+  },
+  "hotspots.confidence": {
+    "sourceHash": "51ad012cb746a3c5",
+    "text": "{{pct}} % ਵਿਸ਼ਵਾਸ"
+  },
+  "hotspots.hiddenHotspot": {
+    "sourceHash": "86970c5b70022add",
+    "text": "ਲੁਕਿਆ ਹੋਇਆ ਹੌਟਸਪੌਟ"
+  },
+  "hotspots.last7Days": {
+    "sourceHash": "0603deca4fcb660f",
+    "text": "ਪਿਛਲੇ 7 ਦਿਨ"
+  },
+  "hotspots.notEnoughHistory": {
+    "sourceHash": "f82a8da172ad63cc",
+    "text": "ਅਜੇ ਕਾਫ਼ੀ ਘੰਟੇ ਨਹੀਂ ਲੱਗੇ।"
+  },
+  "hotspots.modelHour": {
+    "sourceHash": "9a83d0f229411ecf",
+    "text": "ਮਾਡਲ {{model}} · ਘੰਟਾ {{hour}} UTC"
+  },
+  "hotspots.signals.citizenReports": {
+    "sourceHash": "bf75568ccb51ce00",
+    "text": "ਨਾਗਰਿਕ ਰਿਪੋਰਟਾਂ"
+  },
+  "hotspots.signals.avgSeverity": {
+    "sourceHash": "a0d628e99e0522c2",
+    "text": "ਔਸਤ ਨਾਗਰਿਕ ਗੰਭੀਰਤਾ"
+  },
+  "hotspots.signals.aod": {
+    "sourceHash": "0d4d5c6705c70994",
+    "text": "ਸੈਟੇਲਾਈਟ AOD"
+  },
+  "hotspots.signals.no2": {
+    "sourceHash": "f8ea518ea683df4e",
+    "text": "ਸੈਟੇਲਾਈਟ NO₂"
+  },
+  "hotspots.signals.fires": {
+    "sourceHash": "0ba5bd8a63c8cb22",
+    "text": "ਅੱਗ ਲੱਗਣ ਦੀ ਪਛਾਣ"
+  },
+  "hotspots.signals.nearestMonitor": {
+    "sourceHash": "3ec205d98ffb70b7",
+    "text": "ਸਭ ਤੋਂ ਨੇੜਲਾ ਮਾਨੀਟਰ"
+  },
+  "hotspots.signals.deltaAqi": {
+    "sourceHash": "819ad4aa927c401b",
+    "text": "Δ AQI ਬਨਾਮ ਮਾਨੀਟਰ"
+  },
+  "hotspots.table.cell": {
+    "sourceHash": "e1a87324a4d699cf",
+    "text": "H3 ਸੈੱਲ"
+  },
+  "hotspots.table.classification": {
+    "sourceHash": "72f049954fdd06c8",
+    "text": "ਵਰਗੀਕਰਨ"
+  },
+  "hotspots.table.confidence": {
+    "sourceHash": "6422e3e78f5e5f5a",
+    "text": "ਵਿਸ਼ਵਾਸ"
+  },
+  "hotspots.table.hidden": {
+    "sourceHash": "7e6fefff0f0aeb6c",
+    "text": "ਲੁਕਿਆ ਹੋਇਆ"
+  },
+  "hotspots.table.reports": {
+    "sourceHash": "dacca3cba3f346a4",
+    "text": "ਰਿਪੋਰਟਾਂ"
+  },
+  "hotspots.table.updated": {
+    "sourceHash": "3a5ecca188c0579c",
+    "text": "ਅੱਪਡੇਟ ਕੀਤਾ ਗਿਆ"
+  },
+  "forecast.title": {
+    "sourceHash": "cfaa0c71601bf2bb",
+    "text": "72-ਘੰਟੇ ਦੀ ਭਵਿੱਖਬਾਣੀ"
+  },
+  "forecast.subtitle": {
+    "sourceHash": "9d4c8ab8d0c392e8",
+    "text": "ਕੋਰੀਡੋਰ AQI ਟ੍ਰੈਜੈਕਟਰੀ, ਹਰ 6 ਘੰਟਿਆਂ ਬਾਅਦ ਸਕੋਰ ਕੀਤੀ ਗਈ"
+  },
+  "forecast.none": {
+    "sourceHash": "34471d6121cac84d",
+    "text": "ਇਸ ਲਾਂਘੇ ਲਈ ਕੋਈ ਪੂਰਵ ਅਨੁਮਾਨ ਉਪਲਬਧ ਨਹੀਂ ਹੈ।"
+  },
+  "forecast.horizon": {
+    "sourceHash": "ae8359684edfa68a",
+    "text": "ਹੋਰਾਇਜਨ"
+  },
+  "forecast.predictedAqi": {
+    "sourceHash": "2a621123d5a2a9e0",
+    "text": "ਅਨੁਮਾਨਿਤ AQI"
+  },
+  "forecast.range": {
+    "sourceHash": "5de74a81b192304c",
+    "text": "ਸੀਮਾ"
+  },
+  "forecast.grapStage": {
+    "sourceHash": "8ed1b214a9d8485b",
+    "text": "GRAP ਪੜਾਅ"
+  },
+  "forecast.runInfo": {
+    "sourceHash": "d93e61351b465a9d",
+    "text": "{{time}} IST · ਮਾਡਲ {{model}} ਚਲਾਓ"
+  },
+  "forecast.trendTitle": {
+    "sourceHash": "32761bb1097f367f",
+    "text": "ਪਿਛਲੇ 7 ਦਿਨਾਂ ਦੀਆਂ ਦੌੜਾਂ ਲਈ +24 ਘੰਟੇ ਦੀ ਭਵਿੱਖਬਾਣੀ"
+  },
+  "forecast.keyDrivers": {
+    "sourceHash": "1178f448e9a50392",
+    "text": "ਮੁੱਖ ਡਰਾਈਵਰ"
+  },
+  "federation.title": {
+    "sourceHash": "f8c6e8016cfb9bea",
+    "text": "ਫੈਡਰੇਸ਼ਨ"
+  },
+  "federation.subtitle": {
+    "sourceHash": "878b35220898bf5e",
+    "text": "ਸਿਖਲਾਈ ਪ੍ਰਾਪਤ ਮਾਡਲ ਕਲਾਕ੍ਰਿਤੀਆਂ ਅਤੇ ਕੇ-ਅਨਾਮ ਸਮੂਹਾਂ ਦਾ ਬੈਚ ਨਿਰਯਾਤ/ਆਯਾਤ - ਗਰੇਡੀਐਂਟ-ਪੱਧਰ ਦੀ ਸੰਘੀ ਸਿਖਲਾਈ ਨਹੀਂ।"
+  },
+  "federation.tabModels": {
+    "sourceHash": "46530ff443976c2e",
+    "text": "ਸਾਂਝੇ ਮਾਡਲ"
+  },
+  "federation.tabExchange": {
+    "sourceHash": "9dafaf639239a628",
+    "text": "ਕਰਾਸ-ਸਟੇਟ ਦ੍ਰਿਸ਼"
+  },
+  "federation.tabResources": {
+    "sourceHash": "3bdcaf052ab2d273",
+    "text": "ਸਰੋਤ ਤਾਲਮੇਲ"
+  },
+  "federation.active": {
+    "sourceHash": "466a4d379b9aeda0",
+    "text": "ਕਿਰਿਆਸ਼ੀਲ ਆਯਾਤ ਕੀਤਾ ਮਾਡਲ:"
+  },
+  "federation.noModels": {
+    "sourceHash": "a1a892d10a019b14",
+    "text": "ਅਜੇ ਤੱਕ ਕੋਈ ਸਾਂਝਾ ਮਾਡਲ ਉਪਲਬਧ ਨਹੀਂ ਹੈ"
+  },
+  "federation.noModelsHint": {
+    "sourceHash": "2b03ecd46d21b9e1",
+    "text": "ਹੋਰ ਰਾਜ ਰਾਤ ਨੂੰ ਪ੍ਰਕਾਸ਼ਿਤ ਕਰਦੇ ਹਨ — ਅਗਲੇ ਸਿੰਕ ਤੋਂ ਬਾਅਦ ਵਾਪਸ ਜਾਂਚ ਕਰੋ।"
+  },
+  "federation.records": {
+    "sourceHash": "ae545889686b77c5",
+    "text": "{{count}} ਰਿਕਾਰਡ · ਸਾਂਝੇ ਕੀਤੇ {{date}}"
+  },
+  "federation.import": {
+    "sourceHash": "2cff9baabf56ca00",
+    "text": "ਆਯਾਤ ਕਰੋ"
+  },
+  "federation.importSuperOnly": {
+    "sourceHash": "7e3f9b5ea9a27bff",
+    "text": "ਉਤਪਾਦਨ ਵਿੱਚ ਆਯਾਤ ਕਰਨਾ ਸਿਰਫ਼ ਸੁਪਰ_ਐਡਮਿਨ ਹੈ (ਸਭ ਤੋਂ ਵੱਧ-ਬਲਾਸਟ-ਰੇਡੀਅਸ ਐਕਸ਼ਨ)।"
+  },
+  "federation.imported": {
+    "sourceHash": "67a4ec46266bcd28",
+    "text": "ਮਾਡਲ ਆਯਾਤ ਅਤੇ ਕਿਰਿਆਸ਼ੀਲ ਕੀਤਾ ਗਿਆ"
+  },
+  "federation.importBlocked": {
+    "sourceHash": "9de10faf69fad6ee",
+    "text": "ਆਯਾਤ ਬਲੌਕ ਕੀਤਾ ਗਿਆ"
+  },
+  "federation.postRequest": {
+    "sourceHash": "b421ea78b90910db",
+    "text": "ਇੱਕ ਸਰੋਤ ਬੇਨਤੀ ਪੋਸਟ ਕਰੋ"
+  },
+  "federation.resourceType": {
+    "sourceHash": "c9bf2e8987cca1e2",
+    "text": "ਸਰੋਤ ਕਿਸਮ"
+  },
+  "federation.quantity": {
+    "sourceHash": "822bab8d41bca8d7",
+    "text": "ਮਾਤਰਾ"
+  },
+  "federation.post": {
+    "sourceHash": "72fb5fa0ce8fba16",
+    "text": "ਪੋਸਟ ਬੇਨਤੀ"
+  },
+  "federation.posted": {
+    "sourceHash": "712f670d9fc37354",
+    "text": "ਸਰੋਤ ਬੇਨਤੀ ਪੋਸਟ ਕੀਤੀ ਗਈ"
+  },
+  "federation.weekSummary": {
+    "sourceHash": "936bec45205fe7dc",
+    "text": "{{week}} ਦਾ ਹਫ਼ਤਾ · {{cells}} {{states}} ਰਾਜਾਂ ਵਿੱਚ ਆਮ ਸੈੱਲ (ਰਿਜ਼ੋਲੇਸ਼ਨ 6)"
+  },
+  "federation.exchangeIntro": {
+    "sourceHash": "1b8596acd035245e",
+    "text": "ਐਕਸਚੇਂਜ 'ਤੇ ਹਰੇਕ ਰਾਜ ਤੋਂ ਹਫਤਾਵਾਰੀ ਕੇ-ਅਨਾਮ ਸੰਖੇਪ"
+  },
+  "federation.noSummaries": {
+    "sourceHash": "7c4f2015935d0d61",
+    "text": "ਇਸ ਖੇਤਰ ਲਈ ਅਜੇ ਤੱਕ ਕੋਈ ਸਾਂਝਾ ਕੀਤਾ ਸਾਰਾਂਸ਼ ਨਹੀਂ ਹੈ"
+  },
+  "federation.noSummariesHint": {
+    "sourceHash": "83d4ce30e48161e2",
+    "text": "ਰਾਜ ਪਿਛਲੇ ਹਫ਼ਤੇ ਦੇ ਸਮੂਹਾਂ ਨੂੰ ਹਰ ਰਾਤ ਪ੍ਰਕਾਸ਼ਤ ਕਰਦੇ ਹਨ, ਇੱਕ ਵਾਰ ਜਦੋਂ ਕਾਫ਼ੀ ਨਾਗਰਿਕ ਰਿਪੋਰਟ ਕਰ ਲੈਂਦੇ ਹਨ (ਕੇ-ਅਗਿਆਤ ਫਲੋਰ)।"
+  },
+  "federation.byState": {
+    "sourceHash": "952cdc555426e478",
+    "text": "ਯੋਗਦਾਨ ਪਾਉਣ ਵਾਲੀ ਸਥਿਤੀ ਦੁਆਰਾ"
+  },
+  "federation.byStateHint": {
+    "sourceHash": "a2b2c8d12da90c43",
+    "text": "ਸੈੱਲ ਔਸਤ ਦਾ ਔਸਤ, ਆਖਰੀ ਹਫ਼ਤਾ"
+  },
+  "federation.stateCells": {
+    "sourceHash": "fcf3103acfd219a5",
+    "text": "{{count}} ਸੈੱਲ · {{pct}} %"
+  }
+}

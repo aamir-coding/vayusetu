@@ -1,23 +1,25 @@
 import * as React from 'react';
 import { ArrowDown, ArrowUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { HotspotCell } from '@vayusetu/shared-types';
 import { cn } from '@vayusetu/ui-components';
 
 type SortKey = 'hotspotConfidenceScore' | 'timestampHour' | 'contributingSignals.citizenReportCount';
 
 const COLUMNS: Array<{ key: SortKey | 'h3Index' | 'classification' | 'isHidden'; label: string; sortable: boolean }> = [
-  { key: 'h3Index', label: 'H3 Cell', sortable: false },
-  { key: 'classification', label: 'Classification', sortable: false },
-  { key: 'hotspotConfidenceScore', label: 'Confidence', sortable: true },
-  { key: 'isHidden', label: 'Hidden', sortable: false },
-  { key: 'contributingSignals.citizenReportCount', label: 'Reports', sortable: true },
-  { key: 'timestampHour', label: 'Updated', sortable: true },
+  { key: 'h3Index', label: 'cell', sortable: false },
+  { key: 'classification', label: 'classification', sortable: false },
+  { key: 'hotspotConfidenceScore', label: 'confidence', sortable: true },
+  { key: 'isHidden', label: 'hidden', sortable: false },
+  { key: 'contributingSignals.citizenReportCount', label: 'reports', sortable: true },
+  { key: 'timestampHour', label: 'updated', sortable: true },
 ];
 
 /** Product Spec: "Admin Dashboard has a 'Lite Mode' plain-table fallback." Zero
  *  images, zero SVG geometry, zero animation — a plain HTML table an
  *  official on a throttled connection can render and scan quickly. */
 export function LiteModeTable({ cells }: { cells: HotspotCell[] }) {
+  const { t } = useTranslation();
   const [sortKey, setSortKey] = React.useState<SortKey>('hotspotConfidenceScore');
   const [sortDir, setSortDir] = React.useState<'asc' | 'desc'>('desc');
 
@@ -50,11 +52,11 @@ export function LiteModeTable({ cells }: { cells: HotspotCell[] }) {
               <th key={col.key} className="px-4 py-2.5">
                 {col.sortable ? (
                   <button type="button" className="flex items-center gap-1" onClick={() => toggleSort(col.key as SortKey)}>
-                    {col.label}
+                    {t(`hotspots.table.${col.label}`)}
                     {sortKey === col.key && (sortDir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
                   </button>
                 ) : (
-                  col.label
+                  t(`hotspots.table.${col.label}`)
                 )}
               </th>
             ))}
@@ -64,11 +66,11 @@ export function LiteModeTable({ cells }: { cells: HotspotCell[] }) {
           {sorted.map((cell) => (
             <tr key={cell.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60">
               <td className="px-4 py-2.5 font-mono text-xs text-slate-500">{cell.h3Index}</td>
-              <td className="px-4 py-2.5 capitalize text-slate-700">{cell.classification.replace(/_/g, ' ')}</td>
+              <td className="px-4 py-2.5 text-slate-700">{t(`source.${cell.classification}`)}</td>
               <td className="px-4 py-2.5 text-slate-700">{Math.round(cell.hotspotConfidenceScore * 100)}%</td>
               <td className="px-4 py-2.5">
                 {cell.isHidden && (
-                  <span className={cn('rounded-full bg-accent-500/20 px-2 py-0.5 text-xs font-semibold text-accent-700')}>Hidden</span>
+                  <span className={cn('rounded-full bg-accent-500/20 px-2 py-0.5 text-xs font-semibold text-accent-700')}>{t('hotspots.table.hidden')}</span>
                 )}
               </td>
               <td className="px-4 py-2.5 text-slate-700">{cell.contributingSignals.citizenReportCount}</td>
