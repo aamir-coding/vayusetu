@@ -20,6 +20,11 @@ module "ncr_dev" {
   dashboard_base_url              = var.dashboard_base_url
   firebase_vapid_public_key       = var.firebase_vapid_public_key
 
+  # Monitoring and alerting
+  alert_emails       = var.alert_emails
+  billing_account_id = var.billing_account_id
+  monthly_budget     = var.monthly_budget
+
   # Ingestion (ingestion.tf)
   corridor_ids                    = ["ncr-airshed"]
   cpcb_api_key_secret_populated   = var.cpcb_api_key_secret_populated

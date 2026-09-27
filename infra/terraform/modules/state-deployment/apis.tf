@@ -39,6 +39,8 @@ locals {
     "firebaserules.googleapis.com",   # Firestore security rules release (firestore_rules.tf)
     "maps-backend.googleapis.com",    # Maps JavaScript API (admin HotspotMap, maps.tf)
     "apikeys.googleapis.com",         # Terraform-managed browser key (maps.tf)
+    "monitoring.googleapis.com",      # alert policies, uptime check, dashboard (monitoring.tf)
+    "billingbudgets.googleapis.com",  # budget alert (monitoring.tf)
     "firebasehosting.googleapis.com", # citizen + admin Hosting sites (firebase.tf)
 
   ]
