@@ -22,6 +22,15 @@ export interface FeatureRow {
   has_monitor_within_radius: boolean;
   nearest_station_id: string | null;
   nearest_station_distance_km: number | null;
+  h3_res6?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  built_frac?: number | null;
+  crops_frac?: number | null;
+  trees_frac?: number | null;
+  bare_frac?: number | null;
+  night_lights?: number | null;
+  population_density?: number | null;
   sat_no2: number | null;
   sat_aerosol_index: number | null;
   sat_aod: number | null;

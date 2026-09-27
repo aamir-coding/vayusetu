@@ -22,12 +22,13 @@ def test_training_sql_renders_fully():
     assert "@test_from" in training_sql.render("forecast", "proj")
 
 
-def test_hotspot_split_is_week_blocked_across_seasons():
-    # A chronological tail put the whole TEST set in the monsoon (3.8% vs 19%
-    # positives). Whole weeks, spread over the year, instead.
+def test_hotspot_split_holds_out_whole_regions():
+    # The model scores places WITHOUT monitors: test on regions never trained on.
     sql = training_sql.render("hotspot", "p")
-    assert "MOD(DIV(UNIX_DATE(DATE(f.ts)), 7), 7)" in sql
-    assert ">= @test_from" not in sql
+    assert "FARM_FINGERPRINT(f.h3_res6)" in sql and ">= @test_from" not in sql
+    assert "h3_res6)," in sql  # grouping key excluded from the features
+    for col in ("lat", "lng", "built_frac", "night_lights", "population_density"):
+        assert col in specs.HOTSPOT.numeric_features
 
 
 def test_hotspot_features_exist_in_the_shared_tvf():
@@ -38,7 +39,7 @@ def test_hotspot_features_exist_in_the_shared_tvf():
 
 def test_hotspot_training_drops_proximity_columns_and_labels():
     sql = training_sql.render("hotspot", "p")
-    assert "EXCEPT (has_monitor_within_radius, nearest_station_id, nearest_station_distance_km, nearest_station_aqi_d2)" in sql
+    assert "EXCEPT (has_monitor_within_radius, nearest_station_id, nearest_station_distance_km, nearest_station_aqi_d2, h3_res6)" in sql
     assert "IF(sh.aqi >= 201 AND sh.aqi - rn.aqi >= 50, 'hotspot', 'normal') AS is_hotspot" in sql
     assert specs.HOTSPOT.positive_class == "hotspot"
     assert "boundary_layer_height" not in " ".join(specs.HOTSPOT.features)  # ERA5 lags ~5 days: never live
@@ -85,7 +86,7 @@ def test_time_split_is_chronological():
 
 def test_specs_json_is_serializable():
     data = json.loads(json.dumps(specs.as_json()))
-    assert data["hotspot"]["feature_schema"] == "hs-v1" and data["forecast"]["feature_schema"] == "fc-v2"
+    assert data["hotspot"]["feature_schema"] == "hs-v2" and data["forecast"]["feature_schema"] == "fc-v2"
     assert data["hotspot"]["features"] == list(specs.HOTSPOT.features)
 
 
@@ -113,7 +114,7 @@ def test_parameters_cover_every_pipeline_input(kind, monkeypatch):
     fn = pipelines.hotspot_pipeline if kind == "hotspot" else pipelines.forecast_pipeline
     expected = set(fn.component_spec.inputs.keys())
     assert set(params) == expected
-    assert params["labels"]["vayusetu-feature-schema"] in {"hs-v1", "fc-v2"}
+    assert params["labels"]["vayusetu-feature-schema"] in {"hs-v2", "fc-v2"}
     assert all(re.fullmatch(r"[a-z0-9_-]{1,63}", v) for v in params["labels"].values())
 
 

@@ -27,6 +27,7 @@ export const MODEL_NUMERIC_FEATURES = [
   'wind_speed_ms', 'wind_dir_sin', 'wind_dir_cos', 'temperature_c', 'relative_humidity_pct', 'precipitation_mm',
   'citizen_report_count_3h', 'citizen_avg_severity_3h',
   'regional_aqi_d2', 'regional_station_count_d2',
+  'lat', 'lng', 'built_frac', 'crops_frac', 'trees_frac', 'bare_frac', 'night_lights', 'population_density',
 ] as const;
 export const MODEL_CATEGORICAL_FEATURES = ['hour_ist', 'day_of_week', 'month', 'is_harvest_season', 'is_diwali_window'] as const;
 export const POSITIVE_CLASS = 'hotspot';
