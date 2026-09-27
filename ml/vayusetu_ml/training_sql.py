@@ -42,7 +42,7 @@ def build(kind: str, project: str, window: TrainingWindow, dataset: str = "core"
     table = f"{project}.{dataset}.{kind}_training_dataset"
     label = "is_hotspot = 'hotspot'" if kind == "hotspot" else "FALSE"
     stats = list(client.query(
-        f"SELECT COUNT(*) AS rows, COUNTIF({label}) AS positives, COUNTIF(split = 'TRAIN') AS train, "
+        f"SELECT COUNT(*) AS `rows`, COUNTIF({label}) AS positives, COUNTIF(split = 'TRAIN') AS train, "
         f"COUNTIF(split = 'VALIDATE') AS validate, COUNTIF(split = 'TEST') AS test FROM `{table}`"
     ).result())[0]
     return {"table": table, **dict(stats)}

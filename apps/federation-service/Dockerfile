@@ -33,4 +33,5 @@ ENV NODE_ENV=production
 COPY --from=build /app /app
 WORKDIR /app/apps/federation-service
 EXPOSE 8080
-CMD ["pnpm", "start"]
+# node directly: pnpm + the tsx CLI would add two more Node processes (~100 MiB).
+CMD ["node", "--import", "tsx", "src/index.ts"]
