@@ -96,3 +96,8 @@ variable "ml_pipeline_submitters" {
   type    = list(string)
   default = []
 }
+
+variable "briefing_generator" {
+  type    = string
+  default = "gemini"
+}
