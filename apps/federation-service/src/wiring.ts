@@ -2,7 +2,14 @@ import { BigQuery } from '@google-cloud/bigquery';
 import { v1 } from '@google-cloud/aiplatform';
 import { getDb } from '@vayusetu/gcp-clients';
 import { env } from './config/env.js';
-import { createBigQueryExchange, createBigQueryLocalData, createFirestoreAdapters, createVertexRegistry } from './lib/adapters.js';
+import {
+  EXCHANGE_UNSET,
+  createBigQueryExchange,
+  createBigQueryLocalData,
+  createDisconnectedExchange,
+  createFirestoreAdapters,
+  createVertexRegistry,
+} from './lib/adapters.js';
 import type { LocalDataSource } from './lib/ports.js';
 
 /**
@@ -16,18 +23,28 @@ export function buildProductionAdapters() {
   // Hotspot scores from the full BigQuery grid; contributions (who reported
   // where) from Firestore submissions -- the only place user ids live.
   const local: LocalDataSource = {
-    ...createBigQueryLocalData(bq, { project: env.GOOGLE_CLOUD_PROJECT, location: env.BIGQUERY_LOCATION }),
+    ...createBigQueryLocalData(bq, {
+      project: env.GOOGLE_CLOUD_PROJECT,
+      location: env.BIGQUERY_LOCATION,
+    }),
     contributions: firestore.contributions,
   };
   // Jobs run (and bill) in THIS state project; the tables live in the exchange project.
-  const exchange = createBigQueryExchange(bq, {
-    project: env.EXCHANGE_PROJECT_ID,
-    dataset: env.EXCHANGE_DATASET,
-    location: env.BIGQUERY_LOCATION,
-  });
+  const exchange =
+    env.EXCHANGE_PROJECT_ID === EXCHANGE_UNSET
+      ? createDisconnectedExchange()
+      : createBigQueryExchange(bq, {
+          project: env.EXCHANGE_PROJECT_ID,
+          dataset: env.EXCHANGE_DATASET,
+          location: env.BIGQUERY_LOCATION,
+        });
   const registry = createVertexRegistry(
     new v1.ModelServiceClient({ apiEndpoint: `${env.VERTEX_LOCATION}-aiplatform.googleapis.com` }),
-    { localProject: env.GOOGLE_CLOUD_PROJECT, exchangeProject: env.EXCHANGE_PROJECT_ID, location: env.VERTEX_LOCATION },
+    {
+      localProject: env.GOOGLE_CLOUD_PROJECT,
+      exchangeProject: env.EXCHANGE_PROJECT_ID,
+      location: env.VERTEX_LOCATION,
+    },
   );
   return { local, state: firestore, exchange, registry };
 }
