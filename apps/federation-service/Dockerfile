@@ -13,7 +13,7 @@ RUN corepack enable
 
 # ---- deps: install once, leveraging the workspace lockfile ----
 FROM base AS deps
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.json ./
 COPY packages/shared-types/package.json packages/shared-types/package.json
 COPY packages/gcp-clients/package.json packages/gcp-clients/package.json
 COPY apps/federation-service/package.json apps/federation-service/package.json
@@ -33,4 +33,5 @@ ENV NODE_ENV=production
 COPY --from=build /app /app
 WORKDIR /app/apps/federation-service
 EXPOSE 8080
-CMD ["pnpm", "start"]
+# node directly: pnpm + the tsx CLI would add two more Node processes (~100 MiB).
+CMD ["node", "--import", "tsx", "src/index.ts"]

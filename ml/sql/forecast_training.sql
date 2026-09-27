@@ -13,6 +13,11 @@
 -- Split: by TIME, same rule as the hotspot set.
 --
 -- Params: @start_ts, @end_ts, @validate_from, @test_from (TIMESTAMP)
+-- Derived table, rebuilt from scratch every run and owned here (not by
+-- data/schemas): DROP first so a partitioning/clustering change can never
+-- block a rebuild ("Cannot replace a table with a different partitioning spec").
+DROP TABLE IF EXISTS `{dataset}.forecast_training_dataset`;
+
 CREATE OR REPLACE TABLE `{dataset}.forecast_training_dataset`
 PARTITION BY DATE(ts)
 CLUSTER BY corridor_id AS
