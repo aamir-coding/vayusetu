@@ -12,10 +12,11 @@
   },
   "scripts": {
     "type-check": "tsc --noEmit",
-    "lint": "eslint src test",
+    "lint": "eslint src test redteam/evaluate.ts",
     "test": "vitest run",
     "smoke": "tsx scripts/smoke.ts",
-    "clean": "rimraf .turbo *.tsbuildinfo"
+    "clean": "rimraf .turbo *.tsbuildinfo",
+    "redteam": "tsx scripts/redteam.ts"
   },
   "dependencies": {
     "@google/genai": "^2.24.0",

@@ -7,7 +7,7 @@ VayuSetu runs two trained models and three Gemini pipelines. The trained models:
 | Hotspot Confidence (AutoML Tabular) | [HOTSPOT_MODEL_CARD.md](HOTSPOT_MODEL_CARD.md) | v2, `hs-v2` | positive-class auPRC ≥ 0.30 | **0.550** (spatial holdout) | 0.15 (chance = base rate) |
 | AQI Forecast (AutoML Forecasting) | [FORECAST_MODEL_CARD.md](FORECAST_MODEL_CARD.md) | v1, `fc-v2` | MAPE ≤ 40 | **22.7** | persistence 23.8 (D+1 18.0, D+3 28.3) |
 
-The Gemini pipelines (A: citizen photo triage, B: voice, C: official briefings, D: clarifying questions) are prompt-and-schema systems, not trained models. They are documented in `docs/context/05_AI_PIPELINES.md`, and Pipeline A is stress-tested by the red-team set in `ml/redteam/`.
+The Gemini pipelines (A: citizen photo triage, B: voice, C: official briefings, D: clarifying questions) are prompt-and-schema systems, not trained models. They are documented in `docs/context/05_AI_PIPELINES.md`, and Pipeline A is stress-tested by the red-team set in `packages/gemini-client/redteam/` (27 cases; it found and fixed 3 weaknesses: steam, fog, unsafe reassurance).
 
 ## What we learned evaluating them
 1. **Gate on the decision, not the headline.** Hotspot v1 was promoted on Vertex's micro-averaged auPRC (0.895), while the hotspot class scored 0.292. The gate now reads the positive-class slice. See the hotspot card, "v1".
