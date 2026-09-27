@@ -83,6 +83,7 @@ export const handlers = [
       uploadedAt: now,
       status: 'queued',
       deviceMeta: body.deviceMeta,
+      ...(body.fieldSensorReading ? { fieldSensorReading: body.fieldSensorReading } : {}),
     };
     db.submissions.set(submission.id, submission);
 
@@ -134,6 +135,27 @@ export const handlers = [
       const result = fabricateAnalysis(updated);
       db.analysisResults.set(updated.id, result);
       db.submissions.set(updated.id, { ...updated, status: result.needsHumanReview ? 'flagged_for_review' : 'analyzed' });
+    }, 2000);
+    return HttpResponse.json({ submission: updated }, { status: 202 });
+  }),
+
+  http.post('*/api/v1/submissions/:id/clarify', async ({ params, request }) => {
+    const submission = db.submissions.get(params.id as string);
+    const pending = submission && db.analysisResults.get(submission.id)?.pendingClarification;
+    if (!submission || !pending) return err('CONFLICT', 'No clarifying question is waiting for an answer');
+    const body = (await request.json()) as { answerText?: string; answerPhotoStorageUrl?: string };
+    const now = new Date().toISOString();
+    const updated: Submission = {
+      ...submission,
+      status: 'pending_analysis',
+      clarifications: [{ turn: pending.turn, question: pending.question, language: pending.language, askedAt: now, ...body, answeredAt: now }],
+    };
+    db.submissions.set(updated.id, updated);
+    setTimeout(() => {
+      const result = { ...fabricateAnalysis(updated), sourceClassification: 'open_waste_burning' as const, confidenceScore: 0.78, needsHumanReview: false };
+      delete result.pendingClarification;
+      db.analysisResults.set(updated.id, result);
+      db.submissions.set(updated.id, { ...updated, status: 'analyzed' });
     }, 2000);
     return HttpResponse.json({ submission: updated }, { status: 202 });
   }),

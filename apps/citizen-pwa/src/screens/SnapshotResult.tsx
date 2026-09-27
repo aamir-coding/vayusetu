@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { AlertCircle, Eye, Pause, Play, Wind } from 'lucide-react';
+import { AlertCircle, Eye, Gauge, Pause, Play, Satellite, Wind } from 'lucide-react';
 import {
   AqiBadge,
   Button,
@@ -13,13 +13,16 @@ import {
   severityWord,
 } from '@vayusetu/ui-components';
 import { useAuth } from '../hooks/useAuth';
-import { analysisApi } from '../lib/apiClient';
+import { analysisApi, submissionsApi } from '../lib/apiClient';
+import { ClarifyCard } from '../components/ClarifyCard';
 
 export function SnapshotResult() {
   const { submissionId = '' } = useParams();
   const { t } = useTranslation();
   const { getToken } = useAuth();
   const [speaking, setSpeaking] = React.useState(false);
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  React.useEffect(() => () => audioRef.current?.pause(), []);
 
   const { data, isLoading } = useQuery({
     queryKey: ['analysis', submissionId],
@@ -31,11 +34,29 @@ export function SnapshotResult() {
   const status = data?.status;
   const result = data?.result;
 
+  // The report itself (once): the field worker's own sensor reading.
+  const { data: detail } = useQuery({
+    queryKey: ['submission', submissionId],
+    queryFn: async () => submissionsApi.get(await getToken(), submissionId),
+    enabled: Boolean(submissionId && result),
+    staleTime: Infinity,
+  });
+  const sensor = detail?.submission.fieldSensorReading;
+
   function playAdvisory() {
     if (!result) return;
     if (result.advisory.audioStorageUrl) {
-      // Cached Cloud TTS render, once alert/analysis-service actually produces one.
-      new Audio(result.advisory.audioStorageUrl).play().catch(() => undefined);
+      // Cloud TTS (Chirp 3 HD) render in the citizen's language; the API
+      // hands out a short-lived signed URL. Browser speech is the fallback.
+      const audio = audioRef.current ?? new Audio();
+      audioRef.current = audio;
+      audio.src = result.advisory.audioStorageUrl;
+      audio.onended = () => setSpeaking(false);
+      audio.onerror = () => setSpeaking(false);
+      audio.play().then(
+        () => setSpeaking(true),
+        () => setSpeaking(false),
+      );
       return;
     }
     if (!('speechSynthesis' in window)) return;
@@ -48,6 +69,7 @@ export function SnapshotResult() {
   }
 
   function stopAdvisory() {
+    audioRef.current?.pause();
     window.speechSynthesis?.cancel();
     setSpeaking(false);
   }
@@ -81,9 +103,14 @@ export function SnapshotResult() {
 
   if (!result) return <Spinner className="mx-auto mt-16" />;
 
+  const xv = result.crossValidation ?? {};
+  const pending = status === 'flagged_for_review' ? result.pendingClarification : undefined;
+
   return (
     <div className="flex flex-col gap-5">
       <h1 className="text-xl font-bold text-ink">{t('result.title')}</h1>
+
+      {pending && <ClarifyCard submissionId={submissionId} pending={pending} />}
 
       <Card>
         <CardContent className="flex flex-col gap-4 pt-5">
@@ -128,7 +155,7 @@ export function SnapshotResult() {
             </Button>
           </div>
 
-          {result.sourceClassification === 'indeterminate' && (
+          {result.sourceClassification === 'indeterminate' && !pending && (
             <p className="text-sm text-slate-500">{t('result.indeterminate')}</p>
           )}
           {result.needsHumanReview && result.sourceClassification !== 'indeterminate' && (
@@ -136,6 +163,31 @@ export function SnapshotResult() {
           )}
         </CardContent>
       </Card>
+
+      {(xv.nearestMonitorAQI !== undefined || xv.satelliteAODAtCell !== undefined || sensor) && (
+        <Card>
+          <CardContent className="flex flex-col gap-2 pt-5 text-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{t('result.sensorsTitle')}</p>
+            {xv.nearestMonitorAQI !== undefined && (
+              <p className="flex items-center gap-2 text-slate-600">
+                <Gauge className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                {t('result.nearestMonitor', { aqi: Math.round(xv.nearestMonitorAQI) })}
+              </p>
+            )}
+            {xv.satelliteAODAtCell !== undefined && (
+              <p className="flex items-center gap-2 text-slate-600">
+                <Satellite className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                {t('result.satelliteAod', { aod: xv.satelliteAODAtCell.toFixed(2) })}
+              </p>
+            )}
+            {sensor?.pm25 !== undefined && <p className="text-slate-600">{t('result.yourSensorPm25', { value: sensor.pm25 })}</p>}
+            {sensor?.pm10 !== undefined && <p className="text-slate-600">{t('result.yourSensorPm10', { value: sensor.pm10 })}</p>}
+            {xv.agreementScore !== undefined && (
+              <p className="text-xs text-slate-400">{t('result.agreement', { pct: Math.round(xv.agreementScore * 100) })}</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <Button asChild size="lg" variant="outline">
         <Link to="/capture">{t('result.reportAnother')}</Link>

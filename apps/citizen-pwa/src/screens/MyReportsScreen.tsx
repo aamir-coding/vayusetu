@@ -67,7 +67,11 @@ export function MyReportsScreen() {
               </Link>
               <div className="flex shrink-0 flex-col items-end gap-2">
                 <SubmissionStatusBadge status={submission.status} />
-                {(submission.status === 'failed' || submission.status === 'flagged_for_review') && (
+                {awaitingAnswer(submission) ? (
+                  <Link to={`/result/${submission.id}`} className="text-xs font-semibold text-accent-700 hover:underline">
+                    {t('reports.awaitingAnswer')}
+                  </Link>
+                ) : (submission.status === 'failed' || submission.status === 'flagged_for_review') && (
                   <button
                     type="button"
                     onClick={() => retry(submission.id)}
@@ -83,6 +87,12 @@ export function MyReportsScreen() {
       </ul>
     </div>
   );
+}
+
+/** Pipeline D asked a question the citizen hasn't answered yet. */
+function awaitingAnswer(s: { status: string; clarifications?: Array<{ answeredAt?: string }> }): boolean {
+  const last = s.clarifications?.[s.clarifications.length - 1];
+  return s.status === 'flagged_for_review' && Boolean(last && !last.answeredAt);
 }
 
 function ImageThumb({ src }: { src: string }) {
