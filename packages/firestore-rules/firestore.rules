@@ -1,0 +1,77 @@
+rules_version = '2';
+
+// VayuSetu Firestore security rules (docs/context/04_DB_SCHEMA.md).
+//
+// Every write goes through the services (Admin SDK bypasses these rules), so
+// clients get READ access only, and only to what the REST API would show them
+// -- the "defense in depth, not either/or" rule in API_CONTRACTS.md 4.2.
+// Officials' jurisdiction comes from Firebase custom claims set by
+// apps/alert-service/scripts/provision-official.mjs: role, stateCode, districtCode.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function claims() { return request.auth.token; }
+    function role() { return claims().get('role', ''); }
+    function isSuper() { return signedIn() && role() == 'super_admin'; }
+    function isStateAdmin() { return signedIn() && role() == 'state_admin'; }
+    function isOfficial() { return signedIn() && role() in ['district_admin', 'state_admin', 'super_admin']; }
+
+    // Same rule as the API (jurisdictionContains): a district official sees
+    // their district only; a state official the whole state; super_admin all.
+    function covers(j) {
+      return isSuper()
+        || (isOfficial()
+            && j.stateCode == claims().get('stateCode', '')
+            && (isStateAdmin() || j.get('districtCode', null) == claims().get('districtCode', '')));
+    }
+
+    // ---- users: own profile only (officials' profiles are provisioned out-of-band)
+    match /users/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // ---- citizen reports: owner, or an official covering the report's jurisdiction
+    match /submissions/{id} {
+      allow read: if signedIn() && (resource.data.userId == request.auth.uid || covers(resource.data.jurisdiction));
+      allow write: if false;
+    }
+
+    // Gemini output is server-only to write (DB_SCHEMA.md); readable like its parent.
+    match /analysisResults/{id} {
+      allow read: if signedIn() && (
+        get(/databases/$(database)/documents/submissions/$(id)).data.userId == request.auth.uid
+        || covers(get(/databases/$(database)/documents/submissions/$(id)).data.jurisdiction));
+      allow write: if false;
+    }
+
+    // ---- officials' alert queue (the dashboard's real-time listener)
+    match /alerts/{id} {
+      allow read: if covers(resource.data.assignedJurisdiction);
+      allow write: if false; // status changes go through PATCH /alerts/:id/status (audit trail)
+    }
+
+    match /resourceRequests/{id} {
+      allow read: if covers(resource.data.jurisdiction);
+      allow write: if false;
+    }
+
+    // ---- public-to-signed-in reference and model output
+    match /hotspots/{id} { allow read: if signedIn(); allow write: if false; }
+    match /forecasts/{id} { allow read: if signedIn(); allow write: if false; }
+    match /corridors/{id} { allow read: if signedIn(); allow write: if false; }
+    match /monitoringStations/{id} { allow read: if signedIn(); allow write: if false; }
+
+    // ---- Federation Exchange mirror: state_admin and above
+    match /federationExchange/{rest=**} {
+      allow read: if isStateAdmin() || isSuper();
+      allow write: if false;
+    }
+
+    // Everything else is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

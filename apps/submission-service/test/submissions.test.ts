@@ -18,6 +18,7 @@ vi.mock('@vayusetu/gcp-clients', async (importOriginal) => ({
     published.push({ topic, payload });
     return 'fake-message-id';
   },
+  createSignedReadUrl: async (gs: string) => `https://storage.googleapis.com/signed/${gs.slice(5)}?X-Goog-Signature=fake`,
   createSignedUploadUrl: async (args: { bucket: string; objectPath: string; contentType: string }) => {
     signCalls.push(args);
     return {
@@ -395,6 +396,211 @@ describe('submission-service', () => {
       await fakeDb.collection('submissions').doc(submission.id).set({ status: 'flagged_for_review' }, { merge: true });
       const again = await app.inject({ method: 'POST', url: `/api/v1/submissions/${submission.id}/retry-analysis`, headers: auth('rina') });
       expect(again.statusCode).toBe(202);
+    });
+  });
+  describe('PATCH /users/me role upgrade (Phase 1 contract)', () => {
+    it('lets a citizen become a field worker, one way', async () => {
+      await register('anand');
+      const res = await app.inject({ method: 'PATCH', url: '/api/v1/users/me', headers: auth('anand'), payload: { role: 'field_worker' } });
+      expect(res.statusCode).toBe(200);
+      expect(res.json().role).toBe('field_worker');
+      const back = await app.inject({ method: 'PATCH', url: '/api/v1/users/me', headers: auth('anand'), payload: { role: 'citizen' } });
+      expect(back.statusCode).toBe(400);
+    });
+
+    it('never lets an official self-assign a role', async () => {
+      seedOfficial('deshmukh', 'district_admin', { stateCode: 'DL', districtCode: 'DL-CENTRAL' });
+      const res = await app.inject({ method: 'PATCH', url: '/api/v1/users/me', headers: auth('deshmukh'), payload: { role: 'field_worker' } });
+      expect(res.statusCode).toBe(403);
+    });
+  });
+
+  describe('preferredLanguage is stored canonical', () => {
+    it('register "en" -> en-IN; patch "hi" -> hi-IN', async () => {
+      const reg = await app.inject({
+        method: 'POST', url: '/api/v1/users/register', headers: auth('lang'),
+        payload: { displayName: 'L', preferredLanguage: 'en', role: 'citizen' },
+      });
+      expect(reg.json().preferredLanguage).toBe('en-IN');
+      const patch = await app.inject({ method: 'PATCH', url: '/api/v1/users/me', headers: auth('lang'), payload: { preferredLanguage: 'hi' } });
+      expect(patch.json().preferredLanguage).toBe('hi-IN');
+    });
+  });
+
+  describe('fieldSensorReading', () => {
+    it('is stored for field workers, dropped for citizens, bounded', async () => {
+      await register('anand', 'field_worker');
+      await register('rina');
+      const fw = await submit('anand', { fieldSensorReading: { pm25: 182.5, pm10: 240 } });
+      expect(fw.json().submission.fieldSensorReading).toEqual({ pm25: 182.5, pm10: 240 });
+      const citizen = await submit('rina', { fieldSensorReading: { pm25: 99 } });
+      expect(citizen.statusCode).toBe(202);
+      expect(citizen.json().submission.fieldSensorReading).toBeUndefined();
+      expect((await submit('anand', { fieldSensorReading: { pm25: 5000 } })).statusCode).toBe(400);
+      expect((await submit('anand', { fieldSensorReading: {} })).statusCode).toBe(400);
+    });
+  });
+
+  describe('GET /analysis/:submissionId', () => {
+    it('returns status + null result while analysis is pending', async () => {
+      await register('rina');
+      const { submission } = (await submit('rina')).json();
+      const res = await app.inject({ method: 'GET', url: `/api/v1/analysis/${submission.id}`, headers: auth('rina') });
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toEqual({ status: 'queued', result: null });
+    });
+
+    it('swaps the private gs:// advisory audio for a signed https URL', async () => {
+      await register('rina');
+      const { submission } = (await submit('rina')).json();
+      fakeDb.collection('analysisResults').seed(submission.id, {
+        submissionId: submission.id,
+        sourceClassification: 'vehicular_smog',
+        advisory: { text: 't', language: 'hi-IN', audioStorageUrl: 'gs://audio/tts/hi-IN/x.mp3' },
+      });
+      const res = await app.inject({ method: 'GET', url: `/api/v1/analysis/${submission.id}`, headers: auth('rina') });
+      expect(res.json().result.advisory.audioStorageUrl).toBe('https://storage.googleapis.com/signed/audio/tts/hi-IN/x.mp3?X-Goog-Signature=fake');
+      const viaSubmission = await app.inject({ method: 'GET', url: `/api/v1/submissions/${submission.id}`, headers: auth('rina') });
+      expect(viaSubmission.json().analysis.advisory.audioStorageUrl).toMatch(/^https:/);
+    });
+
+    it('applies the parent submission authorization', async () => {
+      await register('rina');
+      await register('other');
+      const { submission } = (await submit('rina')).json();
+      const res = await app.inject({ method: 'GET', url: `/api/v1/analysis/${submission.id}`, headers: auth('other') });
+      expect(res.statusCode).toBe(403);
+      expect((await app.inject({ method: 'GET', url: '/api/v1/analysis/nope', headers: auth('rina') })).statusCode).toBe(404);
+    });
+  });
+
+  describe('POST /submissions/:id/clarify (Pipeline D)', () => {
+    async function withQuestion() {
+      await register('rina');
+      const { submission } = (await submit('rina')).json();
+      await fakeDb.collection('submissions').doc(submission.id).set(
+        { status: 'flagged_for_review', clarifications: [{ turn: 1, question: 'Field or chimney?', language: 'en-IN', askedAt: now() }] },
+        { merge: true },
+      );
+      fakeDb.collection('analysisResults').seed(submission.id, {
+        submissionId: submission.id,
+        advisory: { text: 't', language: 'en-IN' },
+        pendingClarification: { turn: 1, question: 'Field or chimney?', language: 'en-IN' },
+      });
+      published.length = 0;
+      return submission.id as string;
+    }
+
+    it('records the answer, resets to pending_analysis and re-publishes', async () => {
+      const id = await withQuestion();
+      const res = await app.inject({
+        method: 'POST',
+        url: `/api/v1/submissions/${id}/clarify`,
+        headers: auth('rina'),
+        payload: { answerText: 'A field, far away', answerPhotoStorageUrl: photoUrl('rina', 'b.jpg') },
+      });
+      expect(res.statusCode).toBe(202);
+      const stored = (await fakeDb.collection('submissions').doc(id).get()).data() as {
+        status: string;
+        clarifications: Array<Record<string, unknown>>;
+      };
+      expect(stored.status).toBe('pending_analysis');
+      expect(stored.clarifications[0]).toMatchObject({
+        turn: 1,
+        answerText: 'A field, far away',
+        answerPhotoStorageUrl: photoUrl('rina', 'b.jpg'),
+        answeredAt: expect.any(String),
+      });
+      expect(published).toEqual([{ topic: 'submission.created', payload: { submissionId: id } }]);
+      const again = await app.inject({ method: 'POST', url: `/api/v1/submissions/${id}/clarify`, headers: auth('rina'), payload: { answerText: 'x' } });
+      expect(again.statusCode).toBe(409);
+    });
+
+    it('rejects other users, empty answers, foreign photos, and reports with no question', async () => {
+      const id = await withQuestion();
+      await register('other');
+      const post = (uid: string, sid: string, payload: object) =>
+        app.inject({ method: 'POST', url: `/api/v1/submissions/${sid}/clarify`, headers: auth(uid), payload });
+      expect((await post('other', id, { answerText: 'x' })).statusCode).toBe(403);
+      expect((await post('rina', id, {})).statusCode).toBe(400);
+      expect((await post('rina', id, { answerPhotoStorageUrl: photoUrl('other') })).statusCode).toBe(400);
+      const { submission } = (await submit('rina')).json();
+      expect((await post('rina', submission.id, { answerText: 'x' })).statusCode).toBe(409);
+    });
+  });
+
+  describe('retry-analysis keeps fields written by analysis-service', () => {
+    it('does not clobber the transcript', async () => {
+      await register('rina');
+      const { submission } = (await submit('rina')).json();
+      await fakeDb.collection('submissions').doc(submission.id).set({ status: 'failed', transcript: 'dhuan' }, { merge: true });
+      await app.inject({ method: 'POST', url: `/api/v1/submissions/${submission.id}/retry-analysis`, headers: auth('rina') });
+      const stored = (await fakeDb.collection('submissions').doc(submission.id).get()).data() as { transcript: string; status: string };
+      expect(stored).toMatchObject({ transcript: 'dhuan', status: 'pending_analysis' });
+    });
+  });
+
+  describe('GET /corridors', () => {
+    it('lists and gets corridors; 404 for unknown; auth required', async () => {
+      await register('rina');
+      fakeDb.collection('corridors').seed('ncr-airshed', { id: 'ncr-airshed', name: 'Delhi-NCR Airshed', states: ['DL'] });
+      fakeDb.collection('corridors').seed('mumbai-pune-corridor', { id: 'mumbai-pune-corridor', name: 'Mumbai-Pune', states: ['MH'] });
+      const list = await app.inject({ method: 'GET', url: '/api/v1/corridors', headers: auth('rina') });
+      expect(list.json().corridors.map((c: { id: string }) => c.id)).toEqual(['mumbai-pune-corridor', 'ncr-airshed']);
+      expect((await app.inject({ method: 'GET', url: '/api/v1/corridors/ncr-airshed', headers: auth('rina') })).json().name).toBe('Delhi-NCR Airshed');
+      expect((await app.inject({ method: 'GET', url: '/api/v1/corridors/nope', headers: auth('rina') })).statusCode).toBe(404);
+      expect((await app.inject({ method: 'GET', url: '/api/v1/corridors' })).statusCode).toBe(401);
+    });
+  });
+
+  describe('/resources/requests (Resource Coordination)', () => {
+    const create = (uid: string, payload: Record<string, unknown>) =>
+      app.inject({ method: 'POST', url: '/api/v1/resources/requests', headers: auth(uid), payload });
+    const list = (uid: string, qs = '') => app.inject({ method: 'GET', url: `/api/v1/resources/requests${qs}`, headers: auth(uid) });
+
+    beforeEach(() => {
+      seedOfficial('deshmukh', 'district_admin', { stateCode: 'DL', districtCode: 'DL-CENTRAL' });
+      seedOfficial('east', 'district_admin', { stateCode: 'DL', districtCode: 'DL-EAST' });
+      seedOfficial('iyer', 'state_admin', { stateCode: 'DL' });
+      seedOfficial('patil', 'state_admin', { stateCode: 'MH' });
+      seedOfficial('root', 'super_admin');
+    });
+
+    it('takes jurisdiction from the caller profile, never the body', async () => {
+      const res = await create('deshmukh', { resourceType: 'anti_smog_gun', quantityNeeded: 3, jurisdiction: { stateCode: 'MH' } });
+      expect(res.statusCode).toBe(201);
+      expect(res.json()).toMatchObject({
+        jurisdiction: { stateCode: 'DL', districtCode: 'DL-CENTRAL' },
+        status: 'open',
+        createdBy: 'deshmukh',
+        quantityNeeded: 3,
+      });
+    });
+
+    it('validates the related alert and its jurisdiction', async () => {
+      fakeDb.collection('alerts').seed('a-central', { id: 'a-central', assignedJurisdiction: { stateCode: 'DL', districtCode: 'DL-CENTRAL' } });
+      fakeDb.collection('alerts').seed('a-east', { id: 'a-east', assignedJurisdiction: { stateCode: 'DL', districtCode: 'DL-EAST' } });
+      expect((await create('deshmukh', { resourceType: 'water_sprinkler', quantityNeeded: 2, relatedAlertId: 'a-central' })).statusCode).toBe(201);
+      expect((await create('deshmukh', { resourceType: 'water_sprinkler', quantityNeeded: 2, relatedAlertId: 'a-east' })).statusCode).toBe(403);
+      expect((await create('deshmukh', { resourceType: 'water_sprinkler', quantityNeeded: 2, relatedAlertId: 'ghost' })).statusCode).toBe(400);
+      expect((await create('deshmukh', { resourceType: 'tank', quantityNeeded: 2 })).statusCode).toBe(400);
+    });
+
+    it('citizens and super_admins cannot raise requests', async () => {
+      await register('rina');
+      expect((await create('rina', { resourceType: 'other', quantityNeeded: 1 })).statusCode).toBe(403);
+      expect((await create('root', { resourceType: 'other', quantityNeeded: 1 })).statusCode).toBe(403);
+      expect((await list('rina')).statusCode).toBe(403);
+    });
+
+    it('scopes the board: district -> own district, state -> own state, super_admin -> all', async () => {
+      await create('deshmukh', { resourceType: 'anti_smog_gun', quantityNeeded: 1 });
+      await create('east', { resourceType: 'inspection_team', quantityNeeded: 1 });
+      await create('patil', { resourceType: 'mobile_monitoring_van', quantityNeeded: 1 });
+      expect((await list('deshmukh')).json().items.map((r: { createdBy: string }) => r.createdBy)).toEqual(['deshmukh']);
+      expect((await list('iyer')).json().totalCount).toBe(2);
+      expect((await list('root')).json().totalCount).toBe(3);
+      expect((await list('root', '?status=fulfilled')).json().totalCount).toBe(0);
     });
   });
 });

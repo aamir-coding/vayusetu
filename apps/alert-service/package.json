@@ -20,11 +20,12 @@
     "provision:official": "node scripts/provision-official.mjs"
   },
   "dependencies": {
-    "@vayusetu/shared-types": "workspace:*",
-    "@vayusetu/gcp-clients": "workspace:*",
     "@fastify/cors": "^10.0.1",
     "@fastify/rate-limit": "^10.1.1",
     "@google-cloud/pubsub": "^4.9.0",
+    "@vayusetu/gcp-clients": "workspace:*",
+    "@vayusetu/gemini-client": "workspace:*",
+    "@vayusetu/shared-types": "workspace:*",
     "fastify": "^5.1.0",
     "fastify-plugin": "^5.0.1",
     "firebase-admin": "^12.6.0",

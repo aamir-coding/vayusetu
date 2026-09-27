@@ -7,4 +7,4 @@ region     = "asia-south1"
 # enable_ci_triggers              = true   # after: Cloud Build GitHub App installed + repo connected
 # github_owner                    = "your-org"
 # github_repo                     = "vayusetu"
-# dashboard_base_url              = "https://vayusetu-ncr-dev.web.app"
+# dashboard_base_url              = "https://vayusetu-ncr-dev-admin.web.app"

@@ -63,7 +63,7 @@ variable "maps_api_key_secret_populated" {
 variable "dashboard_base_url" {
   type        = string
   default     = null
-  description = "Admin dashboard origin used for alert deep links. Defaults to the Firebase Hosting default domain https://<project_id>.web.app. Must be https in deployed envs (FCM rejects non-https web-push links)."
+  description = "Admin dashboard origin used for alert deep links. Defaults to the admin Hosting site https://<project_id>-admin.web.app (firebase.tf). Must be https in deployed envs (FCM rejects non-https web-push links)."
 }
 
 variable "enable_alert_push_subscriptions" {
@@ -126,4 +126,141 @@ variable "openaq_api_key_secret_populated" {
   type        = bool
   default     = false
   description = "Set true only AFTER adding a version to the openaq-api-key secret."
+}
+
+# --- Phase 1: AI layer ---
+
+variable "enable_analysis_push_subscription" {
+  type        = bool
+  default     = false
+  description = "Push submission.created to analysis-service. Enable only AFTER its real image is deployed (the hello placeholder would ack and drop every report)."
+}
+
+variable "briefing_generator" {
+  type        = string
+  default     = "gemini"
+  description = "alert-service Pipeline C generator: gemini (Gemini Pro, with guards + template fallback) or template."
+  validation {
+    condition     = contains(["gemini", "template"], var.briefing_generator)
+    error_message = "briefing_generator must be gemini or template."
+  }
+}
+
+variable "gemini_location" {
+  type        = string
+  default     = "global"
+  description = "Vertex AI location for Gemini. The planned models answer only on `global` today (asia-south1 returns 404); switch when Model Garden lists them in India."
+}
+
+variable "gemini_triage_model" {
+  type    = string
+  default = "gemini-3.7-flash"
+}
+
+variable "gemini_briefing_model" {
+  type    = string
+  default = "gemini-3.1-pro-preview"
+}
+
+variable "vertex_location" {
+  type        = string
+  default     = "asia-south1"
+  description = "Vertex AI region for AutoML training, endpoints and batch prediction (data residency: India)."
+}
+
+variable "hotspot_scorer" {
+  type        = string
+  default     = "heuristic"
+  description = "hotspot-service scorer: heuristic (bootstrap until the first model is registered) | endpoint (online, always-on node) | batch (per-run job)."
+  validation {
+    condition     = contains(["heuristic", "endpoint", "batch"], var.hotspot_scorer)
+    error_message = "hotspot_scorer must be heuristic, endpoint or batch."
+  }
+}
+
+variable "hotspot_endpoint_id" {
+  type        = string
+  default     = ""
+  description = "Vertex AI endpoint id serving the hotspot model (hotspot_scorer = endpoint)."
+}
+
+variable "hotspot_model" {
+  type        = string
+  default     = ""
+  description = "Registry model resource (projects/.../models/<id>); batch scoring uses its `default` alias."
+}
+
+variable "enable_hotspot_push_subscription" {
+  type        = bool
+  default     = false
+  description = "Push analysis.completed to hotspot-service (fast path). Enable only after its real image is deployed."
+}
+
+variable "enable_model_schedules" {
+  type        = bool
+  default     = false
+  description = "Cloud Scheduler for hotspot hourly scoring and forecast 6-hourly runs. Enable after the images are deployed and the backfills have landed."
+}
+
+variable "forecaster" {
+  type        = string
+  default     = "persistence"
+  description = "forecast-service: persistence (bootstrap baseline) | batch (AutoML Forecasting via Vertex AI batch prediction)."
+  validation {
+    condition     = contains(["persistence", "batch"], var.forecaster)
+    error_message = "forecaster must be persistence or batch."
+  }
+}
+
+variable "forecast_model" {
+  type        = string
+  default     = ""
+  description = "Registry model resource (projects/.../models/<id>) for forecaster = batch; its `default` alias is used."
+}
+
+variable "ml_pipeline_submitters" {
+  type        = list(string)
+  default     = []
+  description = "IAM members (e.g. user:someone@example.com) allowed to submit Vertex AI Pipelines runs as the ml-pipelines service account."
+}
+
+variable "deploy_firestore_rules" {
+  type        = bool
+  default     = false
+  description = "Release packages/firestore-rules/firestore.rules to the project's Firestore (jurisdiction-scoped reads, no client writes)."
+}
+
+# ---- Federation Exchange (federation.tf)
+variable "federation_state_code" {
+  type        = string
+  description = "This deployment's identity on the National Exchange (NCR -> DL, Mumbai-Pune -> MH)."
+}
+
+variable "federation_owned_states" {
+  type        = list(string)
+  description = "States whose summary rows this deployment may publish/replace (NCR spans DL, HR, UP, RJ)."
+}
+
+variable "exchange_project_id" {
+  type        = string
+  default     = ""
+  description = "The National Exchange project (modules/exchange). Empty = sync job not scheduled."
+}
+
+variable "exchange_project_number" {
+  type        = string
+  default     = ""
+  description = "Exchange project NUMBER, for its Vertex AI service agent's cross-project model read."
+}
+
+variable "enable_federation_sync" {
+  type        = bool
+  default     = false
+  description = "Nightly federation-sync schedule (also needs exchange_project_id)."
+}
+
+variable "firebase_vapid_public_key" {
+  type        = string
+  default     = ""
+  description = "Web-push VAPID PUBLIC key (Firebase console > Cloud Messaging > Web Push certificates; not Terraform-manageable). Empty = the admin dashboard hides the push opt-in."
 }

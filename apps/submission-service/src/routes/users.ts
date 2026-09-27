@@ -1,20 +1,22 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import type { User } from '@vayusetu/shared-types';
+import { normalizeLanguage } from '@vayusetu/gcp-clients';
 import { usersCollection } from '../lib/collections.js';
 import { requireAuthUser } from '../plugins/auth.js';
 import { ApiHttpError } from '../lib/errors.js';
 
 const RegisterBodySchema = z.object({
   displayName: z.string().min(1).max(120),
-  preferredLanguage: z.string().min(2).max(10),
+  // Stored canonical (hi-IN, en-IN, mr-IN, pa-IN): every downstream Google API needs the full tag.
+  preferredLanguage: z.string().min(2).max(10).transform(normalizeLanguage),
   role: z.enum(['citizen', 'field_worker']),
 });
 
 const UpdateBodySchema = z
   .object({
     displayName: z.string().min(1).max(120).optional(),
-    preferredLanguage: z.string().min(2).max(10).optional(),
+    preferredLanguage: z.string().min(2).max(10).transform(normalizeLanguage).optional(),
     // Officials' dashboards register FCM tokens here (alert-service reads
     // them). De-duplicate and keep the 10 most recent: tokens accumulate per
     // browser/device, and every stale one costs a failed send per alert.
@@ -23,6 +25,9 @@ const UpdateBodySchema = z
       .max(50)
       .transform((tokens) => [...new Set(tokens)].slice(-10))
       .optional(),
+    // One-way upgrade only (API_CONTRACTS.md): a citizen who later turns out
+    // to be a field worker (Persona 2). Every other role change is out-of-band.
+    role: z.literal('field_worker').optional(),
   })
   .refine((body) => Object.keys(body).length > 0, { message: 'Provide at least one field to update' });
 
@@ -74,6 +79,10 @@ export default async function usersRoutes(app: FastifyInstance) {
       // this endpoint (only 400/401 are listed), but this is the correct
       // defensive behavior for a doc that genuinely doesn't exist.
       throw new ApiHttpError('NOT_FOUND', 'No profile registered for this account yet');
+    }
+    const current = snap.data()!;
+    if (patch.role && current.role !== 'citizen' && current.role !== 'field_worker') {
+      throw new ApiHttpError('FORBIDDEN_JURISDICTION', 'Official roles are provisioned out-of-band, never self-assigned');
     }
 
     await ref.set({ ...patch, updatedAt: new Date().toISOString() }, { merge: true });

@@ -1,0 +1,40 @@
+{
+  "name": "@vayusetu/analysis-service",
+  "version": "0.1.0",
+  "private": true,
+  "description": "VayuSetu Analysis Service -- Feature 1 'Snap & Sense'. Private Pub/Sub worker on submission.created: Speech-to-Text (voice notes), context assembly (nearest monitor, satellite, Air Quality API), Gemini Pipeline A triage + Pipeline D clarification, deterministic cross-validation, Pipeline B Text-to-Speech advisory, AnalysisResult write, analysis.completed publish. No public REST routes.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc --noEmit",
+    "start": "tsx src/index.ts",
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rimraf .turbo *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@google-cloud/speech": "^8.1.0",
+    "@google-cloud/text-to-speech": "^7.1.0",
+    "@vayusetu/gcp-clients": "workspace:*",
+    "@vayusetu/gemini-client": "workspace:*",
+    "@vayusetu/shared-types": "workspace:*",
+    "fastify": "^5.1.0",
+    "firebase-admin": "^12.6.0",
+    "pino": "^9.4.0",
+    "pino-pretty": "^11.2.2",
+    "tsx": "^4.19.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@types/node": "^22.7.5",
+    "eslint": "^9.13.0",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.15.0",
+    "vitest": "^2.1.3"
+  }
+}

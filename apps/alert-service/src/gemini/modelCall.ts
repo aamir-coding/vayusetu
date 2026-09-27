@@ -1,23 +1,44 @@
+import {
+  createGeminiClient,
+  forcedFunctionCall,
+  resolveLocation,
+  resolveModels,
+  type GenerativeModelTransport,
+} from '@vayusetu/gemini-client';
 import type { PipelineCModelCall } from './geminiBriefingGenerator.js';
 
+export interface PipelineCModelCallOptions {
+  project: string;
+  /** Test hook: a fake transport instead of Vertex AI. */
+  ai?: GenerativeModelTransport;
+  env?: Record<string, string | undefined>;
+}
+
 /**
- * ENGINEER 3 -- your Week 3 deliverable "Pipeline C implemented, wired into
- * alert-service" is the body of this ONE function, using
- * @vayusetu/gemini-client (Gemini 3.1 Pro). Contract (see PipelineCModelCall):
- *   - systemInstruction  -> the model's system instruction
- *   - functionDeclaration -> the single tool; force the call (mode ANY)
- *   - payload            -> JSON.stringify'd as the user turn
- *   - signal             -> abort the request on timeout
- *   - return             -> the function call's ARGS object, unvalidated
- * Everything else (timeout, schema validation, grounding guards, template
- * fallback, logging) is alert-service's and already tested.
+ * Pipeline C's model call (AI_PIPELINES.md): Gemini Pro on Vertex AI, forced
+ * to call draft_alert_briefing, payload JSON as the single user turn.
+ * Returns the function call's ARGS unvalidated -- geminiBriefingGenerator
+ * owns validation, grounding checks and the template fallback.
  *
- * Until then, BRIEFING_GENERATOR=gemini makes the service refuse to boot --
- * deliberately loud at deploy time instead of silent at the first alert.
+ * One retry at most: the caller's timeout (BRIEFING_TIMEOUT_MS) bounds the
+ * whole thing and must stay under the push subscription's ack deadline.
  */
-export function createPipelineCModelCall(): PipelineCModelCall {
-  throw new Error(
-    'Pipeline C model call is not implemented yet (apps/alert-service/src/gemini/modelCall.ts, Engineer 3). ' +
-      'Run with BRIEFING_GENERATOR=template until it lands.',
-  );
+export function createPipelineCModelCall(opts: PipelineCModelCallOptions): PipelineCModelCall {
+  const env = opts.env ?? process.env;
+  const ai = opts.ai ?? createGeminiClient({ project: opts.project, location: resolveLocation(env) });
+  const model = resolveModels(env).briefing;
+
+  return async ({ systemInstruction, functionDeclaration, payload, signal }) => {
+    const result = await forcedFunctionCall({
+      ai,
+      model,
+      systemInstruction,
+      functions: [functionDeclaration],
+      parts: [{ text: JSON.stringify(payload) }],
+      signal,
+      retry: { maxRetries: 1 },
+      temperature: 0.2,
+    });
+    return result.args;
+  };
 }

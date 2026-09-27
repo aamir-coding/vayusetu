@@ -28,7 +28,7 @@ const securityHeaders = {
   ],
 };
 // Service worker + manifest must never be cached, or clients pin an old app.
-const noCache = { source: '/@(sw.js|registerSW.js|manifest.webmanifest)', headers: [{ key: 'Cache-Control', value: 'no-cache' }] };
+const noCache = { source: '/@(sw.js|registerSW.js|firebase-messaging-sw.js|manifest.webmanifest)', headers: [{ key: 'Cache-Control', value: 'no-cache' }] };
 const immutableAssets = { source: '/assets/**', headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }] };
 
 const site = (target, app) => ({
@@ -41,7 +41,8 @@ const site = (target, app) => ({
 
 const config = {
   hosting: [site('citizen', 'citizen-pwa'), site('admin', 'admin-dashboard')],
-  firestore: { rules: 'firestore.rules', indexes: 'firestore.indexes.json' },
+  // Rules are also released by Terraform (firestore_rules.tf); same file.
+  firestore: { rules: 'packages/firestore-rules/firestore.rules' },
 };
 writeFileSync(new URL('../../firebase.json', import.meta.url), JSON.stringify(config, null, 2) + '\n');
 console.log(`firebase.json written for ${env} (${apiRewrites.length} API rewrites)`);

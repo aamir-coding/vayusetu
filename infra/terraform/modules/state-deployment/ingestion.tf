@@ -28,8 +28,10 @@ locals {
     ingest-cpcb             = { args = ["cpcb"], schedule = "15 * * * *", timeout = "900s", secrets = { DATA_GOV_IN_API_KEY = "cpcb-api-key" } }
     ingest-seed             = { args = ["seed"], schedule = "30 2 * * *", timeout = "1800s", secrets = {} }
     ingest-air-quality      = { args = ["air-quality", "--hours", "26"], schedule = "0 3 * * *", timeout = "3600s", secrets = { GOOGLE_MAPS_API_KEY = "google-maps-api-key" } }
+    ingest-aq-stations      = { args = ["air-quality", "--hours", "8", "--scope", "stations"], schedule = "50 5,11,17,23 * * *", timeout = "1800s", secrets = { GOOGLE_MAPS_API_KEY = "google-maps-api-key" } }
     ingest-weather          = { args = ["weather", "--mode", "observed"], schedule = "5 * * * *", timeout = "900s", secrets = { GOOGLE_MAPS_API_KEY = "google-maps-api-key" } }
     ingest-weather-forecast = { args = ["weather", "--mode", "forecast"], schedule = "10 */6 * * *", timeout = "900s", secrets = { GOOGLE_MAPS_API_KEY = "google-maps-api-key" } }
+    ingest-era5             = { args = ["era5"], schedule = "30 4 * * *", timeout = "1800s", secrets = {} }
     ingest-earth-engine     = { args = ["earth-engine"], schedule = "0 4 * * *", timeout = "3600s", secrets = {} }
     ingest-rollup           = { args = ["rollup"], schedule = "20 * * * *", timeout = "900s", secrets = {} }
   }

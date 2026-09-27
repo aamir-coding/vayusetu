@@ -17,7 +17,8 @@
     "back": "Back",
     "change": "Change",
     "verify": "Verify",
-    "skipForNow": "Skip for now"
+    "skipForNow": "Skip for now",
+    "remove": "Remove"
   },
   "capture": {
     "title": "What do you see?",
@@ -59,14 +60,28 @@
     "indeterminate": "We couldn't tell for sure from this photo — thank you for reporting. Our team will take a look.",
     "reportAnother": "Report Another",
     "failed": "This report couldn't be analyzed.",
-    "visibility": "Visibility ~{{meters}} m"
+    "visibility": "Visibility ~{{meters}} m",
+    "clarifyTitle": "One quick question",
+    "clarifyHint": "Your answer helps us find the source. Reply in any language.",
+    "clarifyPlaceholder": "Type your answer…",
+    "clarifyAddPhoto": "Add another photo",
+    "clarifySend": "Send answer",
+    "clarifySent": "Thanks! Re-checking your report.",
+    "clarifyFailed": "Couldn't send your answer. Please try again.",
+    "sensorsTitle": "What the sensors say",
+    "nearestMonitor": "Nearest monitor: AQI {{aqi}}",
+    "satelliteAod": "Satellite haze (AOD): {{aod}}",
+    "yourSensorPm25": "Your sensor PM2.5: {{value}} µg/m³",
+    "yourSensorPm10": "Your sensor PM10: {{value}} µg/m³",
+    "agreement": "Photo and sensor data agree {{pct}}%"
   },
   "reports": {
     "title": "My Reports",
     "titleFieldWorker": "My Area Reports",
     "empty": "No reports yet",
     "emptyHint": "Your reports will show up here once you send your first one.",
-    "emptyAction": "Report Now"
+    "emptyAction": "Report Now",
+    "awaitingAnswer": "Answer needed"
   },
   "auth": {
     "verifyTitle": "Verify your phone",

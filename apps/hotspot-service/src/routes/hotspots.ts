@@ -1,0 +1,75 @@
+import type { FastifyInstance } from 'fastify';
+import { cellToLatLng } from 'h3-js';
+import { z } from 'zod';
+import { getDb } from '@vayusetu/gcp-clients';
+import type { HotspotCell } from '@vayusetu/shared-types';
+import { requireAuthUser } from '../plugins/auth.js';
+import { ApiHttpError } from '../lib/errors.js';
+import type { DataAdapters } from '../adapters/data.js';
+
+const BBox = z
+  .string()
+  .transform((s) => s.split(',').map(Number))
+  .refine((a) => a.length === 4 && a.every(Number.isFinite), 'bbox must be minLat,minLng,maxLat,maxLng')
+  .refine(([minLat, minLng, maxLat, maxLng]) => minLat! < maxLat! && minLng! < maxLng!, 'bbox min must be below max');
+
+const ListQuery = z.object({
+  corridorId: z.string().regex(/^[a-z0-9-]{1,64}$/),
+  bbox: BBox.optional(),
+  sinceHour: z.string().datetime({ offset: true }).optional(),
+});
+
+const HistoryQuery = z.object({ range: z.enum(['24h', '7d', '30d']).default('7d') });
+const RANGE_MS = { '24h': 86_400_000, '7d': 7 * 86_400_000, '30d': 30 * 86_400_000 } as const;
+const H3 = /^[0-9a-f]{15}$/i;
+
+/** Firestore docs carry non-contract helpers (modelScore, expireAt) -- strip them from responses. */
+function toContract(d: Record<string, unknown>): HotspotCell {
+  const { modelScore: _m, expireAt: _e, ...cell } = d;
+  void _m;
+  void _e;
+  return cell as unknown as HotspotCell;
+}
+
+export function inBBox(h3Index: string, [minLat, minLng, maxLat, maxLng]: number[]): boolean {
+  const [lat, lng] = cellToLatLng(h3Index);
+  return lat >= minLat! && lat <= maxLat! && lng >= minLng! && lng <= maxLng!;
+}
+
+export default async function hotspotsRoutes(app: FastifyInstance, opts: { data: DataAdapters }) {
+  // GET /hotspots?corridorId=&bbox=&sinceHour= -- API_CONTRACTS.md 4.2.
+  // Without sinceHour: the latest scored hour (what the live heatmap shows).
+  app.get('/hotspots', async (request, reply) => {
+    requireAuthUser(request);
+    const q = ListQuery.parse(request.query);
+    const col = getDb().collection('hotspots');
+    let docs: Array<Record<string, unknown>>;
+    if (q.sinceHour) {
+      const since = new Date(q.sinceHour).toISOString();
+      docs = (await col.where('corridorId', '==', q.corridorId).where('timestampHour', '>=', since).orderBy('timestampHour', 'desc').limit(5000).get())
+        .docs.map((d) => d.data());
+    } else {
+      const latest = (await col.where('corridorId', '==', q.corridorId).orderBy('timestampHour', 'desc').limit(1).get()).docs[0];
+      const hour = latest?.data().timestampHour as string | undefined;
+      docs = hour
+        ? (await col.where('corridorId', '==', q.corridorId).where('timestampHour', '==', hour).get()).docs.map((d) => d.data())
+        : [];
+    }
+    let cells = docs.map(toContract);
+    if (q.bbox) cells = cells.filter((c) => inBBox(c.h3Index, q.bbox!));
+    cells.sort((a, b) => b.hotspotConfidenceScore - a.hotspotConfidenceScore);
+    reply.send({ cells });
+  });
+
+  // GET /hotspots/:h3Index/history?range=24h|7d|30d -- the full hourly grid (BigQuery).
+  app.get('/hotspots/:h3Index/history', async (request, reply) => {
+    requireAuthUser(request);
+    const { h3Index } = request.params as { h3Index: string };
+    const { range } = HistoryQuery.parse(request.query);
+    if (!H3.test(h3Index) || !(await opts.data.cellExists(h3Index))) {
+      throw new ApiHttpError('NOT_FOUND', 'Unknown H3 cell (not in any corridor grid)');
+    }
+    const since = new Date(Date.now() - RANGE_MS[range]).toISOString();
+    reply.send({ h3Index, points: await opts.data.history(h3Index, since) });
+  });
+}

@@ -14,23 +14,26 @@
 
 locals {
   ci_shared_paths = {
-    backend  = ["packages/shared-types/**", "packages/gcp-clients/**"]
+    backend  = ["packages/shared-types/**", "packages/gcp-clients/**", "packages/gemini-client/**"]
     frontend = ["packages/shared-types/**", "packages/ui-components/**", "packages/config/**"] # config = shared Tailwind tokens
   }
   ci_root_paths = ["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml", "tsconfig.json", "turbo.json", ".dockerignore"]
 
-  # deploy = true only for Cloud Run services whose yaml builds an image.
-  # Frontends validate only: their Firebase Hosting deploy is Engineer 1's
-  # Week 4 deliverable. Engineer 3's services (analysis/hotspot/forecast)
-  # join by adding infra/cloudbuild/<name>.yaml + one line here, once their
-  # Dockerfiles exist -- see WEEK2_SETUP.md.
+  # deploy = true: services build/push/deploy a Cloud Run image; frontends
+  # build with their frontend-env secret and release to Firebase Hosting
+  # (hosting.tf).
   ci_apps = {
     submission-service = { deploy = true, paths = local.ci_shared_paths.backend }
     alert-service      = { deploy = true, paths = local.ci_shared_paths.backend }
-    citizen-pwa        = { deploy = false, paths = local.ci_shared_paths.frontend }
-    admin-dashboard    = { deploy = false, paths = local.ci_shared_paths.frontend }
+    analysis-service   = { deploy = true, paths = local.ci_shared_paths.backend }
+    hotspot-service    = { deploy = true, paths = local.ci_shared_paths.backend }
+    forecast-service   = { deploy = true, paths = local.ci_shared_paths.backend }
+    federation-service = { deploy = true, paths = local.ci_shared_paths.backend }
+    citizen-pwa        = { deploy = true, paths = local.ci_shared_paths.frontend }
+    admin-dashboard    = { deploy = true, paths = local.ci_shared_paths.frontend }
   }
-  ci_deployable = { for k, v in local.ci_apps : k => v if v.deploy }
+  # Cloud Run services CI deploys (actAs on their runtime SAs); frontends have none.
+  ci_deployable = { for k, v in local.ci_apps : k => v if v.deploy && contains(keys(local.service_accounts), k) }
 }
 
 resource "google_service_account" "cloudbuild_deployer" {

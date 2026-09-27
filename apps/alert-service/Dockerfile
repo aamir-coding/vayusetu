@@ -16,6 +16,7 @@ FROM base AS deps
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.json ./
 COPY packages/shared-types/package.json packages/shared-types/package.json
 COPY packages/gcp-clients/package.json packages/gcp-clients/package.json
+COPY packages/gemini-client/package.json packages/gemini-client/package.json
 COPY apps/alert-service/package.json apps/alert-service/package.json
 RUN pnpm install --frozen-lockfile --filter @vayusetu/alert-service...
 
@@ -23,6 +24,7 @@ RUN pnpm install --frozen-lockfile --filter @vayusetu/alert-service...
 FROM deps AS build
 COPY packages/shared-types packages/shared-types
 COPY packages/gcp-clients packages/gcp-clients
+COPY packages/gemini-client packages/gemini-client
 COPY apps/alert-service apps/alert-service
 RUN pnpm --filter @vayusetu/shared-types build
 RUN pnpm --filter @vayusetu/alert-service build

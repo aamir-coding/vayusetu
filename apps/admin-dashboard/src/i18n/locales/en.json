@@ -1,0 +1,144 @@
+{
+  "app": {
+    "console": "Admin Console",
+    "loginTitle": "VayuSetu Admin Console",
+    "loginSubtitle": "Jurisdiction-filtered alerts, hotspots, and forecasts."
+  },
+  "nav": {
+    "alerts": "Alert Queue",
+    "hotspots": "Hotspot Map",
+    "forecast": "Forecast",
+    "federation": "Federation",
+    "liteMode": "Lite Mode",
+    "liteModeToggle": "Toggle low-bandwidth Lite Mode",
+    "signOut": "Sign out",
+    "language": "Language",
+    "enablePush": "Enable alert notifications",
+    "pushOn": "Alert notifications on",
+    "pushBlocked": "Notifications are blocked in this browser"
+  },
+  "role": {
+    "district_admin": "District Admin",
+    "state_admin": "State Admin",
+    "super_admin": "Super Admin"
+  },
+  "login": {
+    "mockHint": "Mock mode — accounts are normally provisioned out-of-band by a super_admin. Choose a persona to explore the console.",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign In",
+    "failed": "Sign-in failed"
+  },
+  "common": {
+    "loading": "Loading",
+    "close": "Close"
+  },
+  "corridor": {
+    "ncr-airshed": "Delhi-NCR Airshed",
+    "mumbai-pune-corridor": "Mumbai–Pune Industrial Corridor"
+  },
+  "source": {
+    "crop_residue_burning": "Crop residue burning",
+    "construction_dust": "Construction dust",
+    "vehicular_smog": "Vehicular smog",
+    "industrial_emission": "Industrial emission",
+    "open_waste_burning": "Open waste burning",
+    "no_visible_pollution": "No visible pollution",
+    "indeterminate": "Indeterminate",
+    "mixed": "Mixed sources",
+    "unknown": "Unknown"
+  },
+  "alerts": {
+    "title": "Alert Queue",
+    "subtitle": "Jurisdiction-filtered · sorted by severity, then newest first",
+    "live": "Live",
+    "polling": "Polling",
+    "all": "All",
+    "status": {
+      "new": "New",
+      "acknowledged": "Acknowledged",
+      "in_progress": "In Progress",
+      "resolved": "Resolved",
+      "dismissed": "Dismissed"
+    },
+    "loading": "Loading alerts…",
+    "emptyTitle": "No alerts in this view",
+    "emptyHint": "Nothing matches the current filter for your jurisdiction.",
+    "recommendedActions": "Recommended actions",
+    "publicAdvisory": "Public advisory",
+    "auditTrail": "Audit trail",
+    "markAs": "Mark {{status}}",
+    "newAlert": "New {{severity}} alert",
+    "justNow": "just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago"
+  },
+  "hotspots": {
+    "title": "Hotspot Map",
+    "subtitle": "Fused hourly confidence grid · {{cells}} cells · {{hidden}} hidden (no monitor within 3 km)",
+    "hiddenLegend": "Amber outline = hidden hotspot",
+    "selectCell": "Select a cell to see its signals and the last 7 days of scores.",
+    "confidence": "{{pct}}% confidence",
+    "hiddenHotspot": "hidden hotspot",
+    "last7Days": "Last 7 days",
+    "notEnoughHistory": "Not enough scored hours yet.",
+    "modelHour": "Model {{model}} · hour {{hour}} UTC",
+    "signals": {
+      "citizenReports": "Citizen reports",
+      "avgSeverity": "Avg citizen severity",
+      "aod": "Satellite AOD",
+      "no2": "Satellite NO₂",
+      "fires": "Fire detections",
+      "nearestMonitor": "Nearest monitor",
+      "deltaAqi": "Δ AQI vs monitor"
+    },
+    "table": {
+      "cell": "H3 Cell",
+      "classification": "Classification",
+      "confidence": "Confidence",
+      "hidden": "Hidden",
+      "reports": "Reports",
+      "updated": "Updated"
+    }
+  },
+  "forecast": {
+    "title": "72-Hour Forecast",
+    "subtitle": "Corridor AQI trajectory, scored every 6 hours",
+    "none": "No forecast available for this corridor.",
+    "horizon": "Horizon",
+    "predictedAqi": "Predicted AQI",
+    "range": "Range",
+    "grapStage": "GRAP Stage",
+    "runInfo": "Run {{time}} IST · model {{model}}",
+    "trendTitle": "+24h prediction across the last 7 days of runs",
+    "keyDrivers": "Key drivers"
+  },
+  "federation": {
+    "title": "Federation",
+    "subtitle": "Batch export/import of trained model artifacts and k-anonymized aggregates — not gradient-level federated learning.",
+    "tabModels": "Shared Models",
+    "tabExchange": "Cross-state View",
+    "tabResources": "Resource Coordination",
+    "active": "Active imported model:",
+    "noModels": "No shared models available yet",
+    "noModelsHint": "Other states publish nightly — check back after the next sync.",
+    "records": "{{count}} records · shared {{date}}",
+    "import": "Import",
+    "importSuperOnly": "Importing into production is super_admin only (the highest-blast-radius action).",
+    "imported": "Model imported and activated",
+    "importBlocked": "Import blocked",
+    "postRequest": "Post a resource request",
+    "resourceType": "Resource type",
+    "quantity": "Quantity",
+    "post": "Post Request",
+    "posted": "Resource request posted",
+    "weekSummary": "Week of {{week}} · {{cells}} generalized cells (res 6) across {{states}} states",
+    "exchangeIntro": "Weekly k-anonymized summaries from every state on the Exchange",
+    "noSummaries": "No shared summaries for this area yet",
+    "noSummariesHint": "States publish last week's aggregates nightly, once enough citizens have reported (k-anonymity floor).",
+    "byState": "By contributing state",
+    "byStateHint": "Mean of cell averages, latest week",
+    "stateCells": "{{count}} cells · {{pct}}%"
+  }
+}

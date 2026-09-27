@@ -56,3 +56,73 @@ variable "openaq_api_key_secret_populated" {
   type    = bool
   default = false
 }
+
+variable "enable_analysis_push_subscription" {
+  type    = bool
+  default = false
+}
+
+variable "enable_hotspot_push_subscription" {
+  type    = bool
+  default = false
+}
+
+variable "enable_model_schedules" {
+  type    = bool
+  default = false
+}
+
+variable "hotspot_scorer" {
+  type    = string
+  default = "heuristic"
+}
+
+variable "hotspot_model" {
+  type    = string
+  default = ""
+}
+
+variable "forecaster" {
+  type    = string
+  default = "persistence"
+}
+
+variable "forecast_model" {
+  type    = string
+  default = ""
+}
+
+variable "ml_pipeline_submitters" {
+  type    = list(string)
+  default = []
+}
+
+variable "briefing_generator" {
+  type    = string
+  default = "gemini"
+}
+
+variable "deploy_firestore_rules" {
+  type    = bool
+  default = false
+}
+
+variable "exchange_project_id" {
+  type    = string
+  default = ""
+}
+
+variable "exchange_project_number" {
+  type    = string
+  default = ""
+}
+
+variable "enable_federation_sync" {
+  type    = bool
+  default = false
+}
+
+variable "firebase_vapid_public_key" {
+  type    = string
+  default = ""
+}
