@@ -154,9 +154,9 @@ run "ci_triggers_path_filtered_and_deploy_gated" {
   assert {
     condition = (
       google_cloudbuild_trigger.main["alert-service"].substitutions["_DEPLOY"] == "true" &&
-      google_cloudbuild_trigger.main["citizen-pwa"].substitutions["_DEPLOY"] == "false"
+      google_cloudbuild_trigger.main["citizen-pwa"].substitutions["_DEPLOY"] == "true"
     )
-    error_message = "Only backend services deploy from CI in Week 2."
+    error_message = "Services and frontends (Firebase Hosting) deploy from main."
   }
   assert {
     condition = (
