@@ -1,6 +1,6 @@
 import { getDb, NonRetryableEventError } from '@vayusetu/gcp-clients';
 import type { AnalysisResult, HotspotCell, PollutionSourceType, Submission } from '@vayusetu/shared-types';
-import { hiddenThreshold, citizenProbability, fuse, hourIso, hourKey } from './fusion.js';
+import { citizenProbability, fuse, hourIso, hourKey } from './fusion.js';
 
 /**
  * analysis.completed fast path: a verified citizen report re-scores its cell
@@ -78,7 +78,7 @@ export async function handleAnalysisCompleted(
     corridorId: cell.corridorId,
     timestampHour,
     hotspotConfidenceScore: score,
-    isHidden: score >= hiddenThreshold(fresh ? latest.modelVersion : undefined, deps.config) && !cell.hasMonitorWithinRadius,
+    isHidden: score >= deps.config.hiddenMinConfidence && !cell.hasMonitorWithinRadius,
     classification: mode,
     contributingSignals: signals,
     modelVersion: fresh ? `${latest.modelVersion}+citizen` : 'citizen-evidence',

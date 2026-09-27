@@ -1,6 +1,7 @@
 import type { HotspotCell, PollutionSourceType } from '@vayusetu/shared-types';
 import {
-  hiddenThreshold,
+  calibrate,
+  isModelVersion,
   hourIso,
   scoreCell,
   selectForPublication,
@@ -14,6 +15,7 @@ export interface HourlyConfig {
   hiddenMinConfidence: number;
   modelHiddenMinConfidence?: number;
   firestoreMinScore: number;
+  firestoreMinCells?: number;
   firestoreMaxCells: number;
   alertMinScore: number;
   alertMaxPerCorridor: number;
@@ -55,9 +57,11 @@ export async function runHourly(hourTs: string | Date, deps: HourlyDeps): Promis
     deps.scorer.score(rows, { hourIso: hour, inputTable }),
     deps.citizenModes(hour),
   ]);
+  const { hiddenMinConfidence, modelHiddenMinConfidence } = deps.config;
+  const onScale = (p: number) => (isModelVersion(modelVersion) ? calibrate(p, modelHiddenMinConfidence, hiddenMinConfidence) : p);
   const scored = rows.map((row, i) =>
-    scoreCell(row, probabilities[i] ?? 0, modelVersion, {
-      hiddenMinConfidence: hiddenThreshold(modelVersion, deps.config),
+    scoreCell(row, onScale(probabilities[i] ?? 0), modelVersion, {
+      hiddenMinConfidence,
       citizenMode: modes.get(row.h3_index),
     }),
   );
