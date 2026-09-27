@@ -269,3 +269,12 @@ run "frontend_build_config_comes_from_terraform" {
     error_message = "Frontends deploy to Hosting; they add no runtime SA to act as."
   }
 }
+
+run "deployed_pwa_can_upload" {
+  command = plan
+
+  assert {
+    condition     = contains(google_storage_bucket.citizen_media.cors[0].origin, "https://vayusetu-test.web.app") && contains(google_storage_bucket.citizen_media.cors[0].origin, "http://localhost:5173")
+    error_message = "The citizen Hosting origin must pass the upload CORS preflight (27 Sep rehearsal bug), and dev stays allowed."
+  }
+}
