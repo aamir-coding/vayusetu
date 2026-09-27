@@ -1,0 +1,62 @@
+{
+  "common.remove": {
+    "sourceHash": "c3812fc4acb861d5",
+    "text": "काढून टाका"
+  },
+  "result.clarifyTitle": {
+    "sourceHash": "5ed5854e252b567c",
+    "text": "एक छोटासा प्रश्न"
+  },
+  "result.clarifyHint": {
+    "sourceHash": "83397ae4b4f0deca",
+    "text": "तुमच्या उत्तरामुळे आम्हाला स्रोत शोधण्यास मदत होते. कोणत्याही भाषेत उत्तर द्या."
+  },
+  "result.clarifyPlaceholder": {
+    "sourceHash": "8666026a31fa7dea",
+    "text": "तुमचे उत्तर टाईप करा…"
+  },
+  "result.clarifyAddPhoto": {
+    "sourceHash": "fef05d42a999d1c9",
+    "text": "आणखी एक फोटो जोडा"
+  },
+  "result.clarifySend": {
+    "sourceHash": "18737070e41c09dd",
+    "text": "उत्तर पाठवा"
+  },
+  "result.clarifySent": {
+    "sourceHash": "a0a6a743f2306cce",
+    "text": "धन्यवाद! तुमचा अहवाल पुन्हा तपासत आहे."
+  },
+  "result.clarifyFailed": {
+    "sourceHash": "abd1b97203b76f47",
+    "text": "तुमचे उत्तर पाठवता आले नाही. कृपया पुन्हा प्रयत्न करा."
+  },
+  "result.sensorsTitle": {
+    "sourceHash": "5777c624b4fe068c",
+    "text": "सेन्सर काय सांगतात"
+  },
+  "result.nearestMonitor": {
+    "sourceHash": "c50c6b9a3d3c02e2",
+    "text": "जवळचा मॉनिटर: AQI {{aqi}}"
+  },
+  "result.satelliteAod": {
+    "sourceHash": "685798eb802a166b",
+    "text": "उपग्रह धूसरता (एओडी): {{aod}}"
+  },
+  "result.yourSensorPm25": {
+    "sourceHash": "106fe469f5497e13",
+    "text": "तुमच्या सेन्सरचे PM2.5: {{value}} µg/m³"
+  },
+  "result.yourSensorPm10": {
+    "sourceHash": "f9c14716493bb94c",
+    "text": "तुमच्या सेन्सरमधील PM10: {{value}} µg/m³"
+  },
+  "result.agreement": {
+    "sourceHash": "08aabf8812e02122",
+    "text": "फोटो आणि सेन्सर डेटा जुळतात {{pct}} %"
+  },
+  "reports.awaitingAnswer": {
+    "sourceHash": "1a6227e081977c7d",
+    "text": "उत्तराची आवश्यकता आहे"
+  }
+}

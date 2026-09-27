@@ -24,9 +24,9 @@ steps:
         corepack enable
         pnpm install --frozen-lockfile
         pnpm turbo run build type-check lint --ui=stream
-        pnpm turbo run test --ui=stream --concurrency=2 --filter='!@vayusetu/ingestion-jobs'
+        pnpm turbo run test --ui=stream --concurrency=2 --filter='!@vayusetu/ingestion-jobs' --filter='!@vayusetu/ml' --filter='!@vayusetu/firestore-rules'
 
-  - id: python
+  - id: python-ingestion
     name: python:3.12-slim
     waitFor: ['-']
     dir: apps/ingestion-jobs
@@ -37,6 +37,18 @@ steps:
         set -euo pipefail
         pip install --quiet -r requirements-dev.txt
         python -m pytest -q
+
+  - id: python-ml
+    name: python:3.11-slim
+    waitFor: ['-']
+    dir: ml
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        pip install --quiet -r requirements-dev.txt
+        python -m pytest -q   # includes compiling both Vertex AI pipelines offline
 
   - id: terraform
     name: hashicorp/terraform:1.9
@@ -51,3 +63,17 @@ steps:
         terraform init -backend=false -input=false
         terraform validate
         terraform test
+
+  # Firestore security rules against the real emulator (needs a JRE).
+  - id: firestore-rules
+    name: node:22
+    waitFor: ['-']
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        apt-get update -qq && apt-get install -y -qq openjdk-17-jre-headless > /dev/null
+        corepack enable
+        pnpm install --frozen-lockfile --filter @vayusetu/firestore-rules
+        pnpm --filter @vayusetu/firestore-rules test

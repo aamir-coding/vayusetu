@@ -104,12 +104,9 @@ export interface CreateSubmissionRequest {
   geo: GeoPoint;
   capturedAt: string;
   deviceMeta?: Submission['deviceMeta'];
-  /** Field-worker-only, Product Spec Feature 1: optional PM2.5/PM10 sensor
-   *  reading alongside the photo. Not present in API_CONTRACTS.md §4.1's
-   *  Submission or the POST /submissions request body, so it is NOT sent
-   *  to the server yet — flagging this to Engineer 2/3 as a probable
-   *  contract gap rather than inventing a field. Kept client-side only
-   *  (shown in the confirmation UI) until the contract is extended. */
+  /** Field-worker-only (Product Spec Feature 1): handheld PM2.5/PM10, ug/m3.
+   *  Submission.fieldSensorReading in API_CONTRACTS.md 4.1; the server
+   *  ignores it for citizens. */
   fieldSensorReading?: { pm25?: number; pm10?: number };
 }
 
@@ -147,6 +144,10 @@ export const submissionsApi = {
 
   retryAnalysis: (token: string, id: string) =>
     request<{ submission: Submission }>(`/submissions/${id}/retry-analysis`, token, { method: 'POST' }),
+
+  /** Pipeline D: answer the clarifying question (text and/or one more photo). */
+  clarify: (token: string, id: string, body: { answerText?: string; answerPhotoStorageUrl?: string }) =>
+    request<{ submission: Submission }>(`/submissions/${id}/clarify`, token, { method: 'POST', body: JSON.stringify(body) }),
 };
 
 // ===================== Analysis =====================

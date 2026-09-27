@@ -7,9 +7,33 @@ import { LiteModeProvider } from './hooks/useLiteMode';
 import { AppShell } from './components/AppShell';
 import { LoginScreen } from './screens/LoginScreen';
 import { AlertQueue } from './screens/AlertQueue';
-import { HotspotMap } from './screens/HotspotMap';
-import { ForecastView } from './screens/ForecastView';
-import { FederationPanel } from './screens/FederationPanel';
+
+// Route-level splitting: the map (h3-js + Maps loader), charts (recharts) and
+// federation screens load on first visit, so the alert queue -- the screen an
+// official opens on a slow connection -- ships without them.
+const HotspotMap = React.lazy(() =>
+  import('./screens/HotspotMap').then((m) => ({ default: m.HotspotMap })),
+);
+const ForecastView = React.lazy(() =>
+  import('./screens/ForecastView').then((m) => ({ default: m.ForecastView })),
+);
+const FederationPanel = React.lazy(() =>
+  import('./screens/FederationPanel').then((m) => ({ default: m.FederationPanel })),
+);
+
+function Lazy({ children }: { children: React.ReactNode }) {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="flex h-64 items-center justify-center">
+          <Spinner label="Loading" />
+        </div>
+      }
+    >
+      {children}
+    </React.Suspense>
+  );
+}
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
@@ -48,13 +72,29 @@ export function App() {
                   <Route element={<AppShell />}>
                     <Route index element={<Navigate to="/alerts" replace />} />
                     <Route path="alerts" element={<AlertQueue />} />
-                    <Route path="hotspots" element={<HotspotMap />} />
-                    <Route path="forecast" element={<ForecastView />} />
+                    <Route
+                      path="hotspots"
+                      element={
+                        <Lazy>
+                          <HotspotMap />
+                        </Lazy>
+                      }
+                    />
+                    <Route
+                      path="forecast"
+                      element={
+                        <Lazy>
+                          <ForecastView />
+                        </Lazy>
+                      }
+                    />
                     <Route
                       path="federation"
                       element={
                         <RequireStateAdmin>
-                          <FederationPanel />
+                          <Lazy>
+                            <FederationPanel />
+                          </Lazy>
                         </RequireStateAdmin>
                       }
                     />

@@ -34,9 +34,11 @@ mock_provider "google-beta" {
 }
 
 variables {
-  project_id       = "vayusetu-test"
-  region           = "asia-south1"
-  environment_name = "ncr-test"
+  project_id              = "vayusetu-test"
+  region                  = "asia-south1"
+  environment_name        = "ncr-test"
+  federation_state_code   = "DL"
+  federation_owned_states = ["DL", "HR", "UP", "RJ"]
 }
 
 run "defaults_are_safe" {
@@ -96,10 +98,12 @@ run "alert_service_env_matches_push_config" {
     condition     = google_pubsub_subscription.alert_service_push["forecast.updated"].dead_letter_policy[0].max_delivery_attempts == 10
     error_message = "Push subscriptions must dead-letter after bounded retries."
   }
-  # Other engineers' services get no Engineer-2 env injected.
+  # Env is per-service: federation-service gets its own block, never alert-service's push config.
   assert {
-    condition     = length(google_cloud_run_v2_service.service["hotspot-service"].template[0].containers[0].env) == 1
-    error_message = "Only GOOGLE_CLOUD_PROJECT should be set on services Engineer 2 doesn't own."
+    condition = !contains(
+      [for e in google_cloud_run_v2_service.service["federation-service"].template[0].containers[0].env : e.name], "PUBSUB_PUSH_AUDIENCE",
+    )
+    error_message = "alert-service's push config must not leak into other services."
   }
 }
 
@@ -119,8 +123,14 @@ run "maps_secret_wired_when_populated" {
   assert {
     condition = length([
       for e in google_cloud_run_v2_service.service["analysis-service"].template[0].containers[0].env : e if e.name == "GOOGLE_MAPS_API_KEY"
+    ]) == 1
+    error_message = "analysis-service needs the Maps key (Air Quality API context) once populated."
+  }
+  assert {
+    condition = length([
+      for e in google_cloud_run_v2_service.service["hotspot-service"].template[0].containers[0].env : e if e.name == "GOOGLE_MAPS_API_KEY"
     ]) == 0
-    error_message = "Only the geocoding services get the Maps key."
+    error_message = "Only services that call Maps Platform APIs get the Maps key."
   }
 }
 
@@ -134,8 +144,8 @@ run "ci_triggers_path_filtered_and_deploy_gated" {
   }
 
   assert {
-    condition     = length(google_cloudbuild_trigger.pr) == 4 && length(google_cloudbuild_trigger.main) == 4
-    error_message = "Expected a PR and a main trigger for each of the 4 apps."
+    condition     = length(google_cloudbuild_trigger.pr) == 8 && length(google_cloudbuild_trigger.main) == 8
+    error_message = "Expected a PR and a main trigger for each of the 8 apps."
   }
   assert {
     condition     = alltrue([for t in google_cloudbuild_trigger.pr : t.substitutions["_DEPLOY"] == "false"])
@@ -144,9 +154,9 @@ run "ci_triggers_path_filtered_and_deploy_gated" {
   assert {
     condition = (
       google_cloudbuild_trigger.main["alert-service"].substitutions["_DEPLOY"] == "true" &&
-      google_cloudbuild_trigger.main["citizen-pwa"].substitutions["_DEPLOY"] == "false"
+      google_cloudbuild_trigger.main["citizen-pwa"].substitutions["_DEPLOY"] == "true"
     )
-    error_message = "Only backend services deploy from CI in Week 2."
+    error_message = "Services and frontends (Firebase Hosting) deploy from main."
   }
   assert {
     condition = (
@@ -158,8 +168,8 @@ run "ci_triggers_path_filtered_and_deploy_gated" {
   }
   # actAs only on the runtime SAs CI deploys -- never project-wide.
   assert {
-    condition     = length(google_service_account_iam_member.cloudbuild_act_as_runtime) == 2
-    error_message = "Deployer should act as exactly the 2 deployable services' runtime SAs."
+    condition     = length(google_service_account_iam_member.cloudbuild_act_as_runtime) == 6
+    error_message = "Deployer should act as exactly the 6 deployable services' runtime SAs."
   }
 }
 

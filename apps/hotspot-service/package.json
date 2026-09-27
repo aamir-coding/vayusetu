@@ -1,0 +1,42 @@
+{
+  "name": "@vayusetu/hotspot-service",
+  "version": "0.1.0",
+  "private": true,
+  "description": "VayuSetu Hotspot Fusion Engine (PRODUCT_SPEC Feature 2): hourly Cloud Run Job scoring every res-8 cell with the Hotspot Confidence Model (Vertex AI AutoML Tabular) fused with citizen evidence; analysis.completed fast path; GET /hotspots, GET /hotspots/:h3Index/history.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc --noEmit",
+    "start": "tsx src/index.ts",
+    "job:hourly": "tsx src/jobs/scoreHourly.ts",
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "clean": "rimraf .turbo *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.1",
+    "@fastify/rate-limit": "^10.1.1",
+    "@google-cloud/aiplatform": "^7.4.0",
+    "@vayusetu/gcp-clients": "workspace:*",
+    "@vayusetu/shared-types": "workspace:*",
+    "fastify": "^5.1.0",
+    "fastify-plugin": "^5.0.1",
+    "firebase-admin": "^12.6.0",
+    "h3-js": "^4.1.0",
+    "pino": "^9.4.0",
+    "pino-pretty": "^11.2.2",
+    "tsx": "^4.19.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@types/node": "^22.7.5",
+    "eslint": "^9.13.0",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.15.0",
+    "vitest": "^2.1.3"
+  }
+}

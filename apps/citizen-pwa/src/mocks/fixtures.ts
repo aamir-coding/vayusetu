@@ -17,6 +17,9 @@ export const db = {
 const NCR_DELHI: Jurisdiction = { stateCode: 'DL', districtCode: 'DL-CENTRAL' };
 
 let submissionSeq = 0;
+// Separate from submissionSeq: sharing one counter made every create advance it
+// twice, so only two of the four analysis presets ever appeared.
+let idSeq = 0;
 
 /** Decode the uid from either a real Firebase ID token (unverified, mock-purposes-only) or our own `mock-token:<uid>` shape. */
 export function extractUid(authHeader: string | null): string {
@@ -100,14 +103,17 @@ export function fabricateAnalysis(submission: Submission): AnalysisResult {
       text: preset.advisoryEn,
       language: submission.jurisdiction ? 'en-IN' : 'en-IN',
     },
+    ...(preset.sourceClassification === 'indeterminate' && !(submission.clarifications ?? []).length
+      ? { pendingClarification: { turn: 1 as const, question: 'Is the smoke coming from a fire on the ground, or from vehicles on the road?', language: 'en-IN' } }
+      : {}),
     modelVersion: 'gemini-3.7-flash@mock',
     createdAt: new Date().toISOString(),
   };
 }
 
 export function nextSubmissionId(): string {
-  submissionSeq += 1;
-  return `sub-${Date.now()}-${submissionSeq}`;
+  idSeq += 1;
+  return `sub-${Date.now()}-${idSeq}`;
 }
 
 export const DEFAULT_JURISDICTION = NCR_DELHI;

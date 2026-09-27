@@ -1,0 +1,458 @@
+{
+  "app.console": {
+    "sourceHash": "104bfb7a21182419",
+    "text": "व्यवस्थापक कंसोल"
+  },
+  "app.loginTitle": {
+    "sourceHash": "e8b441426df5cbdc",
+    "text": "वायुसेतु एडमिन कंसोल"
+  },
+  "app.loginSubtitle": {
+    "sourceHash": "9bc2a5de96d52091",
+    "text": "क्षेत्राधिकार के आधार पर फ़िल्टर किए गए अलर्ट, हॉटस्पॉट और पूर्वानुमान।"
+  },
+  "nav.alerts": {
+    "sourceHash": "0e1a919f914cb467",
+    "text": "अलर्ट कतार"
+  },
+  "nav.hotspots": {
+    "sourceHash": "2075df611438810b",
+    "text": "हॉटस्पॉट मानचित्र"
+  },
+  "nav.forecast": {
+    "sourceHash": "75205de8b342f506",
+    "text": "पूर्वानुमान"
+  },
+  "nav.federation": {
+    "sourceHash": "f8c6e8016cfb9bea",
+    "text": "फेडरेशन"
+  },
+  "nav.liteMode": {
+    "sourceHash": "5a6705a841815cd3",
+    "text": "लाइट मोड"
+  },
+  "nav.liteModeToggle": {
+    "sourceHash": "b4819d67913bbe76",
+    "text": "कम बैंडविड्थ लाइट मोड को चालू/बंद करें"
+  },
+  "nav.signOut": {
+    "sourceHash": "48f0d3d397d49f13",
+    "text": "साइन आउट"
+  },
+  "nav.language": {
+    "sourceHash": "a4fe65264ef7dbb3",
+    "text": "भाषा"
+  },
+  "nav.enablePush": {
+    "sourceHash": "dd3f022f999ee78a",
+    "text": "अलर्ट नोटिफिकेशन चालू करें"
+  },
+  "nav.pushOn": {
+    "sourceHash": "a70b1ec4f25ba74e",
+    "text": "अलर्ट सूचनाएं"
+  },
+  "nav.pushBlocked": {
+    "sourceHash": "106bc43e5e7cd951",
+    "text": "इस ब्राउज़र में सूचनाएं अवरुद्ध हैं।"
+  },
+  "role.district_admin": {
+    "sourceHash": "6addf13f8f74271d",
+    "text": "जिला प्रशासन"
+  },
+  "role.state_admin": {
+    "sourceHash": "20d295b1a1a47efe",
+    "text": "राज्य प्रशासन"
+  },
+  "role.super_admin": {
+    "sourceHash": "cd55f733e210a64a",
+    "text": "सुपर एडमिन"
+  },
+  "login.mockHint": {
+    "sourceHash": "729697cd3c6b8946",
+    "text": "मॉक मोड — खाते सामान्यतः सुपर_एडमिन द्वारा आउट-ऑफ-बैंड रूप से प्रोविज़न किए जाते हैं। कंसोल को एक्सप्लोर करने के लिए एक पर्सोना चुनें।"
+  },
+  "login.email": {
+    "sourceHash": "969ccbd3cf6300ec",
+    "text": "ईमेल"
+  },
+  "login.password": {
+    "sourceHash": "e7cf3ef4f17c3999",
+    "text": "पासवर्ड"
+  },
+  "login.signIn": {
+    "sourceHash": "bcc0bcc9140b0c97",
+    "text": "दाखिल करना"
+  },
+  "login.failed": {
+    "sourceHash": "5ee01ca9e679b23b",
+    "text": "भाग लेना विफल हुआ"
+  },
+  "common.loading": {
+    "sourceHash": "dc380888c4e2c776",
+    "text": "लोड हो रहा है"
+  },
+  "common.close": {
+    "sourceHash": "7d9eb7acb13e2462",
+    "text": "बंद करना"
+  },
+  "corridor.ncr-airshed": {
+    "sourceHash": "058e25c2aec0d13c",
+    "text": "दिल्ली-एनसीआर एयरशेड"
+  },
+  "corridor.mumbai-pune-corridor": {
+    "sourceHash": "4762728dfcad497f",
+    "text": "मुंबई-पुणे औद्योगिक गलियारा"
+  },
+  "source.crop_residue_burning": {
+    "sourceHash": "483402046ed3ae28",
+    "text": "फसल अवशेषों को जलाना"
+  },
+  "source.construction_dust": {
+    "sourceHash": "9a38aa13276f41dd",
+    "text": "निर्माण कार्य की धूल"
+  },
+  "source.vehicular_smog": {
+    "sourceHash": "db3a3e11e4ef7426",
+    "text": "वाहनों से उत्पन्न धुंध"
+  },
+  "source.industrial_emission": {
+    "sourceHash": "8f0aee14d16f8193",
+    "text": "औद्योगिक उत्सर्जन"
+  },
+  "source.open_waste_burning": {
+    "sourceHash": "adb9da8acb6b99b7",
+    "text": "खुले में कचरा जलाना"
+  },
+  "source.no_visible_pollution": {
+    "sourceHash": "e65eab6be6965eae",
+    "text": "कोई प्रत्यक्ष प्रदूषण नहीं"
+  },
+  "source.indeterminate": {
+    "sourceHash": "d5db1eba726dd542",
+    "text": "दुविधा में पड़ा हुआ"
+  },
+  "source.mixed": {
+    "sourceHash": "906167c9502514f9",
+    "text": "मिश्रित स्रोत"
+  },
+  "source.unknown": {
+    "sourceHash": "b764cdc0eab71374",
+    "text": "अज्ञात"
+  },
+  "alerts.title": {
+    "sourceHash": "0e1a919f914cb467",
+    "text": "अलर्ट कतार"
+  },
+  "alerts.subtitle": {
+    "sourceHash": "fb315adf070ee2fe",
+    "text": "अधिकार क्षेत्र के अनुसार फ़िल्टर किया गया · गंभीरता के अनुसार क्रमबद्ध, फिर नवीनतम पहले"
+  },
+  "alerts.live": {
+    "sourceHash": "b64ac05f17e64d03",
+    "text": "रहना"
+  },
+  "alerts.polling": {
+    "sourceHash": "78736a93bedae5ca",
+    "text": "मतदान"
+  },
+  "alerts.all": {
+    "sourceHash": "a52ace420f2175d0",
+    "text": "सभी"
+  },
+  "alerts.status.new": {
+    "sourceHash": "18fdd549b2ed367a",
+    "text": "नया"
+  },
+  "alerts.status.acknowledged": {
+    "sourceHash": "d87cdf8aa30447b1",
+    "text": "स्वीकार किया"
+  },
+  "alerts.status.in_progress": {
+    "sourceHash": "b4cc4b07c300103a",
+    "text": "प्रगति पर है"
+  },
+  "alerts.status.resolved": {
+    "sourceHash": "5be3c2c8354e1eb9",
+    "text": "हल किया"
+  },
+  "alerts.status.dismissed": {
+    "sourceHash": "9d74727714dba768",
+    "text": "ख़ारिज"
+  },
+  "alerts.loading": {
+    "sourceHash": "4246f49e52b34ad1",
+    "text": "अलर्ट लोड हो रहे हैं…"
+  },
+  "alerts.emptyTitle": {
+    "sourceHash": "4d79b562ed3f1c5b",
+    "text": "इस दृश्य में कोई अलर्ट नहीं है"
+  },
+  "alerts.emptyHint": {
+    "sourceHash": "6f437aeeee7cf35c",
+    "text": "आपके अधिकार क्षेत्र के लिए वर्तमान फ़िल्टर से कुछ भी मेल नहीं खाता है।"
+  },
+  "alerts.recommendedActions": {
+    "sourceHash": "d67b993f2b46a805",
+    "text": "अनुशंसित कार्रवाइयां"
+  },
+  "alerts.publicAdvisory": {
+    "sourceHash": "01ad4099b306c83c",
+    "text": "सार्वजनिक परामर्श"
+  },
+  "alerts.auditTrail": {
+    "sourceHash": "c1ada08ce13857e4",
+    "text": "लेखापरीक्षा"
+  },
+  "alerts.markAs": {
+    "sourceHash": "14e4b89b68b52045",
+    "text": "मार्क {{status}}"
+  },
+  "alerts.newAlert": {
+    "sourceHash": "f5d766efba20aced",
+    "text": "नई {{severity}} चेतावनी"
+  },
+  "alerts.justNow": {
+    "sourceHash": "7ddb44d8a533a753",
+    "text": "बस अब"
+  },
+  "alerts.minutesAgo": {
+    "sourceHash": "96da0d6c543c29bd",
+    "text": "{{count}} मीटर पहले"
+  },
+  "alerts.hoursAgo": {
+    "sourceHash": "f9fd95fe176ea25b",
+    "text": "{{count}} घंटे पहले"
+  },
+  "alerts.daysAgo": {
+    "sourceHash": "477879d991b4f84f",
+    "text": "{{count}} दिन पहले"
+  },
+  "hotspots.title": {
+    "sourceHash": "2075df611438810b",
+    "text": "हॉटस्पॉट मानचित्र"
+  },
+  "hotspots.subtitle": {
+    "sourceHash": "fdb66a039fa310f5",
+    "text": "फ्यूज्ड आवरली कॉन्फिडेंस ग्रिड · {{cells}} सेल्स · {{hidden}} हिडन (3 किमी के भीतर कोई मॉनिटर नहीं)"
+  },
+  "hotspots.hiddenLegend": {
+    "sourceHash": "a0f05e6e8f0b3635",
+    "text": "एम्बर रंग की रूपरेखा = छिपा हुआ हॉटस्पॉट"
+  },
+  "hotspots.selectCell": {
+    "sourceHash": "6c936c7bd92389cc",
+    "text": "किसी सेल को चुनकर उसके सिग्नल और पिछले 7 दिनों के स्कोर देखें।"
+  },
+  "hotspots.confidence": {
+    "sourceHash": "51ad012cb746a3c5",
+    "text": "{{pct}} % विश्वास"
+  },
+  "hotspots.hiddenHotspot": {
+    "sourceHash": "86970c5b70022add",
+    "text": "छिपा हुआ हॉटस्पॉट"
+  },
+  "hotspots.last7Days": {
+    "sourceHash": "0603deca4fcb660f",
+    "text": "पिछले 7 दिन"
+  },
+  "hotspots.notEnoughHistory": {
+    "sourceHash": "f82a8da172ad63cc",
+    "text": "अभी तक पर्याप्त घंटे पूरे नहीं हुए हैं।"
+  },
+  "hotspots.modelHour": {
+    "sourceHash": "9a83d0f229411ecf",
+    "text": "मॉडल {{model}} · घंटा {{hour}} UTC"
+  },
+  "hotspots.signals.citizenReports": {
+    "sourceHash": "bf75568ccb51ce00",
+    "text": "नागरिक रिपोर्ट"
+  },
+  "hotspots.signals.avgSeverity": {
+    "sourceHash": "a0d628e99e0522c2",
+    "text": "औसत नागरिक गंभीरता"
+  },
+  "hotspots.signals.aod": {
+    "sourceHash": "0d4d5c6705c70994",
+    "text": "सैटेलाइट एओडी"
+  },
+  "hotspots.signals.no2": {
+    "sourceHash": "f8ea518ea683df4e",
+    "text": "उपग्रह NO₂"
+  },
+  "hotspots.signals.fires": {
+    "sourceHash": "0ba5bd8a63c8cb22",
+    "text": "आग का पता लगाना"
+  },
+  "hotspots.signals.nearestMonitor": {
+    "sourceHash": "3ec205d98ffb70b7",
+    "text": "निकटतम मॉनिटर"
+  },
+  "hotspots.signals.deltaAqi": {
+    "sourceHash": "819ad4aa927c401b",
+    "text": "Δ AQI बनाम मॉनिटर"
+  },
+  "hotspots.table.cell": {
+    "sourceHash": "e1a87324a4d699cf",
+    "text": "एच3 कोशिका"
+  },
+  "hotspots.table.classification": {
+    "sourceHash": "72f049954fdd06c8",
+    "text": "वर्गीकरण"
+  },
+  "hotspots.table.confidence": {
+    "sourceHash": "6422e3e78f5e5f5a",
+    "text": "आत्मविश्वास"
+  },
+  "hotspots.table.hidden": {
+    "sourceHash": "7e6fefff0f0aeb6c",
+    "text": "छिपा हुआ"
+  },
+  "hotspots.table.reports": {
+    "sourceHash": "dacca3cba3f346a4",
+    "text": "रिपोर्टों"
+  },
+  "hotspots.table.updated": {
+    "sourceHash": "3a5ecca188c0579c",
+    "text": "अद्यतन"
+  },
+  "forecast.title": {
+    "sourceHash": "cfaa0c71601bf2bb",
+    "text": "72 घंटे का पूर्वानुमान"
+  },
+  "forecast.subtitle": {
+    "sourceHash": "9d4c8ab8d0c392e8",
+    "text": "कॉरिडोर में AQI का रुझान, हर 6 घंटे में दर्ज किया गया"
+  },
+  "forecast.none": {
+    "sourceHash": "34471d6121cac84d",
+    "text": "इस कॉरिडोर के लिए कोई पूर्वानुमान उपलब्ध नहीं है।"
+  },
+  "forecast.horizon": {
+    "sourceHash": "ae8359684edfa68a",
+    "text": "क्षितिज"
+  },
+  "forecast.predictedAqi": {
+    "sourceHash": "2a621123d5a2a9e0",
+    "text": "अनुमानित वायुजलवायु"
+  },
+  "forecast.range": {
+    "sourceHash": "5de74a81b192304c",
+    "text": "श्रेणी"
+  },
+  "forecast.grapStage": {
+    "sourceHash": "8ed1b214a9d8485b",
+    "text": "जीआरएपी चरण"
+  },
+  "forecast.runInfo": {
+    "sourceHash": "d93e61351b465a9d",
+    "text": "चलाएँ {{time}} IST · मॉडल {{model}}"
+  },
+  "forecast.trendTitle": {
+    "sourceHash": "32761bb1097f367f",
+    "text": "पिछले 7 दिनों के रन के आधार पर +24 घंटे का पूर्वानुमान"
+  },
+  "forecast.keyDrivers": {
+    "sourceHash": "1178f448e9a50392",
+    "text": "प्रमुख कारक"
+  },
+  "federation.title": {
+    "sourceHash": "f8c6e8016cfb9bea",
+    "text": "फेडरेशन"
+  },
+  "federation.subtitle": {
+    "sourceHash": "878b35220898bf5e",
+    "text": "प्रशिक्षित मॉडल कलाकृतियों और k-अनाम एग्रीगेट्स का बैच निर्यात/आयात — ग्रेडिएंट-स्तर पर फेडरेटेड लर्निंग नहीं।"
+  },
+  "federation.tabModels": {
+    "sourceHash": "46530ff443976c2e",
+    "text": "साझा मॉडल"
+  },
+  "federation.tabExchange": {
+    "sourceHash": "9dafaf639239a628",
+    "text": "अंतर-राज्यीय दृष्टिकोण"
+  },
+  "federation.tabResources": {
+    "sourceHash": "3bdcaf052ab2d273",
+    "text": "संसाधन समन्वय"
+  },
+  "federation.active": {
+    "sourceHash": "466a4d379b9aeda0",
+    "text": "सक्रिय आयातित मॉडल:"
+  },
+  "federation.noModels": {
+    "sourceHash": "a1a892d10a019b14",
+    "text": "अभी तक कोई साझा मॉडल उपलब्ध नहीं है"
+  },
+  "federation.noModelsHint": {
+    "sourceHash": "2b03ecd46d21b9e1",
+    "text": "अन्य राज्य प्रतिदिन रात में डेटा प्रकाशित करते हैं — अगले सिंक के बाद दोबारा जांच करें।"
+  },
+  "federation.records": {
+    "sourceHash": "ae545889686b77c5",
+    "text": "{{count}} रिकॉर्ड · साझा किया गया {{date}}"
+  },
+  "federation.import": {
+    "sourceHash": "2cff9baabf56ca00",
+    "text": "आयात"
+  },
+  "federation.importSuperOnly": {
+    "sourceHash": "7e3f9b5ea9a27bff",
+    "text": "उत्पादन में आयात करना केवल सुपर_एडमिन के अधिकार क्षेत्र में है (यह सबसे अधिक प्रभाव डालने वाली कार्रवाई है)।"
+  },
+  "federation.imported": {
+    "sourceHash": "67a4ec46266bcd28",
+    "text": "मॉडल आयातित और सक्रिय किया गया"
+  },
+  "federation.importBlocked": {
+    "sourceHash": "9de10faf69fad6ee",
+    "text": "आयात अवरुद्ध"
+  },
+  "federation.postRequest": {
+    "sourceHash": "b421ea78b90910db",
+    "text": "संसाधन अनुरोध पोस्ट करें"
+  },
+  "federation.resourceType": {
+    "sourceHash": "c9bf2e8987cca1e2",
+    "text": "संसाधन प्रकार"
+  },
+  "federation.quantity": {
+    "sourceHash": "822bab8d41bca8d7",
+    "text": "मात्रा"
+  },
+  "federation.post": {
+    "sourceHash": "72fb5fa0ce8fba16",
+    "text": "पोस्ट अनुरोध"
+  },
+  "federation.posted": {
+    "sourceHash": "712f670d9fc37354",
+    "text": "संसाधन अनुरोध पोस्ट किया गया"
+  },
+  "federation.weekSummary": {
+    "sourceHash": "936bec45205fe7dc",
+    "text": "{{week}} का सप्ताह · { {{states}} {{cells}} सामान्यीकृत कोशिकाएं (res 6)"
+  },
+  "federation.exchangeIntro": {
+    "sourceHash": "1b8596acd035245e",
+    "text": "एक्सचेंज पर मौजूद प्रत्येक राज्य से साप्ताहिक k-अनाम सारांश"
+  },
+  "federation.noSummaries": {
+    "sourceHash": "7c4f2015935d0d61",
+    "text": "इस क्षेत्र के लिए अभी तक कोई साझा सारांश उपलब्ध नहीं है।"
+  },
+  "federation.noSummariesHint": {
+    "sourceHash": "83d4ce30e48161e2",
+    "text": "पर्याप्त नागरिकों द्वारा रिपोर्ट किए जाने के बाद (k-अनाम पहचान सीमा), राज्य पिछले सप्ताह के कुल आंकड़े रात में प्रकाशित करते हैं।"
+  },
+  "federation.byState": {
+    "sourceHash": "952cdc555426e478",
+    "text": "राज्य के योगदान से"
+  },
+  "federation.byStateHint": {
+    "sourceHash": "a2b2c8d12da90c43",
+    "text": "नवीनतम सप्ताह के सेल औसत का माध्य"
+  },
+  "federation.stateCells": {
+    "sourceHash": "fcf3103acfd219a5",
+    "text": "{{count}} कोशिकाएँ · {{pct}} %"
+  }
+}

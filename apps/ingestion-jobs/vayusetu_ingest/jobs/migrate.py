@@ -19,14 +19,21 @@ log = logging.getLogger(__name__)
 
 def statements(settings: Settings) -> list[tuple[str, str]]:
     schema_dir = DATA_DIR / "schemas"
-    files = sorted(schema_dir.glob("*.sql")) + sorted((schema_dir / "migrations").glob("*.sql"))
+    # tables -> column migrations -> functions/TVFs that read those columns
+    files = (
+        sorted(schema_dir.glob("*.sql"))
+        + sorted((schema_dir / "migrations").glob("*.sql"))
+        + sorted((schema_dir / "features").glob("*.sql"))
+    )
     out = []
     for f in files:
         sql = f.read_text(encoding="utf-8")
         sql = re.sub(r"`core\.", f"`{settings.project}.{settings.dataset}.", sql)
-        for stmt in (s.strip() for s in sql.split(";")):
-            if stmt and not all(line.strip().startswith("--") or not line.strip() for line in stmt.splitlines()):
-                out.append((f.name, stmt))
+        # Drop `--` comments BEFORE splitting on ';' -- a semicolon inside a
+        # comment otherwise cuts a statement in half. (DDL has no string
+        # literals containing '--'.)
+        sql = re.sub(r"--[^\n]*", "", sql)
+        out.extend((f.name, stmt) for stmt in (x.strip() for x in sql.split(";")) if stmt)
     return out
 
 

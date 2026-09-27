@@ -1,0 +1,458 @@
+{
+  "app.console": {
+    "sourceHash": "104bfb7a21182419",
+    "text": "प्रशासक कन्सोल"
+  },
+  "app.loginTitle": {
+    "sourceHash": "e8b441426df5cbdc",
+    "text": "वायूसेतू प्रशासक कन्सोल"
+  },
+  "app.loginSubtitle": {
+    "sourceHash": "9bc2a5de96d52091",
+    "text": "अधिकारक्षेत्रानुसार फिल्टर केलेले अलर्ट, हॉटस्पॉट आणि अंदाज."
+  },
+  "nav.alerts": {
+    "sourceHash": "0e1a919f914cb467",
+    "text": "अलर्ट रांग"
+  },
+  "nav.hotspots": {
+    "sourceHash": "2075df611438810b",
+    "text": "हॉटस्पॉट नकाशा"
+  },
+  "nav.forecast": {
+    "sourceHash": "75205de8b342f506",
+    "text": "अंदाज"
+  },
+  "nav.federation": {
+    "sourceHash": "f8c6e8016cfb9bea",
+    "text": "महासंघ"
+  },
+  "nav.liteMode": {
+    "sourceHash": "5a6705a841815cd3",
+    "text": "लाईट मोड"
+  },
+  "nav.liteModeToggle": {
+    "sourceHash": "b4819d67913bbe76",
+    "text": "कमी-बँडविड्थ लाइट मोड चालू/बंद करा"
+  },
+  "nav.signOut": {
+    "sourceHash": "48f0d3d397d49f13",
+    "text": "साइन आउट"
+  },
+  "nav.language": {
+    "sourceHash": "a4fe65264ef7dbb3",
+    "text": "भाषा"
+  },
+  "nav.enablePush": {
+    "sourceHash": "dd3f022f999ee78a",
+    "text": "अलर्ट सूचना सक्षम करा"
+  },
+  "nav.pushOn": {
+    "sourceHash": "a70b1ec4f25ba74e",
+    "text": "अलर्ट सूचनांवर"
+  },
+  "nav.pushBlocked": {
+    "sourceHash": "106bc43e5e7cd951",
+    "text": "या ब्राउझरमध्ये सूचना अवरोधित केल्या आहेत."
+  },
+  "role.district_admin": {
+    "sourceHash": "6addf13f8f74271d",
+    "text": "जिल्हा प्रशासन"
+  },
+  "role.state_admin": {
+    "sourceHash": "20d295b1a1a47efe",
+    "text": "राज्य प्रशासन"
+  },
+  "role.super_admin": {
+    "sourceHash": "cd55f733e210a64a",
+    "text": "सुपर प्रशासक"
+  },
+  "login.mockHint": {
+    "sourceHash": "729697cd3c6b8946",
+    "text": "मॉक मोड — खाती सामान्यतः सुपर_ऍडमिनद्वारे आउट-ऑफ-बँड पद्धतीने प्रदान केली जातात. कन्सोल पाहण्यासाठी एक पर्सोना निवडा."
+  },
+  "login.email": {
+    "sourceHash": "969ccbd3cf6300ec",
+    "text": "ईमेल"
+  },
+  "login.password": {
+    "sourceHash": "e7cf3ef4f17c3999",
+    "text": "पासवर्ड"
+  },
+  "login.signIn": {
+    "sourceHash": "bcc0bcc9140b0c97",
+    "text": "साइन इन करा"
+  },
+  "login.failed": {
+    "sourceHash": "5ee01ca9e679b23b",
+    "text": "साइन-इन अयशस्वी झाले"
+  },
+  "common.loading": {
+    "sourceHash": "dc380888c4e2c776",
+    "text": "लोडिंग"
+  },
+  "common.close": {
+    "sourceHash": "7d9eb7acb13e2462",
+    "text": "बंद करा"
+  },
+  "corridor.ncr-airshed": {
+    "sourceHash": "058e25c2aec0d13c",
+    "text": "दिल्ली-एनसीआर एअरशेड"
+  },
+  "corridor.mumbai-pune-corridor": {
+    "sourceHash": "4762728dfcad497f",
+    "text": "मुंबई-पुणे औद्योगिक कॉरिडॉर"
+  },
+  "source.crop_residue_burning": {
+    "sourceHash": "483402046ed3ae28",
+    "text": "पिकांचे अवशेष जाळणे"
+  },
+  "source.construction_dust": {
+    "sourceHash": "9a38aa13276f41dd",
+    "text": "बांधकामाची धूळ"
+  },
+  "source.vehicular_smog": {
+    "sourceHash": "db3a3e11e4ef7426",
+    "text": "वाहनांमुळे होणारे धुरके"
+  },
+  "source.industrial_emission": {
+    "sourceHash": "8f0aee14d16f8193",
+    "text": "औद्योगिक उत्सर्जन"
+  },
+  "source.open_waste_burning": {
+    "sourceHash": "adb9da8acb6b99b7",
+    "text": "उघड्यावर कचरा जाळणे"
+  },
+  "source.no_visible_pollution": {
+    "sourceHash": "e65eab6be6965eae",
+    "text": "कोणतेही दृश्य प्रदूषण नाही"
+  },
+  "source.indeterminate": {
+    "sourceHash": "d5db1eba726dd542",
+    "text": "अनिश्चित"
+  },
+  "source.mixed": {
+    "sourceHash": "906167c9502514f9",
+    "text": "मिश्र स्रोत"
+  },
+  "source.unknown": {
+    "sourceHash": "b764cdc0eab71374",
+    "text": "अज्ञात"
+  },
+  "alerts.title": {
+    "sourceHash": "0e1a919f914cb467",
+    "text": "अलर्ट रांग"
+  },
+  "alerts.subtitle": {
+    "sourceHash": "fb315adf070ee2fe",
+    "text": "अधिकारक्षेत्रानुसार फिल्टर केलेले · तीव्रतेनुसार क्रमवारी, त्यानंतर सर्वात नवीन प्रथम"
+  },
+  "alerts.live": {
+    "sourceHash": "b64ac05f17e64d03",
+    "text": "थेट"
+  },
+  "alerts.polling": {
+    "sourceHash": "78736a93bedae5ca",
+    "text": "मतदान"
+  },
+  "alerts.all": {
+    "sourceHash": "a52ace420f2175d0",
+    "text": "सर्व"
+  },
+  "alerts.status.new": {
+    "sourceHash": "18fdd549b2ed367a",
+    "text": "नवीन"
+  },
+  "alerts.status.acknowledged": {
+    "sourceHash": "d87cdf8aa30447b1",
+    "text": "मान्य केले"
+  },
+  "alerts.status.in_progress": {
+    "sourceHash": "b4cc4b07c300103a",
+    "text": "प्रगतीपथावर"
+  },
+  "alerts.status.resolved": {
+    "sourceHash": "5be3c2c8354e1eb9",
+    "text": "निराकरण झाले"
+  },
+  "alerts.status.dismissed": {
+    "sourceHash": "9d74727714dba768",
+    "text": "बडतर्फ केले"
+  },
+  "alerts.loading": {
+    "sourceHash": "4246f49e52b34ad1",
+    "text": "सूचना लोड होत आहेत…"
+  },
+  "alerts.emptyTitle": {
+    "sourceHash": "4d79b562ed3f1c5b",
+    "text": "या दृश्यात कोणतेही अलर्ट नाहीत"
+  },
+  "alerts.emptyHint": {
+    "sourceHash": "6f437aeeee7cf35c",
+    "text": "तुमच्या अधिकारक्षेत्रासाठी सध्याच्या फिल्टरशी जुळणारे काहीही नाही."
+  },
+  "alerts.recommendedActions": {
+    "sourceHash": "d67b993f2b46a805",
+    "text": "शिफारस केलेल्या कृती"
+  },
+  "alerts.publicAdvisory": {
+    "sourceHash": "01ad4099b306c83c",
+    "text": "सार्वजनिक सूचना"
+  },
+  "alerts.auditTrail": {
+    "sourceHash": "c1ada08ce13857e4",
+    "text": "ऑडिट ट्रेल"
+  },
+  "alerts.markAs": {
+    "sourceHash": "14e4b89b68b52045",
+    "text": "मार्क {{status}}"
+  },
+  "alerts.newAlert": {
+    "sourceHash": "f5d766efba20aced",
+    "text": "नवीन {{severity}} इशारा"
+  },
+  "alerts.justNow": {
+    "sourceHash": "7ddb44d8a533a753",
+    "text": "आत्ताच"
+  },
+  "alerts.minutesAgo": {
+    "sourceHash": "96da0d6c543c29bd",
+    "text": "{{count}} मिनिटांपूर्वी"
+  },
+  "alerts.hoursAgo": {
+    "sourceHash": "f9fd95fe176ea25b",
+    "text": "{{count}} तासांपूर्वी"
+  },
+  "alerts.daysAgo": {
+    "sourceHash": "477879d991b4f84f",
+    "text": "{{count}} दिवसांपूर्वी"
+  },
+  "hotspots.title": {
+    "sourceHash": "2075df611438810b",
+    "text": "हॉटस्पॉट नकाशा"
+  },
+  "hotspots.subtitle": {
+    "sourceHash": "fdb66a039fa310f5",
+    "text": "एकत्रित ताशी विश्वासार्हता ग्रिड · {{cells}} सेल्स · {{hidden}} लपवलेले (३ किमीच्या आत मॉनिटर नाही)"
+  },
+  "hotspots.hiddenLegend": {
+    "sourceHash": "a0f05e6e8f0b3635",
+    "text": "अंबर रंगाची बाह्यरेखा = लपलेले हॉटस्पॉट"
+  },
+  "hotspots.selectCell": {
+    "sourceHash": "6c936c7bd92389cc",
+    "text": "त्याचे सिग्नल्स आणि मागील ७ दिवसांचे स्कोअर्स पाहण्यासाठी एक सेल निवडा."
+  },
+  "hotspots.confidence": {
+    "sourceHash": "51ad012cb746a3c5",
+    "text": "{{pct}} % आत्मविश्वास"
+  },
+  "hotspots.hiddenHotspot": {
+    "sourceHash": "86970c5b70022add",
+    "text": "लपलेले हॉटस्पॉट"
+  },
+  "hotspots.last7Days": {
+    "sourceHash": "0603deca4fcb660f",
+    "text": "गेल्या ७ दिवसांत"
+  },
+  "hotspots.notEnoughHistory": {
+    "sourceHash": "f82a8da172ad63cc",
+    "text": "अद्याप पुरेसे स्कोअर केलेले तास नाहीत."
+  },
+  "hotspots.modelHour": {
+    "sourceHash": "9a83d0f229411ecf",
+    "text": "मॉडेल {{model}} · तास {{hour}} UTC"
+  },
+  "hotspots.signals.citizenReports": {
+    "sourceHash": "bf75568ccb51ce00",
+    "text": "नागरिक अहवाल"
+  },
+  "hotspots.signals.avgSeverity": {
+    "sourceHash": "a0d628e99e0522c2",
+    "text": "सरासरी नागरिक तीव्रता"
+  },
+  "hotspots.signals.aod": {
+    "sourceHash": "0d4d5c6705c70994",
+    "text": "उपग्रह एओडी"
+  },
+  "hotspots.signals.no2": {
+    "sourceHash": "f8ea518ea683df4e",
+    "text": "उपग्रह क्रमांक २"
+  },
+  "hotspots.signals.fires": {
+    "sourceHash": "0ba5bd8a63c8cb22",
+    "text": "आग शोधणे"
+  },
+  "hotspots.signals.nearestMonitor": {
+    "sourceHash": "3ec205d98ffb70b7",
+    "text": "जवळचा मॉनिटर"
+  },
+  "hotspots.signals.deltaAqi": {
+    "sourceHash": "819ad4aa927c401b",
+    "text": "Δ AQI विरुद्ध मॉनिटर"
+  },
+  "hotspots.table.cell": {
+    "sourceHash": "e1a87324a4d699cf",
+    "text": "एच३ सेल"
+  },
+  "hotspots.table.classification": {
+    "sourceHash": "72f049954fdd06c8",
+    "text": "वर्गीकरण"
+  },
+  "hotspots.table.confidence": {
+    "sourceHash": "6422e3e78f5e5f5a",
+    "text": "आत्मविश्वास"
+  },
+  "hotspots.table.hidden": {
+    "sourceHash": "7e6fefff0f0aeb6c",
+    "text": "लपलेले"
+  },
+  "hotspots.table.reports": {
+    "sourceHash": "dacca3cba3f346a4",
+    "text": "अहवाल"
+  },
+  "hotspots.table.updated": {
+    "sourceHash": "3a5ecca188c0579c",
+    "text": "अपडेट केले"
+  },
+  "forecast.title": {
+    "sourceHash": "cfaa0c71601bf2bb",
+    "text": "७२ तासांचा हवामान अंदाज"
+  },
+  "forecast.subtitle": {
+    "sourceHash": "9d4c8ab8d0c392e8",
+    "text": "कॉरिडॉर AQI चा आलेख, दर ६ तासांनी मोजला जातो."
+  },
+  "forecast.none": {
+    "sourceHash": "34471d6121cac84d",
+    "text": "या कॉरिडॉरसाठी कोणताही अंदाज उपलब्ध नाही."
+  },
+  "forecast.horizon": {
+    "sourceHash": "ae8359684edfa68a",
+    "text": "क्षितिज"
+  },
+  "forecast.predictedAqi": {
+    "sourceHash": "2a621123d5a2a9e0",
+    "text": "अंदाजित AQI"
+  },
+  "forecast.range": {
+    "sourceHash": "5de74a81b192304c",
+    "text": "श्रेणी"
+  },
+  "forecast.grapStage": {
+    "sourceHash": "8ed1b214a9d8485b",
+    "text": "ग्रॅप स्टेज"
+  },
+  "forecast.runInfo": {
+    "sourceHash": "d93e61351b465a9d",
+    "text": "{{time}} IST · मॉडेल {{model}} चालवा"
+  },
+  "forecast.trendTitle": {
+    "sourceHash": "32761bb1097f367f",
+    "text": "मागील ७ दिवसांच्या धावसंख्येनुसार +२४ तासांचा अंदाज"
+  },
+  "forecast.keyDrivers": {
+    "sourceHash": "1178f448e9a50392",
+    "text": "मुख्य चालक"
+  },
+  "federation.title": {
+    "sourceHash": "f8c6e8016cfb9bea",
+    "text": "महासंघ"
+  },
+  "federation.subtitle": {
+    "sourceHash": "878b35220898bf5e",
+    "text": "प्रशिक्षित मॉडेल आर्टिफॅक्ट्स आणि के-अनामिक केलेल्या एकत्रित घटकांची बॅच निर्यात/आयात — ग्रेडियंट-स्तरीय फेडरेटेड लर्निंग नाही."
+  },
+  "federation.tabModels": {
+    "sourceHash": "46530ff443976c2e",
+    "text": "सामायिक मॉडेल"
+  },
+  "federation.tabExchange": {
+    "sourceHash": "9dafaf639239a628",
+    "text": "राज्यव्यापी दृष्टिकोन"
+  },
+  "federation.tabResources": {
+    "sourceHash": "3bdcaf052ab2d273",
+    "text": "संसाधन समन्वय"
+  },
+  "federation.active": {
+    "sourceHash": "466a4d379b9aeda0",
+    "text": "सक्रिय आयातित मॉडेल:"
+  },
+  "federation.noModels": {
+    "sourceHash": "a1a892d10a019b14",
+    "text": "अद्याप कोणतेही सामायिक मॉडेल उपलब्ध नाहीत."
+  },
+  "federation.noModelsHint": {
+    "sourceHash": "2b03ecd46d21b9e1",
+    "text": "इतर राज्ये दररोज रात्री प्रकाशित करतात — पुढील सिंकनंतर पुन्हा तपासा."
+  },
+  "federation.records": {
+    "sourceHash": "ae545889686b77c5",
+    "text": "{{count}} रेकॉर्ड्स · शेअर केलेले {{date}}"
+  },
+  "federation.import": {
+    "sourceHash": "2cff9baabf56ca00",
+    "text": "आयात"
+  },
+  "federation.importSuperOnly": {
+    "sourceHash": "7e3f9b5ea9a27bff",
+    "text": "प्रोडक्शनमध्ये इम्पोर्ट करणे केवळ सुपर_अ‍ॅडमिनसाठी आहे (सर्वाधिक-ब्लास्ट-त्रिज्येची क्रिया)."
+  },
+  "federation.imported": {
+    "sourceHash": "67a4ec46266bcd28",
+    "text": "मॉडेल आयात करून सक्रिय केले."
+  },
+  "federation.importBlocked": {
+    "sourceHash": "9de10faf69fad6ee",
+    "text": "आयात अवरोधित"
+  },
+  "federation.postRequest": {
+    "sourceHash": "b421ea78b90910db",
+    "text": "संसाधनाची विनंती पोस्ट करा"
+  },
+  "federation.resourceType": {
+    "sourceHash": "c9bf2e8987cca1e2",
+    "text": "संसाधन प्रकार"
+  },
+  "federation.quantity": {
+    "sourceHash": "822bab8d41bca8d7",
+    "text": "प्रमाण"
+  },
+  "federation.post": {
+    "sourceHash": "72fb5fa0ce8fba16",
+    "text": "पोस्ट विनंती"
+  },
+  "federation.posted": {
+    "sourceHash": "712f670d9fc37354",
+    "text": "संसाधनासाठी विनंती नोंदवली आहे."
+  },
+  "federation.weekSummary": {
+    "sourceHash": "936bec45205fe7dc",
+    "text": "{{week}} चा आठवडा · {{cells}} सामान्यीकृत पेशी (res 6) {{states}} राज्यांमध्ये"
+  },
+  "federation.exchangeIntro": {
+    "sourceHash": "1b8596acd035245e",
+    "text": "एक्सचेंजवरील प्रत्येक राज्यातून साप्ताहिक के-अनामिक सारांश"
+  },
+  "federation.noSummaries": {
+    "sourceHash": "7c4f2015935d0d61",
+    "text": "या क्षेत्रासाठी अद्याप कोणतेही सामायिक सारांश नाहीत."
+  },
+  "federation.noSummariesHint": {
+    "sourceHash": "83d4ce30e48161e2",
+    "text": "पुरेशा नागरिकांनी अहवाल दिल्यानंतर (के-अनामिकतेची किमान मर्यादा), राज्ये दररोज रात्री मागील आठवड्याची एकत्रित आकडेवारी प्रकाशित करतात."
+  },
+  "federation.byState": {
+    "sourceHash": "952cdc555426e478",
+    "text": "राज्याचे योगदान देऊन"
+  },
+  "federation.byStateHint": {
+    "sourceHash": "a2b2c8d12da90c43",
+    "text": "सेल सरासरींची सरासरी, नवीनतम आठवडा"
+  },
+  "federation.stateCells": {
+    "sourceHash": "fcf3103acfd219a5",
+    "text": "{{count}} पेशी · {{pct}} %"
+  }
+}

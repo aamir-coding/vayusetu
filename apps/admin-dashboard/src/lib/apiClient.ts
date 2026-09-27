@@ -13,6 +13,7 @@ import type {
   Paginated,
   ResourceRequest,
   ResourceType,
+  User,
 } from '@vayusetu/shared-types';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api/v1';
@@ -49,6 +50,14 @@ async function request<T>(path: string, token: string, init?: RequestInit): Prom
   if (res.status === 204) return undefined as T;
   return (await res.json()) as T;
 }
+
+// ===================== Users =====================
+
+export const usersApi = {
+  me: (token: string) => request<User>('/users/me', token),
+  update: (token: string, body: { fcmTokens?: string[] }) =>
+    request<User>('/users/me', token, { method: 'PATCH', body: JSON.stringify(body) }),
+};
 
 // ===================== Alerts =====================
 

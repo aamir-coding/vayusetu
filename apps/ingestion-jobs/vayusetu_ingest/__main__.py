@@ -7,6 +7,7 @@ Jobs (schedule in infra/terraform/modules/state-deployment/ingestion.tf):
   cpcb          data.gov.in CPCB live feed -> ground_truth_aqi                  hourly
   seed          corridors (Firestore/GCS) + core.h3_cells                          after cpcb / on change
   air-quality   Air Quality API history -> modeled_aqi   (--hours 26 daily, 720 backfill)
+  era5          ERA5 reanalysis (EE) -> meteorology_features incl. boundary layer  daily; --start/--days backfill
   weather       Weather API -> meteorology_features       (--mode observed hourly | forecast 6-hourly)
   earth-engine  EE satellite features -> satellite_features (daily; --start/--days for backfill)
   rollup        analysisResults -> citizen_reports_agg     hourly
@@ -28,6 +29,7 @@ JOBS = {
     "seed": "seed",
     "air-quality": "air_quality",
     "weather": "weather",
+    "era5": "era5",
     "earth-engine": "earth_engine",
     "rollup": "rollup",
 }
@@ -38,8 +40,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("job", choices=sorted(JOBS))
     parser.add_argument("--hours", type=int)
     parser.add_argument("--mode", choices=["observed", "forecast", "latest", "backfill"])
+    parser.add_argument("--scope", choices=["all", "stations"], help="air-quality: stations only (6-hourly forecast gap-fill)")
     parser.add_argument("--start", help="YYYY-MM-DD (earth-engine backfill)")
     parser.add_argument("--days", type=int)
+    parser.add_argument("--parallel", type=int, help="concurrent Earth Engine exports (earth-engine backfill)")
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")

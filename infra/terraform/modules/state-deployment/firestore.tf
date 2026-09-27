@@ -121,14 +121,17 @@ resource "google_firestore_index" "resource_requests_by_jurisdiction" {
 # to change) but nothing queries it. See WEEK2_SETUP.md.
 locals {
   merge_indexes = {
-    submissions_by_state_code    = { collection = "submissions", field = "jurisdiction.stateCode", sort = "uploadedAt" }
-    submissions_by_district_code = { collection = "submissions", field = "jurisdiction.districtCode", sort = "uploadedAt" }
-    submissions_by_h3_index      = { collection = "submissions", field = "h3Index", sort = "uploadedAt" }
-    alerts_by_state_code         = { collection = "alerts", field = "assignedJurisdiction.stateCode", sort = "createdAt" }
-    alerts_by_district_code      = { collection = "alerts", field = "assignedJurisdiction.districtCode", sort = "createdAt" }
-    alerts_by_status             = { collection = "alerts", field = "status", sort = "createdAt" }
-    alerts_by_severity           = { collection = "alerts", field = "severity", sort = "createdAt" }
-    alerts_by_type               = { collection = "alerts", field = "type", sort = "createdAt" }
+    submissions_by_state_code     = { collection = "submissions", field = "jurisdiction.stateCode", sort = "uploadedAt" }
+    submissions_by_district_code  = { collection = "submissions", field = "jurisdiction.districtCode", sort = "uploadedAt" }
+    submissions_by_h3_index       = { collection = "submissions", field = "h3Index", sort = "uploadedAt" }
+    alerts_by_state_code          = { collection = "alerts", field = "assignedJurisdiction.stateCode", sort = "createdAt" }
+    alerts_by_district_code       = { collection = "alerts", field = "assignedJurisdiction.districtCode", sort = "createdAt" }
+    alerts_by_status              = { collection = "alerts", field = "status", sort = "createdAt" }
+    alerts_by_severity            = { collection = "alerts", field = "severity", sort = "createdAt" }
+    alerts_by_type                = { collection = "alerts", field = "type", sort = "createdAt" }
+    resource_requests_by_state    = { collection = "resourceRequests", field = "jurisdiction.stateCode", sort = "createdAt" }
+    resource_requests_by_district = { collection = "resourceRequests", field = "jurisdiction.districtCode", sort = "createdAt" }
+    resource_requests_by_status   = { collection = "resourceRequests", field = "status", sort = "createdAt" }
   }
 }
 
