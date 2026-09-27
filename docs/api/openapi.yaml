@@ -1,0 +1,1174 @@
+openapi: 3.1.0
+info:
+  title: VayuSetu API
+  version: 1.0.0
+  summary: Hyperlocal air-quality reporting, hotspot detection, forecasting, alerts and federation.
+  description: |
+    Machine-readable form of `docs/context/03_API_CONTRACTS.md` §4.2, which stays
+    canonical. Every schema under `components.schemas` mirrors
+    `packages/shared-types/src/index.ts` (§4.1). `packages/shared-types/test/openapi.test.ts`
+    fails CI if the spec, the shared types or the contract doc drift apart.
+
+    Conventions (every endpoint):
+    - `Authorization: Bearer <Firebase ID token>` is required everywhere. No endpoint is
+      unauthenticated, because jurisdiction-correct routing needs a resolvable identity.
+    - Errors use the `ApiError` envelope.
+    - List endpoints take `pageSize` (default 20, max 100) and `pageToken`, and return a paginated envelope.
+    - `FORBIDDEN_JURISDICTION` (403) fires whenever an official reads or acts outside their
+      `User.jurisdiction`. The API layer and the Firestore security rules enforce this identically.
+
+    Routing: Firebase Hosting rewrites `/api/v1/**` to the owning Cloud Run service
+    (`packages/config/api-routes.json`). Each operation's tag names that service.
+servers:
+  - url: https://api.vayusetu.gov.in/api/v1
+    description: Production (per-state deployments use a subdomain, e.g. api-hr.vayusetu.gov.in)
+  - url: https://vayusetu-ncr-dev.web.app/api/v1
+    description: NCR dev (citizen Hosting site, same-origin rewrites)
+  - url: https://vayusetu-ncr-dev-admin.web.app/api/v1
+    description: NCR dev (admin Hosting site, same-origin rewrites)
+security:
+  - firebaseIdToken: []
+tags:
+  - name: submission-service
+    description: Users, Submissions, Analysis, Corridors, Resource Coordination
+  - name: alert-service
+    description: Alerts
+  - name: hotspot-service
+    description: Hotspots
+  - name: forecast-service
+    description: Forecasts
+  - name: federation-service
+    description: Federation Exchange
+
+paths:
+  # ============================================================ Users
+  /users/register:
+    post:
+      operationId: registerUser
+      tags: [submission-service]
+      summary: Create the caller's profile (first call after sign-up)
+      description: >-
+        Any authenticated Firebase user. Only `citizen` and `field_worker` may self-register;
+        district_admin and above are provisioned out-of-band by a super_admin.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [displayName, preferredLanguage, role]
+              properties:
+                displayName: { type: string, minLength: 1, maxLength: 120 }
+                preferredLanguage:
+                  $ref: '#/components/schemas/BCP47LanguageTag'
+                role: { type: string, enum: [citizen, field_worker] }
+      responses:
+        '201':
+          description: Profile created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /users/me:
+    get:
+      operationId: getMe
+      tags: [submission-service]
+      summary: The caller's profile
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      operationId: updateMe
+      tags: [submission-service]
+      summary: Update the caller's profile
+      description: >-
+        `role` is accepted only as the one-way upgrade `citizen` → `field_worker`. Any other
+        role change is 403. `fcmTokens` is deduplicated server-side and keeps the 10 most recent.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              minProperties: 1
+              properties:
+                displayName: { type: string, minLength: 1, maxLength: 120 }
+                preferredLanguage:
+                  $ref: '#/components/schemas/BCP47LanguageTag'
+                fcmTokens:
+                  type: array
+                  maxItems: 50
+                  items: { type: string, minLength: 20, maxLength: 4096 }
+                role: { type: string, enum: [field_worker] }
+      responses:
+        '200':
+          description: Updated profile
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  # ============================================================ Submissions
+  /submissions/upload-url:
+    post:
+      operationId: createUploadUrl
+      tags: [submission-service]
+      summary: Signed URL for a direct-to-Cloud-Storage media upload
+      description: >-
+        Citizens and field workers (registered). PUT the blob to `uploadUrl` with the identical
+        `Content-Type` within 15 minutes, then pass `storageUrl` to `POST /submissions`, which
+        rejects URLs not issued to the caller. Parameters such as `;codecs=opus` are allowed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [kind, contentType]
+              properties:
+                kind: { type: string, enum: [photo, audio] }
+                contentType:
+                  type: string
+                  description: >-
+                    photo: image/jpeg, image/png, image/webp. audio: audio/webm, audio/ogg,
+                    audio/mp4, audio/mpeg, audio/wav.
+                  examples: [image/jpeg, audio/webm;codecs=opus]
+      responses:
+        '200':
+          description: Signed upload URL
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [uploadUrl, storageUrl, expiresAt]
+                properties:
+                  uploadUrl: { type: string, format: uri }
+                  storageUrl: { type: string, pattern: '^gs://' }
+                  expiresAt: { $ref: '#/components/schemas/ISODateString' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /submissions:
+    post:
+      operationId: createSubmission
+      tags: [submission-service]
+      summary: Register a citizen report (media already uploaded)
+      description: >-
+        Citizens and field workers. Returns 202 because analysis is asynchronous: `status` starts
+        as `queued`. `fieldSensorReading` is honoured for field workers only. A 500 means the
+        jurisdiction was temporarily unresolvable; the client retries.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mediaType, photoStorageUrl, geo, capturedAt]
+              properties:
+                mediaType: { type: string, enum: [photo, photo_audio] }
+                photoStorageUrl: { type: string, pattern: '^gs://' }
+                audioStorageUrl: { type: string, pattern: '^gs://' }
+                geo: { $ref: '#/components/schemas/GeoPoint' }
+                capturedAt: { $ref: '#/components/schemas/ISODateString' }
+                deviceMeta:
+                  $ref: '#/components/schemas/Submission/properties/deviceMeta'
+                fieldSensorReading:
+                  type: object
+                  properties:
+                    pm25: { type: number, minimum: 0, maximum: 2000 }
+                    pm10: { type: number, minimum: 0, maximum: 2000 }
+      responses:
+        '202':
+          description: Accepted and queued for analysis
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SubmissionEnvelope' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '500': { $ref: '#/components/responses/InternalError' }
+    get:
+      operationId: listSubmissions
+      tags: [submission-service]
+      summary: List reports (own reports for citizens; the jurisdiction's for officials)
+      parameters:
+        - name: userId
+          in: query
+          schema: { type: string, minLength: 1 }
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/SubmissionStatus' }
+        - name: h3Index
+          in: query
+          schema: { $ref: '#/components/schemas/H3Index' }
+        - $ref: '#/components/parameters/pageSize'
+        - $ref: '#/components/parameters/pageToken'
+      responses:
+        '200':
+          description: One page
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedSubmission' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /submissions/{id}:
+    get:
+      operationId: getSubmission
+      tags: [submission-service]
+      summary: A report and its analysis
+      description: The owner, or any official whose jurisdiction contains it.
+      parameters:
+        - $ref: '#/components/parameters/idPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [submission, analysis]
+                properties:
+                  submission: { $ref: '#/components/schemas/Submission' }
+                  analysis:
+                    oneOf:
+                      - $ref: '#/components/schemas/AnalysisResult'
+                      - type: 'null'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /submissions/{id}/clarify:
+    post:
+      operationId: answerClarification
+      tags: [submission-service]
+      summary: Answer Pipeline D's clarifying question
+      description: >-
+        Owner only. Records the answer on `Submission.clarifications[turn]`, resets `status` to
+        `pending_analysis` and republishes `submission.created`. 409 when no question is pending.
+      parameters:
+        - $ref: '#/components/parameters/idPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              minProperties: 1
+              description: At least one of the two fields.
+              properties:
+                answerText: { type: string, minLength: 1, maxLength: 500 }
+                answerPhotoStorageUrl:
+                  type: string
+                  pattern: '^gs://'
+                  description: Issued by `POST /submissions/upload-url`.
+      responses:
+        '202':
+          description: Answer recorded; re-analysis queued
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SubmissionEnvelope' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /submissions/{id}/retry-analysis:
+    post:
+      operationId: retryAnalysis
+      tags: [submission-service]
+      summary: Re-queue analysis
+      description: >-
+        Owner, or district_admin and above. `status` resets to `pending_analysis`. 409 when the
+        report is already analyzed and not flagged for review.
+      parameters:
+        - $ref: '#/components/parameters/idPath'
+      responses:
+        '202':
+          description: Re-queued
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SubmissionEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  # ============================================================ Analysis
+  /analysis/{submissionId}:
+    get:
+      operationId: getAnalysis
+      tags: [submission-service]
+      summary: Poll a report's analysis
+      description: >-
+        Same access rule as the parent submission. Clients poll while `status` is
+        `pending_analysis`, or use the Firestore real-time listener directly.
+        `advisory.audioStorageUrl` is returned as a short-lived signed https URL.
+      parameters:
+        - name: submissionId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, result]
+                properties:
+                  status: { $ref: '#/components/schemas/SubmissionStatus' }
+                  result:
+                    oneOf:
+                      - $ref: '#/components/schemas/AnalysisResult'
+                      - type: 'null'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ============================================================ Hotspots
+  /hotspots:
+    get:
+      operationId: listHotspots
+      tags: [hotspot-service]
+      summary: The fused hotspot grid for a corridor
+      description: Without `sinceHour`, returns the latest scored hour (what the live heatmap shows).
+      parameters:
+        - name: corridorId
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/CorridorId' }
+        - $ref: '#/components/parameters/bbox'
+        - name: sinceHour
+          in: query
+          schema: { $ref: '#/components/schemas/ISODateString' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [cells]
+                properties:
+                  cells:
+                    type: array
+                    items: { $ref: '#/components/schemas/HotspotCell' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /hotspots/{h3Index}/history:
+    get:
+      operationId: getHotspotHistory
+      tags: [hotspot-service]
+      summary: Hourly history of one cell
+      parameters:
+        - name: h3Index
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/H3Index' }
+        - name: range
+          in: query
+          schema: { type: string, enum: [24h, 7d, 30d], default: 7d }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [h3Index, points]
+                properties:
+                  h3Index: { $ref: '#/components/schemas/H3Index' }
+                  points:
+                    type: array
+                    items: { $ref: '#/components/schemas/HotspotCell' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ============================================================ Forecasts
+  /forecasts/{corridorId}/latest:
+    get:
+      operationId: getLatestForecast
+      tags: [forecast-service]
+      summary: Latest 72-hour forecast run for a corridor
+      parameters:
+        - $ref: '#/components/parameters/corridorIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ForecastRun' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /forecasts/{corridorId}/history:
+    get:
+      operationId: getForecastHistory
+      tags: [forecast-service]
+      summary: Past forecast runs for a corridor
+      parameters:
+        - $ref: '#/components/parameters/corridorIdPath'
+        - name: range
+          in: query
+          schema: { type: string, enum: [7d, 30d, 90d], default: 7d }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [corridorId, runs]
+                properties:
+                  corridorId: { $ref: '#/components/schemas/CorridorId' }
+                  runs:
+                    type: array
+                    items: { $ref: '#/components/schemas/ForecastRun' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ============================================================ Alerts
+  /alerts:
+    get:
+      operationId: listAlerts
+      tags: [alert-service]
+      summary: The caller's alert queue
+      description: district_admin and above. Filtered to the caller's jurisdiction server-side, never client-filtered.
+      parameters:
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/AlertStatus' }
+        - name: severity
+          in: query
+          schema: { $ref: '#/components/schemas/AlertSeverity' }
+        - name: type
+          in: query
+          schema: { $ref: '#/components/schemas/AlertType' }
+        - $ref: '#/components/parameters/pageSize'
+        - $ref: '#/components/parameters/pageToken'
+      responses:
+        '200':
+          description: One page
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedAlert' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /alerts/{id}:
+    get:
+      operationId: getAlert
+      tags: [alert-service]
+      summary: One alert
+      description: district_admin and above, within jurisdiction.
+      parameters:
+        - $ref: '#/components/parameters/idPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Alert' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /alerts/{id}/status:
+    patch:
+      operationId: updateAlertStatus
+      tags: [alert-service]
+      summary: Move an alert through its lifecycle
+      description: >-
+        district_admin and above, within jurisdiction. The server appends to `statusHistory` and
+        never overwrites it. 409 on an invalid transition, e.g. `resolved` → `new`.
+      parameters:
+        - $ref: '#/components/parameters/idPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { $ref: '#/components/schemas/AlertStatus' }
+                note: { type: string }
+      responses:
+        '200':
+          description: Updated alert
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Alert' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /alerts/{id}/assign:
+    post:
+      operationId: assignAlert
+      tags: [alert-service]
+      summary: Assign an alert to an officer
+      description: >-
+        district_admin and above, within jurisdiction. 400 when the officer does not exist or does
+        not cover the alert's jurisdiction.
+      parameters:
+        - $ref: '#/components/parameters/idPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [officerId]
+              properties:
+                officerId: { type: string, minLength: 1 }
+      responses:
+        '200':
+          description: Updated alert
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Alert' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ============================================================ Resource Coordination
+  /resources/requests:
+    post:
+      operationId: createResourceRequest
+      tags: [submission-service]
+      summary: Post a resource request
+      description: >-
+        district_admin and above. The jurisdiction always comes from the caller's own
+        `User.jurisdiction` and is never client-supplied.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [resourceType, quantityNeeded]
+              properties:
+                resourceType: { $ref: '#/components/schemas/ResourceType' }
+                quantityNeeded: { type: integer, minimum: 1 }
+                relatedAlertId: { type: string }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResourceRequest' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    get:
+      operationId: listResourceRequests
+      tags: [submission-service]
+      summary: Resource Coordination Board
+      description: district_admin sees their own jurisdiction; state_admin and above see their whole state.
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string, enum: [open, fulfilled, cancelled] }
+        - $ref: '#/components/parameters/pageSize'
+        - $ref: '#/components/parameters/pageToken'
+      responses:
+        '200':
+          description: One page
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedResourceRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  # ============================================================ Federation
+  /federation/models:
+    get:
+      operationId: listFederatedModels
+      tags: [federation-service]
+      summary: Models shared on the National Exchange
+      description: state_admin and above.
+      parameters:
+        - name: type
+          in: query
+          schema: { type: string, enum: [hotspot, forecast] }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [available, currentlyActive]
+                properties:
+                  available:
+                    type: array
+                    items: { $ref: '#/components/schemas/FederatedModel' }
+                  currentlyActive:
+                    oneOf:
+                      - $ref: '#/components/schemas/FederatedModel'
+                      - type: 'null'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /federation/models/{modelId}/import:
+    post:
+      operationId: importFederatedModel
+      tags: [federation-service]
+      summary: Import and activate another state's model
+      description: >-
+        super_admin only. This is deliberately the highest bar in the system, because importing an
+        external model into a production endpoint has the largest blast radius. 409 when the
+        model's feature-schema version is incompatible.
+      parameters:
+        - name: modelId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Imported and activated
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [imported, activatedAt]
+                properties:
+                  imported: { $ref: '#/components/schemas/FederatedModel' }
+                  activatedAt: { $ref: '#/components/schemas/ISODateString' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /federation/exchange/hotspot-summary:
+    get:
+      operationId: getExchangeHotspotSummary
+      tags: [federation-service]
+      summary: Cross-state, k-anonymized weekly hotspot summary
+      description: >-
+        state_admin and above. Cells are generalized to H3 resolution 6 and published only above
+        the k-anonymity floor.
+      parameters:
+        - $ref: '#/components/parameters/bbox'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [summary]
+                properties:
+                  summary:
+                    type: array
+                    items:
+                      type: object
+                      required: [sourceStateCode, h3IndexGeneralized, weekStartDate, avgHotspotConfidence]
+                      properties:
+                        sourceStateCode: { $ref: '#/components/schemas/LGDStateCode' }
+                        h3IndexGeneralized: { $ref: '#/components/schemas/H3Index' }
+                        weekStartDate: { type: string, format: date }
+                        avgHotspotConfidence: { type: number, minimum: 0, maximum: 1 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  # ============================================================ Corridors
+  /corridors:
+    get:
+      operationId: listCorridors
+      tags: [submission-service]
+      summary: Configured corridors
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [corridors]
+                properties:
+                  corridors:
+                    type: array
+                    items: { $ref: '#/components/schemas/Corridor' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /corridors/{id}:
+    get:
+      operationId: getCorridor
+      tags: [submission-service]
+      summary: One corridor
+      parameters:
+        - $ref: '#/components/parameters/idPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Corridor' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  securitySchemes:
+    firebaseIdToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Firebase Auth ID token. Officials carry `role`, `stateCode` and `districtCode` custom claims.
+
+  parameters:
+    idPath:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+    corridorIdPath:
+      name: corridorId
+      in: path
+      required: true
+      schema: { $ref: '#/components/schemas/CorridorId' }
+    pageSize:
+      name: pageSize
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    pageToken:
+      name: pageToken
+      in: query
+      schema: { type: string }
+    bbox:
+      name: bbox
+      in: query
+      description: '`minLat,minLng,maxLat,maxLng`'
+      schema:
+        type: string
+        pattern: '^-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?$'
+        examples: ['28.4,76.8,28.9,77.4']
+
+  responses:
+    ValidationError:
+      description: VALIDATION_ERROR
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    Unauthorized:
+      description: UNAUTHORIZED (missing, invalid or expired ID token)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    Forbidden:
+      description: FORBIDDEN_JURISDICTION (role too low, or outside the caller's jurisdiction)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    NotFound:
+      description: NOT_FOUND
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    Conflict:
+      description: CONFLICT
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    RateLimited:
+      description: RATE_LIMITED
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    InternalError:
+      description: INTERNAL_ERROR
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+
+  schemas:
+    # ---------------------------------------------------------- primitives (§4.1)
+    ISODateString: { type: string, format: date-time, examples: ['2026-08-25T10:00:00.000Z'] }
+    BCP47LanguageTag: { type: string, examples: [hi-IN, pa-IN, mr-IN, en-IN] }
+    LGDStateCode: { type: string, examples: [DL, MH] }
+    LGDDistrictCode: { type: string, examples: [DL-CENTRAL] }
+    H3Index:
+      type: string
+      description: H3 cell index (resolution 8 operational, 6 federated)
+      examples: ['883da1136dfffff']
+    CorridorId: { type: string, examples: [ncr-airshed, mumbai-pune-corridor] }
+    UserRole:
+      type: string
+      enum: [citizen, field_worker, district_admin, state_admin, super_admin]
+    PollutionSourceType:
+      type: string
+      enum: [crop_residue_burning, industrial_emission, open_waste_burning, vehicular_smog, construction_dust, no_visible_pollution, indeterminate]
+    AQICategory:
+      type: string
+      enum: [good, satisfactory, moderate, poor, very_poor, severe]
+    GRAPStage:
+      type: string
+      enum: [none, stage_1, stage_2, stage_3, stage_4]
+    SubmissionStatus:
+      type: string
+      enum: [queued, uploading, pending_analysis, analyzed, failed, flagged_for_review]
+    AlertType: { type: string, enum: [hotspot, forecast] }
+    AlertSeverity: { type: string, enum: [info, watch, warning, critical] }
+    AlertStatus: { type: string, enum: [new, acknowledged, in_progress, resolved, dismissed] }
+    ResourceType:
+      type: string
+      enum: [inspection_team, anti_smog_gun, water_sprinkler, mobile_monitoring_van, public_advisory, other]
+    NotificationChannel: { type: string, enum: [push, sms, whatsapp] }
+    GeoPoint:
+      type: object
+      required: [lat, lng]
+      properties:
+        lat: { type: number, minimum: -90, maximum: 90 }
+        lng: { type: number, minimum: -180, maximum: 180 }
+    Jurisdiction:
+      type: object
+      required: [stateCode]
+      properties:
+        stateCode: { $ref: '#/components/schemas/LGDStateCode' }
+        districtCode:
+          $ref: '#/components/schemas/LGDDistrictCode'
+          description: Omitted for state_admin and super_admin
+
+    # ---------------------------------------------------------- core entities (§4.1)
+    User:
+      type: object
+      required: [uid, displayName, role, preferredLanguage, fcmTokens, createdAt, updatedAt]
+      properties:
+        uid: { type: string }
+        phoneNumber: { type: string }
+        email: { type: string }
+        displayName: { type: string }
+        role: { $ref: '#/components/schemas/UserRole' }
+        preferredLanguage: { $ref: '#/components/schemas/BCP47LanguageTag' }
+        jurisdiction:
+          $ref: '#/components/schemas/Jurisdiction'
+          description: Required for every role except citizen and field_worker
+        fcmTokens: { type: array, items: { type: string } }
+        createdAt: { $ref: '#/components/schemas/ISODateString' }
+        updatedAt: { $ref: '#/components/schemas/ISODateString' }
+
+    ClarificationExchange:
+      type: object
+      required: [turn, question, language, askedAt]
+      properties:
+        turn: { type: integer, enum: [1, 2], description: 'Pipeline D: at most two questions per report' }
+        question: { type: string, description: "Written by analysis-service, in the citizen's language" }
+        language: { $ref: '#/components/schemas/BCP47LanguageTag' }
+        askedAt: { $ref: '#/components/schemas/ISODateString' }
+        answerText: { type: string }
+        answerPhotoStorageUrl: { type: string }
+        answeredAt: { $ref: '#/components/schemas/ISODateString' }
+
+    Submission:
+      type: object
+      required: [id, userId, mediaType, photoStorageUrl, geo, h3Index, jurisdiction, capturedAt, uploadedAt, status]
+      properties:
+        id: { type: string }
+        userId: { type: string }
+        mediaType: { type: string, enum: [photo, photo_audio] }
+        photoStorageUrl: { type: string }
+        audioStorageUrl: { type: string }
+        transcript: { type: string }
+        geo: { $ref: '#/components/schemas/GeoPoint' }
+        h3Index: { $ref: '#/components/schemas/H3Index' }
+        jurisdiction: { $ref: '#/components/schemas/Jurisdiction' }
+        capturedAt: { $ref: '#/components/schemas/ISODateString' }
+        uploadedAt: { $ref: '#/components/schemas/ISODateString' }
+        status: { $ref: '#/components/schemas/SubmissionStatus' }
+        deviceMeta:
+          type: object
+          required: [platform, appVersion]
+          properties:
+            platform: { type: string, enum: [android, ios, web] }
+            appVersion: { type: string }
+            networkType: { type: string, enum: [2g, 3g, 4g, 5g, wifi, unknown] }
+        fieldSensorReading:
+          type: object
+          description: Field worker's handheld sensor (Product Spec Feature 1), µg/m³
+          properties:
+            pm25: { type: number }
+            pm10: { type: number }
+        clarifications:
+          type: array
+          items: { $ref: '#/components/schemas/ClarificationExchange' }
+
+    AnalysisResult:
+      type: object
+      required: [submissionId, sourceClassification, severityEstimate, skyOpacityScore, plumeDetected, confidenceScore, needsHumanReview, advisory, modelVersion, createdAt]
+      properties:
+        submissionId: { type: string, description: 1:1 with Submission.id }
+        sourceClassification: { $ref: '#/components/schemas/PollutionSourceType' }
+        severityEstimate: { type: integer, enum: [1, 2, 3, 4, 5] }
+        skyOpacityScore: { type: number, minimum: 0, maximum: 1 }
+        plumeDetected: { type: boolean }
+        visibilityMeters: { type: number }
+        confidenceScore: { type: number, minimum: 0, maximum: 1 }
+        needsHumanReview: { type: boolean }
+        reviewNote: { type: string }
+        estimatedAQICategory: { $ref: '#/components/schemas/AQICategory' }
+        crossValidation:
+          type: object
+          properties:
+            nearestMonitorId: { type: string }
+            nearestMonitorAQI: { type: number }
+            satelliteAODAtCell: { type: number }
+            agreementScore: { type: number, minimum: 0, maximum: 1 }
+        advisory:
+          type: object
+          required: [text, language]
+          properties:
+            text: { type: string }
+            language: { $ref: '#/components/schemas/BCP47LanguageTag' }
+            audioStorageUrl: { type: string }
+        pendingClarification:
+          type: object
+          description: Pipeline D question awaiting the citizen's answer
+          required: [turn, question, language]
+          properties:
+            turn: { type: integer, enum: [1, 2] }
+            question: { type: string }
+            language: { $ref: '#/components/schemas/BCP47LanguageTag' }
+        modelVersion: { type: string, examples: ['gemini-3.7-flash@2026-07-14'] }
+        rawResponseStorageUrl: { type: string }
+        createdAt: { $ref: '#/components/schemas/ISODateString' }
+
+    HotspotCell:
+      type: object
+      required: [id, h3Index, corridorId, timestampHour, hotspotConfidenceScore, isHidden, classification, contributingSignals, modelVersion, createdAt]
+      properties:
+        id: { type: string, description: '`${h3Index}_${timestampHour}`' }
+        h3Index: { $ref: '#/components/schemas/H3Index' }
+        corridorId: { $ref: '#/components/schemas/CorridorId' }
+        timestampHour: { $ref: '#/components/schemas/ISODateString' }
+        hotspotConfidenceScore: { type: number, minimum: 0, maximum: 1 }
+        isHidden: { type: boolean, description: 'Confidence ≥ 0.6 and no monitor within 3 km' }
+        classification:
+          type: string
+          enum: [crop_residue_burning, industrial_emission, open_waste_burning, vehicular_smog, construction_dust, no_visible_pollution, indeterminate, mixed, unknown]
+        contributingSignals:
+          type: object
+          required: [citizenReportCount]
+          properties:
+            citizenReportCount: { type: integer, minimum: 0 }
+            avgCitizenSeverity: { type: number }
+            satelliteAOD: { type: number }
+            satelliteNO2: { type: number }
+            fireDetectionCount: { type: integer, minimum: 0 }
+            nearestMonitorId: { type: string }
+            nearestMonitorDeltaAQI: { type: number }
+        modelVersion: { type: string }
+        createdAt: { $ref: '#/components/schemas/ISODateString' }
+
+    ForecastHorizonPoint:
+      type: object
+      required: [horizonHours, predictedAQI, predictedAQICategory, predictedGRAPStage, confidenceInterval]
+      properties:
+        horizonHours: { type: integer, enum: [24, 48, 72] }
+        predictedAQI: { type: number }
+        predictedAQICategory: { $ref: '#/components/schemas/AQICategory' }
+        predictedGRAPStage: { $ref: '#/components/schemas/GRAPStage' }
+        confidenceInterval:
+          type: object
+          required: [lower, upper]
+          properties:
+            lower: { type: number }
+            upper: { type: number }
+
+    ForecastRun:
+      type: object
+      required: [id, corridorId, forecastRunTimestamp, horizons, keyDrivers, modelVersion, createdAt]
+      properties:
+        id: { type: string, description: '`${corridorId}_${forecastRunTimestamp}`' }
+        corridorId: { $ref: '#/components/schemas/CorridorId' }
+        forecastRunTimestamp: { $ref: '#/components/schemas/ISODateString' }
+        horizons:
+          type: array
+          items: { $ref: '#/components/schemas/ForecastHorizonPoint' }
+        keyDrivers: { type: array, items: { type: string } }
+        modelVersion: { type: string }
+        createdAt: { $ref: '#/components/schemas/ISODateString' }
+
+    Alert:
+      type: object
+      required: [id, type, sourceRef, corridorId, severity, impliedGrapStage, title, description, recommendedActions, citedSignals, publicAdvisory, assignedJurisdiction, status, statusHistory, notificationsSent, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        type: { $ref: '#/components/schemas/AlertType' }
+        sourceRef: { type: string, description: HotspotCell.id or ForecastRun.id }
+        corridorId: { $ref: '#/components/schemas/CorridorId' }
+        h3Index: { $ref: '#/components/schemas/H3Index' }
+        severity: { $ref: '#/components/schemas/AlertSeverity' }
+        impliedGrapStage: { $ref: '#/components/schemas/GRAPStage' }
+        title: { type: string }
+        description: { type: string }
+        recommendedActions: { type: array, items: { type: string } }
+        citedSignals: { type: array, items: { type: string } }
+        publicAdvisory: { type: string }
+        assignedJurisdiction: { $ref: '#/components/schemas/Jurisdiction' }
+        assignedOfficerId: { type: string }
+        status: { $ref: '#/components/schemas/AlertStatus' }
+        statusHistory:
+          type: array
+          description: Append-only audit trail
+          items:
+            type: object
+            required: [status, byUserId, at]
+            properties:
+              status: { $ref: '#/components/schemas/AlertStatus' }
+              byUserId: { type: string }
+              at: { $ref: '#/components/schemas/ISODateString' }
+              note: { type: string }
+        notificationsSent:
+          type: array
+          items:
+            type: object
+            required: [channel, to, at, status]
+            properties:
+              channel: { $ref: '#/components/schemas/NotificationChannel' }
+              to: { type: string }
+              at: { $ref: '#/components/schemas/ISODateString' }
+              status: { type: string, enum: [sent, failed, delivered] }
+        createdAt: { $ref: '#/components/schemas/ISODateString' }
+        updatedAt: { $ref: '#/components/schemas/ISODateString' }
+
+    Corridor:
+      type: object
+      required: [id, name, states, boundaryGeoJsonStorageUrl, population, monitoringStationIds, grapFrameworkActive, createdAt]
+      properties:
+        id: { $ref: '#/components/schemas/CorridorId' }
+        name: { type: string }
+        states: { type: array, items: { $ref: '#/components/schemas/LGDStateCode' } }
+        boundaryGeoJsonStorageUrl: { type: string }
+        population: { type: integer, minimum: 0 }
+        monitoringStationIds: { type: array, items: { type: string } }
+        grapFrameworkActive: { type: boolean }
+        grapThresholds:
+          type: object
+          required: [stage_1, stage_2, stage_3, stage_4]
+          properties:
+            stage_1: { $ref: '#/components/schemas/AqiRange' }
+            stage_2: { $ref: '#/components/schemas/AqiRange' }
+            stage_3: { $ref: '#/components/schemas/AqiRange' }
+            stage_4: { $ref: '#/components/schemas/AqiRange' }
+        createdAt: { $ref: '#/components/schemas/ISODateString' }
+
+    AqiRange:
+      type: object
+      description: 'Helper for Corridor.grapThresholds (inline `{ aqiMin, aqiMax }` in §4.1)'
+      required: [aqiMin, aqiMax]
+      properties:
+        aqiMin: { type: number }
+        aqiMax: { type: number }
+
+    MonitoringStation:
+      type: object
+      required: [id, name, agency, geo, h3Index, isOfficial]
+      properties:
+        id: { type: string, description: CPCB/SPCB station code }
+        name: { type: string }
+        agency: { type: string, enum: [CPCB, SPCB, other] }
+        geo: { $ref: '#/components/schemas/GeoPoint' }
+        h3Index: { $ref: '#/components/schemas/H3Index' }
+        isOfficial: { type: boolean }
+        lastReadingAt: { $ref: '#/components/schemas/ISODateString' }
+
+    ResourceRequest:
+      type: object
+      required: [id, jurisdiction, resourceType, quantityNeeded, status, createdBy, createdAt]
+      properties:
+        id: { type: string }
+        jurisdiction: { $ref: '#/components/schemas/Jurisdiction' }
+        resourceType: { $ref: '#/components/schemas/ResourceType' }
+        quantityNeeded: { type: integer, minimum: 1 }
+        relatedAlertId: { type: string }
+        status: { type: string, enum: [open, fulfilled, cancelled] }
+        createdBy: { type: string }
+        createdAt: { $ref: '#/components/schemas/ISODateString' }
+
+    FederatedModel:
+      type: object
+      required: [id, sourceStateCode, modelType, vertexModelRegistryUri, version, trainingDataSummary, performanceMetrics, sharedAt, downloadCount]
+      properties:
+        id: { type: string }
+        sourceStateCode: { $ref: '#/components/schemas/LGDStateCode' }
+        modelType: { type: string, enum: [hotspot, forecast] }
+        vertexModelRegistryUri: { type: string }
+        version: { type: string }
+        trainingDataSummary:
+          type: object
+          required: [recordCount, dateRangeStart, dateRangeEnd]
+          properties:
+            recordCount: { type: integer, minimum: 0 }
+            dateRangeStart: { $ref: '#/components/schemas/ISODateString' }
+            dateRangeEnd: { $ref: '#/components/schemas/ISODateString' }
+        performanceMetrics:
+          type: object
+          additionalProperties: { type: number }
+          examples: [{ auPrc: 0.41, mape: 23.8 }]
+        sharedAt: { $ref: '#/components/schemas/ISODateString' }
+        downloadCount: { type: integer, minimum: 0 }
+
+    # ---------------------------------------------------------- envelopes (§4.1)
+    ApiErrorCode:
+      type: string
+      enum: [VALIDATION_ERROR, UNAUTHORIZED, FORBIDDEN_JURISDICTION, NOT_FOUND, CONFLICT, RATE_LIMITED, INTERNAL_ERROR]
+    ApiError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { $ref: '#/components/schemas/ApiErrorCode' }
+            message: { type: string }
+            details: {}
+
+    # Paginated<T> instantiations used by list endpoints.
+    PaginatedSubmission:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Submission' } }
+        nextPageToken: { type: string }
+        totalCount: { type: integer, minimum: 0 }
+    PaginatedAlert:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Alert' } }
+        nextPageToken: { type: string }
+        totalCount: { type: integer, minimum: 0 }
+    PaginatedResourceRequest:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ResourceRequest' } }
+        nextPageToken: { type: string }
+        totalCount: { type: integer, minimum: 0 }
+
+    SubmissionEnvelope:
+      type: object
+      required: [submission]
+      properties:
+        submission: { $ref: '#/components/schemas/Submission' }
