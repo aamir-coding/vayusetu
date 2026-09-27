@@ -1,0 +1,19 @@
+{
+  "name": "@vayusetu/firestore-rules",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Firestore security rules (deployed with Firebase) + an emulator-backed test suite pinning jurisdiction scoping to the API's rules.",
+  "type": "module",
+  "scripts": {
+    "test": "node scripts/test-with-emulator.mjs",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "@types/node": "^22.7.5",
+    "firebase": "^12.19.0",
+    "firebase-tools": "^15.31.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.3"
+  }
+}

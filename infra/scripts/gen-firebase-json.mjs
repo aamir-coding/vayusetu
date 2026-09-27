@@ -41,7 +41,8 @@ const site = (target, app) => ({
 
 const config = {
   hosting: [site('citizen', 'citizen-pwa'), site('admin', 'admin-dashboard')],
-  firestore: { rules: 'firestore.rules', indexes: 'firestore.indexes.json' },
+  // Rules are also released by Terraform (firestore_rules.tf); same file.
+  firestore: { rules: 'packages/firestore-rules/firestore.rules' },
 };
 writeFileSync(new URL('../../firebase.json', import.meta.url), JSON.stringify(config, null, 2) + '\n');
 console.log(`firebase.json written for ${env} (${apiRewrites.length} API rewrites)`);

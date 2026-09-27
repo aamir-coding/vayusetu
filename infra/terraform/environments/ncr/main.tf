@@ -26,6 +26,7 @@ module "ncr_dev" {
   hotspot_model                     = var.hotspot_model
   forecaster                        = var.forecaster
   briefing_generator                = var.briefing_generator
+  deploy_firestore_rules            = var.deploy_firestore_rules
   forecast_model                    = var.forecast_model
   ml_pipeline_submitters            = var.ml_pipeline_submitters
 

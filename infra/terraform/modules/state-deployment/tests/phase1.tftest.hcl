@@ -140,3 +140,38 @@ run "forecast_schedule_when_enabled" {
     error_message = "Forecasts run every 6 h at :15, after the Weather API forecast (:10)."
   }
 }
+
+run "gemini_can_read_citizen_photos" {
+  command = plan
+
+  assert {
+    condition     = google_storage_bucket_iam_member.aiplatform_agent_reads_media.role == "roles/storage.objectViewer"
+    error_message = "Vertex AI's service agent needs read-only access to citizen media for Pipeline A (gs:// fileData)."
+  }
+}
+
+run "firestore_rules_are_opt_in" {
+  command = plan
+
+  assert {
+    condition     = length(google_firebaserules_release.firestore) == 0
+    error_message = "Releasing Firestore rules changes client access: opt-in only."
+  }
+}
+
+run "firestore_rules_release_the_tested_file" {
+  command = plan
+
+  variables {
+    deploy_firestore_rules = true
+  }
+
+  assert {
+    condition     = strcontains(google_firebaserules_ruleset.firestore[0].source[0].files[0].content, "function covers(j)")
+    error_message = "The released ruleset must be packages/firestore-rules/firestore.rules (the emulator-tested file)."
+  }
+  assert {
+    condition     = google_firebaserules_release.firestore[0].name == "cloud.firestore"
+    error_message = "Firestore rules are released under the cloud.firestore release name."
+  }
+}
