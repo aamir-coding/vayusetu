@@ -47,6 +47,17 @@ test.describe('citizen PWA (mock mode)', () => {
     await page.evaluate(() => localStorage.removeItem('i18nextLng'));
   });
 
+  test('result screen keeps polling from `queued` until the analysis lands', async ({ page }) => {
+    // Regression (27 Sep live rehearsal): the screen polled only while
+    // `pending_analysis`, so opening it while the report was still `queued`
+    // (a real cold start) stopped polling and it spun forever.
+    const [id] = await createReports(page, 1);
+    await spaNavigate(page, `/result/${id}`);
+    await expect(page.getByText(en.result.analyzing)).toBeVisible();
+    await expect(page.getByText(en.result.analyzing)).toHaveCount(0, { timeout: 15_000 });
+    await expect(page.getByRole('heading', { name: en.result.title })).toBeVisible();
+  });
+
   test('Pipeline D: clarifying question -> answer -> re-analysed result, with sensor panel', async ({ page }) => {
     // The mock rotates four analysis presets; the third report is "indeterminate" and asks a question.
     const ids = await createReports(page, 3);
