@@ -11,9 +11,9 @@ from dataclasses import asdict, dataclass, field
 
 # Bumped whenever a feature is added/removed/redefined. federation-service
 # refuses to import a model whose schema version this deployment can't serve
-# (FEATURE_SCHEMA_VERSIONS=hotspot=hs-v1,forecast=fc-v1).
+# (FEATURE_SCHEMA_VERSIONS=hotspot=hs-v1,forecast=fc-v2).
 HOTSPOT_FEATURE_SCHEMA = "hs-v1"
-FORECAST_FEATURE_SCHEMA = "fc-v1"
+FORECAST_FEATURE_SCHEMA = "fc-v2"  # v2: 3-hourly steps (AutoML 3000-step series cap)
 
 
 @dataclass(frozen=True)
@@ -51,8 +51,14 @@ class ForecastSpec:
     time_column: str = "ts"
     series_column: str = "station_id"
     split_column: str = "split"
-    horizon_hours: int = 72
+    horizon_hours: int = 72   # PRODUCT_SPEC Feature 3
     context_hours: int = 168
+    # AutoML Forecasting caps a series at 3000 time steps; a year of HOURLY
+    # readings is 8760. At 3-hour steps a year is 2920 -- every season (the
+    # winter smog season above all) stays in training. NAQI is a 24 h
+    # average, so 3 h resolution loses nothing the 24/48/72 h outputs use.
+    granularity_hours: int = 3
+    max_series_steps: int = 3000
     quantiles: tuple[float, ...] = (0.1, 0.5, 0.9)
     available_at_forecast: tuple[str, ...] = (
         "wind_speed_ms", "wind_dir_sin", "wind_dir_cos", "temperature_c", "relative_humidity_pct", "precipitation_mm",
@@ -66,6 +72,19 @@ class ForecastSpec:
     gate_metric: str = "meanAbsolutePercentageError"
     gate_min: float = 40.0  # MAPE % ceiling for promotion
     higher_is_better: bool = False
+
+    @property
+    def horizon_steps(self) -> int:
+        return self.horizon_hours // self.granularity_hours
+
+    @property
+    def context_steps(self) -> int:
+        return self.context_hours // self.granularity_hours
+
+    @property
+    def max_train_days(self) -> int:
+        # Leave headroom for the horizon/context the service appends.
+        return (self.max_series_steps * self.granularity_hours) // 24 - 5
 
 
 HOTSPOT = HotspotSpec()

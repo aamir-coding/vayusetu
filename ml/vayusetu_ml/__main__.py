@@ -36,7 +36,10 @@ def _env(name: str, default: str | None = None) -> str:
 def parameters(kind: str) -> dict:
     project = _env("GOOGLE_CLOUD_PROJECT")
     dataset = os.getenv("BQ_DATASET", "core")
-    window = training_sql.time_split_window(datetime.now(timezone.utc), int(os.getenv("TRAIN_DAYS", "365")))
+    days = int(os.getenv("TRAIN_DAYS", "365"))
+    if kind == "forecast":
+        days = min(days, specs.FORECAST.max_train_days)  # AutoML 3000-step series cap
+    window = training_sql.time_split_window(datetime.now(timezone.utc), days)
     spec = specs.HOTSPOT if kind == "hotspot" else specs.FORECAST
     common = {
         "project": project,
@@ -71,8 +74,9 @@ def parameters(kind: str) -> dict:
     return {**common, "time_column": f.time_column, "series_column": f.series_column,
             "available_at_forecast": list(f.available_at_forecast),
             "unavailable_at_forecast": list(f.unavailable_at_forecast),
-            "attribute_columns": list(f.attribute_columns), "horizon_hours": f.horizon_hours,
-            "context_hours": f.context_hours, "quantiles": list(f.quantiles)}
+            "attribute_columns": list(f.attribute_columns), "horizon_steps": f.horizon_steps,
+            "context_steps": f.context_steps, "granularity_hours": f.granularity_hours,
+            "quantiles": list(f.quantiles)}
 
 
 def compile_pipeline(kind: str) -> Path:
