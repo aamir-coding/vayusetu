@@ -18,6 +18,7 @@ module "ncr_dev" {
   github_owner                    = var.github_owner
   github_repo                     = var.github_repo
   dashboard_base_url              = var.dashboard_base_url
+  firebase_vapid_public_key       = var.firebase_vapid_public_key
 
   # Ingestion (ingestion.tf)
   corridor_ids                    = ["ncr-airshed"]

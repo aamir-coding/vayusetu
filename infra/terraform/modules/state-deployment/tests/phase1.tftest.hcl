@@ -244,3 +244,28 @@ run "federation_sync_scheduled_with_exchange" {
     error_message = "The Exchange's Vertex agent must be able to read our models to copy them."
   }
 }
+
+run "frontend_build_config_comes_from_terraform" {
+  command = plan
+
+  variables {
+    firebase_vapid_public_key = "BPublicVapidKeyForTests"
+  }
+
+  assert {
+    condition     = local.frontend_env["admin-dashboard"].VITE_FIREBASE_VAPID_KEY == "BPublicVapidKeyForTests"
+    error_message = "The admin build env carries the VAPID key."
+  }
+  assert {
+    condition     = !contains(keys(local.frontend_env["citizen-pwa"]), "VITE_GOOGLE_MAPS_API_KEY")
+    error_message = "The citizen bundle does not need (so must not ship) the Maps key."
+  }
+  assert {
+    condition     = local.frontend_env["citizen-pwa"].VITE_USE_MOCKS == "false"
+    error_message = "Production bundles never use mocks."
+  }
+  assert {
+    condition     = length(google_service_account_iam_member.cloudbuild_act_as_runtime) == 6
+    error_message = "Frontends deploy to Hosting; they add no runtime SA to act as."
+  }
+}

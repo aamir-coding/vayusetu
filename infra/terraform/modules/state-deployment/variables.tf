@@ -258,3 +258,9 @@ variable "enable_federation_sync" {
   default     = false
   description = "Nightly federation-sync schedule (also needs exchange_project_id)."
 }
+
+variable "firebase_vapid_public_key" {
+  type        = string
+  default     = ""
+  description = "Web-push VAPID PUBLIC key (Firebase console > Cloud Messaging > Web Push certificates; not Terraform-manageable). Empty = the admin dashboard hides the push opt-in."
+}
