@@ -280,3 +280,34 @@ variable "hotspot_model_hidden_min_confidence" {
   default     = ""
   description = "Hidden-hotspot threshold for MODEL scores (the model's tuned best-F1 threshold, registry label vayusetu-threshold). Empty = same as the heuristic's 0.6."
 }
+
+# ---- Monitoring and alerting (monitoring.tf)
+variable "alert_emails" {
+  type        = list(string)
+  default     = []
+  description = "On-call emails for alert policies. Empty = incidents show in the console only."
+}
+
+variable "alert_5xx_per_5m" {
+  type        = number
+  default     = 10
+  description = "5xx responses per service per 5 minutes before alerting."
+}
+
+variable "alert_429_per_5m" {
+  type        = number
+  default     = 20
+  description = "HTTP 429s per service per 5 minutes before alerting."
+}
+
+variable "billing_account_id" {
+  type        = string
+  default     = ""
+  description = "Billing account (XXXXXX-XXXXXX-XXXXXX) for the budget alert. Needs billing.budgets.create on the account; empty = no budget resource."
+}
+
+variable "monthly_budget" {
+  type        = number
+  default     = 15000
+  description = "Monthly budget in the billing account's currency (INR for this project). Alerts at 50/90/100% actual and 100% forecast."
+}
