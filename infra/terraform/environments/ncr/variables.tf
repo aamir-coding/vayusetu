@@ -101,3 +101,8 @@ variable "briefing_generator" {
   type    = string
   default = "gemini"
 }
+
+variable "deploy_firestore_rules" {
+  type    = bool
+  default = false
+}

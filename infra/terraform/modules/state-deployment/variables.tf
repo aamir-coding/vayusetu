@@ -223,3 +223,9 @@ variable "ml_pipeline_submitters" {
   default     = []
   description = "IAM members (e.g. user:someone@example.com) allowed to submit Vertex AI Pipelines runs as the ml-pipelines service account."
 }
+
+variable "deploy_firestore_rules" {
+  type        = bool
+  default     = false
+  description = "Release packages/firestore-rules/firestore.rules to the project's Firestore (jurisdiction-scoped reads, no client writes)."
+}

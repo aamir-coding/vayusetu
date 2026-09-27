@@ -1,20 +1,22 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import type { User } from '@vayusetu/shared-types';
+import { normalizeLanguage } from '@vayusetu/gcp-clients';
 import { usersCollection } from '../lib/collections.js';
 import { requireAuthUser } from '../plugins/auth.js';
 import { ApiHttpError } from '../lib/errors.js';
 
 const RegisterBodySchema = z.object({
   displayName: z.string().min(1).max(120),
-  preferredLanguage: z.string().min(2).max(10),
+  // Stored canonical (hi-IN, en-IN, mr-IN, pa-IN): every downstream Google API needs the full tag.
+  preferredLanguage: z.string().min(2).max(10).transform(normalizeLanguage),
   role: z.enum(['citizen', 'field_worker']),
 });
 
 const UpdateBodySchema = z
   .object({
     displayName: z.string().min(1).max(120).optional(),
-    preferredLanguage: z.string().min(2).max(10).optional(),
+    preferredLanguage: z.string().min(2).max(10).transform(normalizeLanguage).optional(),
     // Officials' dashboards register FCM tokens here (alert-service reads
     // them). De-duplicate and keep the 10 most recent: tokens accumulate per
     // browser/device, and every stale one costs a failed send per alert.

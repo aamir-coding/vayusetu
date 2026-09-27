@@ -415,6 +415,18 @@ describe('submission-service', () => {
     });
   });
 
+  describe('preferredLanguage is stored canonical', () => {
+    it('register "en" -> en-IN; patch "hi" -> hi-IN', async () => {
+      const reg = await app.inject({
+        method: 'POST', url: '/api/v1/users/register', headers: auth('lang'),
+        payload: { displayName: 'L', preferredLanguage: 'en', role: 'citizen' },
+      });
+      expect(reg.json().preferredLanguage).toBe('en-IN');
+      const patch = await app.inject({ method: 'PATCH', url: '/api/v1/users/me', headers: auth('lang'), payload: { preferredLanguage: 'hi' } });
+      expect(patch.json().preferredLanguage).toBe('hi-IN');
+    });
+  });
+
   describe('fieldSensorReading', () => {
     it('is stored for field workers, dropped for citizens, bounded', async () => {
       await register('anand', 'field_worker');
