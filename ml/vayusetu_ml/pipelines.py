@@ -117,18 +117,40 @@ def train_forecast_model(project: str, location: str, table: str, display_name: 
 
 @dsl.component(base_image=BASE, packages_to_install=[AIPLATFORM, BIGQUERY])
 def evaluate_and_promote(project: str, location: str, model_version: str, model_type: str,
-                         metric: str, gate: float, higher_is_better: bool, eval_table: str, stats: dict) -> str:
-    """Promote to alias `default` iff the TEST-split metric clears the gate AND
-    beats the current default. Records every evaluation (promoted or not)."""
+                         metric: str, gate: float, higher_is_better: bool, eval_table: str, stats: dict,
+                         positive_class: str = "") -> str:
+    """Gate on the TEST-split metric, label the version with the outcome, and
+    move alias `default` to it only if it passes AND beats the current default.
+    Records every evaluation (promoted or not).
+
+    - Classification: the gate reads the POSITIVE class's slice. Vertex's
+      top-level auPrc is micro-averaged over both classes, so the 85%
+      "normal" class inflated it (first live model: 0.895 overall vs 0.292
+      for `hotspot`) and a failing model was promoted.
+    - The label `vayusetu-gate=passed|failed` is the source of truth for
+      "promoted": a model's FIRST version always receives `default` at
+      training time, so the alias alone cannot mean "passed". federation-
+      service only publishes versions labelled `passed`.
+    """
     import datetime
     import json
 
     from google.cloud import aiplatform, bigquery
+    from google.cloud.aiplatform_v1 import ModelServiceClient
 
     aiplatform.init(project=project, location=location)
     candidate = aiplatform.Model(model_version)
-    metrics = candidate.list_model_evaluations()[0].to_dict().get("metrics", {})
-    value = metrics.get(metric)
+    evaluation = candidate.list_model_evaluations()[0]
+    metrics = evaluation.to_dict().get("metrics", {})
+
+    def slice_metric(resource_name: str, label: str):
+        client = ModelServiceClient(client_options={"api_endpoint": f"{location}-aiplatform.googleapis.com"})
+        for s in client.list_model_evaluation_slices(parent=resource_name):
+            if s.slice_.dimension == "annotationSpec" and s.slice_.value == label:
+                return dict(s.metrics).get(metric)
+        return None
+
+    value = slice_metric(evaluation.resource_name, positive_class) if positive_class else metrics.get(metric)
     better = (lambda a, b: a > b) if higher_is_better else (lambda a, b: a < b)
     passes_gate = value is not None and (value >= gate if higher_is_better else value <= gate)
 
@@ -137,10 +159,20 @@ def evaluate_and_promote(project: str, location: str, model_version: str, model_
     for v in registry.list_versions():
         if "default" in (v.version_aliases or []) and v.version_id != candidate.version_id:
             current = aiplatform.Model(f"{candidate.resource_name.split('@')[0]}@{v.version_id}")
+            if (current.labels or {}).get("vayusetu-gate") != "passed":
+                continue  # a failed version holding `default` (first version) is no bar to beat
             evals = current.list_model_evaluations()
-            current_value = evals[0].to_dict().get("metrics", {}).get(metric) if evals else None
+            if evals:
+                current_value = (slice_metric(evals[0].resource_name, positive_class) if positive_class
+                                 else evals[0].to_dict().get("metrics", {}).get(metric))
     beats_current = current_value is None or (value is not None and better(value, current_value))
     decision = "promoted" if passes_gate and beats_current else "rejected"
+    candidate.update(labels={
+        **(candidate.labels or {}),
+        "vayusetu-gate": "passed" if decision == "promoted" else "failed",
+        "vayusetu-gate-metric": metric.lower()[:63],
+        "vayusetu-gate-value": ("na" if value is None else f"{value:.4f}".replace(".", "_")),
+    })
     if decision == "promoted":
         registry.add_version_aliases(["default"], version=candidate.version_id)
 
@@ -174,7 +206,7 @@ def hotspot_pipeline(project: str, location: str, sql: str, table: str, start_ts
                                   optimization_objective=optimization_objective,
                                   budget_milli_node_hours=budget_milli_node_hours, labels=labels, stats=stats.output)
     evaluate_and_promote(project=project, location=location, model_version=version.output, model_type="hotspot",
-                         metric=gate_metric, gate=gate, higher_is_better=True, eval_table=eval_table, stats=stats.output)
+                         metric=gate_metric, gate=gate, higher_is_better=True, eval_table=eval_table, stats=stats.output, positive_class="hotspot")
 
 
 @dsl.pipeline(name="vayusetu-forecast-retrain")
