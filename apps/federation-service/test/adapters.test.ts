@@ -6,6 +6,7 @@ import {
   type VertexModelClientLike,
   createBigQueryExchange,
   createBigQueryLocalData,
+  createDisconnectedExchange,
   createFirestoreAdapters,
   createVertexRegistry,
   flattenMetrics,
@@ -164,5 +165,15 @@ describe('BigQuery local grid', () => {
     expect(opts.query).toContain('GROUP BY h3_index');
     expect(opts.params).toEqual({ start: '2026-09-13T18:30:00.000Z', end: '2026-09-20T18:30:00.000Z' });
     expect(opts.location).toBe('asia-south1');
+  });
+});
+
+describe('exchange not provisioned yet', () => {
+  it('reads as empty (no 500s on the dashboard); writes fail loudly', async () => {
+    const x = createDisconnectedExchange();
+    expect(await x.listSharedModels()).toEqual([]);
+    expect(await x.hotspotSummarySince('2026-09-01')).toEqual([]);
+    expect(await x.getSharedModel('m')).toBeNull();
+    await expect(x.publishHotspotSummary([], '2026-09-21', ['DL'])).rejects.toThrow('not configured');
   });
 });
