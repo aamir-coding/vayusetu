@@ -1,4 +1,5 @@
 import { HttpResponse, http } from 'msw';
+import { latLngToCell } from 'h3-js';
 import type { Alert, AlertStatus, Jurisdiction, Paginated, ResourceRequest } from '@vayusetu/shared-types';
 import {
   alerts as seedAlerts,
@@ -187,8 +188,10 @@ export const handlers = [
     if (session.role === 'district_admin') return err(403, 'FORBIDDEN_JURISDICTION', 'state_admin or above required');
     return HttpResponse.json({
       summary: [
-        { sourceStateCode: 'HR', h3IndexGeneralized: '861fb4657ffffff', weekStartDate: '2026-08-24', avgHotspotConfidence: 0.68 },
-        { sourceStateCode: 'UP', h3IndexGeneralized: '861fb46cfffffff', weekStartDate: '2026-08-24', avgHotspotConfidence: 0.54 },
+        // Real res-6 cells (the federated resolution) so the map can draw them.
+        { sourceStateCode: 'HR', h3IndexGeneralized: latLngToCell(28.9, 76.9, 6), weekStartDate: '2026-08-24', avgHotspotConfidence: 0.68 },
+        { sourceStateCode: 'UP', h3IndexGeneralized: latLngToCell(28.65, 77.45, 6), weekStartDate: '2026-08-24', avgHotspotConfidence: 0.54 },
+        { sourceStateCode: 'DL', h3IndexGeneralized: latLngToCell(28.63, 77.22, 6), weekStartDate: '2026-08-24', avgHotspotConfidence: 0.61 },
       ],
     });
   }),

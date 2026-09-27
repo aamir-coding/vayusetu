@@ -4,6 +4,13 @@ module "ncr_dev" {
   region           = var.region
   environment_name = "ncr-dev"
 
+  # Federation Exchange: NCR publishes as DL and owns every NCR state's rows.
+  federation_state_code   = "DL"
+  federation_owned_states = ["DL", "HR", "UP", "RJ"]
+  exchange_project_id     = var.exchange_project_id
+  exchange_project_number = var.exchange_project_number
+  enable_federation_sync  = var.enable_federation_sync
+
   # Week 2 (see WEEK2_SETUP.md for when to flip each)
   maps_api_key_secret_populated   = var.maps_api_key_secret_populated
   enable_alert_push_subscriptions = var.enable_alert_push_subscriptions

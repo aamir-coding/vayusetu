@@ -2,7 +2,8 @@ import { BigQuery } from '@google-cloud/bigquery';
 import { v1 } from '@google-cloud/aiplatform';
 import { getDb } from '@vayusetu/gcp-clients';
 import { env } from './config/env.js';
-import { createBigQueryExchange, createFirestoreAdapters, createVertexRegistry } from './lib/adapters.js';
+import { createBigQueryExchange, createBigQueryLocalData, createFirestoreAdapters, createVertexRegistry } from './lib/adapters.js';
+import type { LocalDataSource } from './lib/ports.js';
 
 /**
  * Real adapters. Passing the actual SDK clients into the adapters' minimal
@@ -11,8 +12,15 @@ import { createBigQueryExchange, createFirestoreAdapters, createVertexRegistry }
  */
 export function buildProductionAdapters() {
   const firestore = createFirestoreAdapters(getDb(), env.FEDERATION_STATE_CODE);
+  const bq = new BigQuery({ projectId: env.GOOGLE_CLOUD_PROJECT });
+  // Hotspot scores from the full BigQuery grid; contributions (who reported
+  // where) from Firestore submissions -- the only place user ids live.
+  const local: LocalDataSource = {
+    ...createBigQueryLocalData(bq, { project: env.GOOGLE_CLOUD_PROJECT, location: env.BIGQUERY_LOCATION }),
+    contributions: firestore.contributions,
+  };
   // Jobs run (and bill) in THIS state project; the tables live in the exchange project.
-  const exchange = createBigQueryExchange(new BigQuery({ projectId: env.GOOGLE_CLOUD_PROJECT }), {
+  const exchange = createBigQueryExchange(bq, {
     project: env.EXCHANGE_PROJECT_ID,
     dataset: env.EXCHANGE_DATASET,
     location: env.BIGQUERY_LOCATION,
@@ -21,5 +29,5 @@ export function buildProductionAdapters() {
     new v1.ModelServiceClient({ apiEndpoint: `${env.VERTEX_LOCATION}-aiplatform.googleapis.com` }),
     { localProject: env.GOOGLE_CLOUD_PROJECT, exchangeProject: env.EXCHANGE_PROJECT_ID, location: env.VERTEX_LOCATION },
   );
-  return { local: firestore, state: firestore, exchange, registry };
+  return { local, state: firestore, exchange, registry };
 }

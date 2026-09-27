@@ -21,6 +21,7 @@ import {
   ALERT_STATUS_SUGGESTED_NEXT,
 } from '@vayusetu/ui-components';
 import { useAuth } from '../hooks/useAuth';
+import { useLiveAlerts } from '../hooks/useLiveAlerts';
 import { alertsApi } from '../lib/apiClient';
 
 const STATUS_ICON: Record<AlertStatus, React.ComponentType<{ className?: string }>> = {
@@ -47,9 +48,12 @@ export function AlertQueue() {
   const [statusFilter, setStatusFilter] = React.useState<AlertStatus | 'all'>('all');
   const [selected, setSelected] = React.useState<Alert | null>(null);
 
+  const live = useLiveAlerts();
   const { data, isLoading } = useQuery({
     queryKey: ['alerts', statusFilter],
     queryFn: async () => alertsApi.list(await getToken(), statusFilter === 'all' ? {} : { status: statusFilter }),
+    // The Firestore listener pushes changes; poll only when it isn't live.
+    refetchInterval: live ? false : 60_000,
   });
 
   const updateStatus = useMutation({
@@ -70,7 +74,13 @@ export function AlertQueue() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-ink">Alert Queue</h1>
-          <p className="text-sm text-slate-500">Jurisdiction-filtered · sorted by severity, then newest first</p>
+          <p className="flex items-center gap-2 text-sm text-slate-500">
+            Jurisdiction-filtered · sorted by severity, then newest first
+            <span className={live ? 'flex items-center gap-1 text-emerald-600' : 'flex items-center gap-1 text-slate-400'}>
+              <span className={live ? 'h-2 w-2 animate-pulse rounded-full bg-emerald-500' : 'h-2 w-2 rounded-full bg-slate-300'} />
+              {live ? 'Live' : 'Polling'}
+            </span>
+          </p>
         </div>
         <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as AlertStatus | 'all')}>
           <TabsList>

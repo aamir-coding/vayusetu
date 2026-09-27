@@ -59,6 +59,7 @@ locals {
     }
     federation-service = {
       roles = [
+        "roles/datastore.user", # submissions (contributions), federationExchange mirror + active pointers
         "roles/bigquery.dataEditor",
         "roles/bigquery.jobUser",
         "roles/aiplatform.admin", # publish to / import from Model Registry -- a step above .user

@@ -1,5 +1,6 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, type Auth } from 'firebase/auth';
+import { getFirestore, type Firestore } from 'firebase/firestore';
 
 /**
  * Architecture doc: officials authenticate via "email/SSO + custom claims
@@ -14,6 +15,7 @@ export const isFirebaseConfigured = Boolean(import.meta.env.VITE_FIREBASE_API_KE
 
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
+let db: Firestore | null = null;
 
 if (isFirebaseConfigured) {
   app = initializeApp({
@@ -25,6 +27,7 @@ if (isFirebaseConfigured) {
     appId: import.meta.env.VITE_FIREBASE_APP_ID,
   });
   auth = getAuth(app);
+  db = getFirestore(app); // read-only, rules-scoped listeners (firestore.rules)
 }
 
-export { app as firebaseApp, auth as firebaseAuth };
+export { app as firebaseApp, auth as firebaseAuth, db as firebaseDb };
