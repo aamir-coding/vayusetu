@@ -8,8 +8,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc --noEmit",
-    "start": "tsx src/index.ts",
-    "sync": "tsx src/jobs/nightlySync.ts",
+    "start": "node --import tsx src/index.ts",
+    "sync": "node --import tsx src/jobs/nightlySync.ts",
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
