@@ -30,7 +30,7 @@ def build_training_table(project: str, location: str, sql: str, table: str, labe
               (("start_ts", start_ts), ("end_ts", end_ts), ("validate_from", validate_from), ("test_from", test_from))]
     client.query(sql, job_config=bigquery.QueryJobConfig(query_parameters=params)).result()
     row = list(client.query(
-        f"SELECT COUNT(*) AS rows, COUNTIF({label_sql}) AS positives, COUNTIF(split = 'TEST') AS test FROM `{table}`"
+        f"SELECT COUNT(*) AS `rows`, COUNTIF({label_sql}) AS positives, COUNTIF(split = 'TEST') AS test FROM `{table}`"
     ).result())[0]
     if row["rows"] < 1000:
         raise RuntimeError(f"{table} has only {row['rows']} rows -- backfill more history before training")

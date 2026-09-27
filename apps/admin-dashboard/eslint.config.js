@@ -15,7 +15,15 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
+  // Service workers (FCM background handler): worker globals, not the DOM.
   {
-    ignores: ['dist/', 'node_modules/', '.turbo/', '*.tsbuildinfo', '*.cjs'],
+    files: ['public/**/*.js'],
+    languageOptions: {
+      sourceType: 'script',
+      globals: { self: 'readonly', URL: 'readonly', importScripts: 'readonly', firebase: 'readonly' },
+    },
+  },
+  {
+    ignores: ['dist/', 'node_modules/', '.turbo/', '*.tsbuildinfo', '*.cjs', 'public/mockServiceWorker.js'],
   },
 );
