@@ -62,7 +62,7 @@ locals {
       PUSH_CHANNEL_MODE     = "live"
       SMS_CHANNEL_MODE      = "stub" # partner gateway not contracted yet (Week 2 scope)
       WHATSAPP_CHANNEL_MODE = "stub"
-      DASHBOARD_BASE_URL    = coalesce(var.dashboard_base_url, "https://${var.project_id}.web.app")
+      DASHBOARD_BASE_URL    = coalesce(var.dashboard_base_url, "https://${google_firebase_hosting_site.admin.site_id}.web.app") # admin Hosting site (firebase.tf)
       DEFAULT_STATE_CODE    = var.default_state_code
       DEFAULT_DISTRICT_CODE = var.default_district_code
       BRIEFING_GENERATOR    = var.briefing_generator

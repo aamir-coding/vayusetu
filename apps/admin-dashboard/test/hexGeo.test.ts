@@ -32,3 +32,12 @@ describe('confidenceColor', () => {
     expect(confidenceColor(0.1)).toBe('#94A3B8');
   });
 });
+
+describe('mergeToken', () => {
+  it('adds a new browser token once, and is a no-op for a known one', async () => {
+    const { mergeToken } = await import('../src/lib/fcmTokens');
+    expect(mergeToken(undefined, 't1')).toEqual(['t1']);
+    expect(mergeToken(['t0'], 't1')).toEqual(['t0', 't1']);
+    expect(mergeToken(['t0', 't1'], 't1')).toBeNull();
+  });
+});
