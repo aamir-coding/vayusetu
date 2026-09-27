@@ -121,3 +121,8 @@ variable "enable_federation_sync" {
   type    = bool
   default = false
 }
+
+variable "firebase_vapid_public_key" {
+  type    = string
+  default = ""
+}

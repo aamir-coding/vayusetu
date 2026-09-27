@@ -1,22 +1,32 @@
-# Cloud Build pipeline -- admin-dashboard (VALIDATION ONLY).
-# Firebase Hosting deploy is Engineer 1's Week 4 deliverable; until then
-# every trigger (PR and main) runs install, type-check, lint, test and a
-# real production `vite build`, so a broken bundle fails the PR.
-# citizen-pwa.yaml is this file with _APP changed.
-
+# Cloud Build pipeline -- admin-dashboard (Firebase Hosting).
+# Triggered by infra/terraform/modules/state-deployment/cloudbuild.tf:
+#   PR into main   -> _DEPLOY=false : install, type-check, lint, test, production build
+#   push to main   -> _DEPLOY=true  : the above with the real build config, then
+#                                     `firebase deploy --only hosting:<target>`
+# The build config (Firebase web app, Maps key, VAPID key) is the
+# frontend-env-<app> secret Terraform writes (hosting.tf) -- never hand-copied.
+# citizen-pwa.yaml is this file with _APP/_TARGET changed.
+#
+# Manual deploy from the repo root:
+#   gcloud builds submit --config infra/cloudbuild/admin-dashboard.yaml \
+#     --substitutions=_DEPLOY=true,_ENV=ncr-dev,_REGION=asia-south1 \
+#     --service-account="projects/$PROJECT/serviceAccounts/cloudbuild-ncr-dev@$PROJECT.iam.gserviceaccount.com" .
 substitutions:
   _APP: admin-dashboard
-
+  _TARGET: admin
+  _SITE: '${PROJECT_ID}-admin'
+  _ENV: ncr-dev
+  _REGION: asia-south1
+  _DEPLOY: 'false'
 options:
-  substitutionOption: ALLOW_LOOSE # triggers also pass _DEPLOY/_ENV/_REGION
+  dynamicSubstitutions: true
+  substitutionOption: ALLOW_LOOSE
   logging: CLOUD_LOGGING_ONLY
   machineType: E2_HIGHCPU_8
   env:
     - COREPACK_HOME=/workspace/.corepack
     - CI=true
-
 timeout: 1200s
-
 steps:
   - id: install
     name: node:20-slim
@@ -27,34 +37,57 @@ steps:
         set -euo pipefail
         corepack enable
         pnpm install --frozen-lockfile --filter "@vayusetu/${_APP}..."
-
   - id: build-shared-types
     name: node:20-slim
     entrypoint: bash
     args: ['-c', 'corepack enable && pnpm --filter @vayusetu/shared-types build']
-
-  # --if-present: this pipeline is Engineer 2's, the scripts are Engineer 1's;
-  # a renamed/removed script shouldn't break CI in a way only E2 can fix.
   - id: type-check
     name: node:20-slim
     waitFor: ['build-shared-types']
     entrypoint: bash
     args: ['-c', 'corepack enable && pnpm --filter "@vayusetu/${_APP}" run --if-present type-check']
-
   - id: lint
     name: node:20-slim
     waitFor: ['build-shared-types']
     entrypoint: bash
     args: ['-c', 'corepack enable && pnpm --filter "@vayusetu/${_APP}" run --if-present lint']
-
   - id: test
     name: node:20-slim
     waitFor: ['build-shared-types']
     entrypoint: bash
     args: ['-c', 'corepack enable && pnpm --filter "@vayusetu/${_APP}" run --if-present test']
 
+  # Deploy builds only: the production config Terraform assembled.
+  - id: build-env
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    waitFor: ['install']
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        if [ "${_DEPLOY}" != "true" ]; then echo "_DEPLOY=${_DEPLOY}: validation build, no production config"; exit 0; fi
+        gcloud secrets versions access latest --secret="frontend-env-${_APP}" > "apps/${_APP}/.env.production.local"
+        echo "wrote $(wc -l < "apps/${_APP}/.env.production.local") build variables (values not logged)"
+
   - id: build
     name: node:20-slim
-    waitFor: ['type-check', 'lint', 'test']
+    waitFor: ['type-check', 'lint', 'test', 'build-env']
     entrypoint: bash
     args: ['-c', 'corepack enable && pnpm --filter "@vayusetu/${_APP}" run build']
+
+  - id: deploy
+    name: node:20-slim
+    waitFor: ['build']
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        if [ "${_DEPLOY}" != "true" ]; then echo "_DEPLOY=${_DEPLOY}: skipping Hosting deploy"; exit 0; fi
+        rm -f "apps/${_APP}/.env.production.local"
+        node infra/scripts/gen-firebase-json.mjs "${_ENV}" "${_REGION}"
+        printf '{"projects":{"default":"%s"},"targets":{"%s":{"hosting":{"%s":["%s"]}}}}\n' \
+          "${PROJECT_ID}" "${PROJECT_ID}" "${_TARGET}" "${_SITE}" > .firebaserc
+        npx --yes firebase-tools@13 deploy --only "hosting:${_TARGET}" --project "${PROJECT_ID}" --non-interactive \
+          --message "cloud-build ${BUILD_ID}"

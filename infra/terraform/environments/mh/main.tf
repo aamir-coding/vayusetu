@@ -9,8 +9,8 @@ module "mh_dev" {
   federation_owned_states = ["MH"]
 
   # Jurisdiction fallback when geocoding cannot resolve a point.
-  default_state_code    = "MH"
-  default_district_code = "MH-PUNE"
+  default_state_code      = "MH"
+  default_district_code   = "MH-PUNE"
   exchange_project_id     = var.exchange_project_id
   exchange_project_number = var.exchange_project_number
   enable_federation_sync  = var.enable_federation_sync
@@ -22,6 +22,7 @@ module "mh_dev" {
   github_owner                    = var.github_owner
   github_repo                     = var.github_repo
   dashboard_base_url              = var.dashboard_base_url
+  firebase_vapid_public_key       = var.firebase_vapid_public_key
 
   # Ingestion (ingestion.tf)
   corridor_ids                    = ["mumbai-pune-corridor"]
