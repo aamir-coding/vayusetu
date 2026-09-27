@@ -13,7 +13,7 @@ from dataclasses import asdict, dataclass, field
 # refuses to import a model whose schema version this deployment can't serve
 # (FEATURE_SCHEMA_VERSIONS=hotspot=hs-v1,forecast=fc-v2).
 HOTSPOT_FEATURE_SCHEMA = "hs-v1"
-FORECAST_FEATURE_SCHEMA = "fc-v2"  # v2: 3-hourly steps (AutoML 3000-step series cap)
+FORECAST_FEATURE_SCHEMA = "fc-v2"  # v2: daily (IST) steps -- AutoML Forecasting 3000-step cap
 
 
 @dataclass(frozen=True)
@@ -53,16 +53,19 @@ class ForecastSpec:
     split_column: str = "split"
     horizon_hours: int = 72   # PRODUCT_SPEC Feature 3
     context_hours: int = 168
-    # AutoML Forecasting caps a series at 3000 time steps; a year of HOURLY
-    # readings is 8760. At 3-hour steps a year is 2920 -- every season (the
-    # winter smog season above all) stays in training. NAQI is a 24 h
-    # average, so 3 h resolution loses nothing the 24/48/72 h outputs use.
-    granularity_hours: int = 3
+    # Steps are IST calendar DAYS. AutoML Forecasting caps a series at 3000
+    # steps (a year of hourly data is 8760) and only supports 1-hour or 1-day
+    # granularity (not 3-hour). NAQI is itself a 24 h average, and the product
+    # outputs +24/+48/+72 h -- exactly 3 daily steps. A year is 365 steps, so
+    # every season (the winter smog season above all) stays in training.
+    granularity_unit: str = "day"
+    horizon_steps: int = 3     # D+1, D+2, D+3 (IST)
+    context_steps: int = 14    # 14 days incl. today (partial)
     max_series_steps: int = 3000
     quantiles: tuple[float, ...] = (0.1, 0.5, 0.9)
     available_at_forecast: tuple[str, ...] = (
         "wind_speed_ms", "wind_dir_sin", "wind_dir_cos", "temperature_c", "relative_humidity_pct", "precipitation_mm",
-        "hour_ist", "day_of_week", "is_harvest_season", "is_diwali_window",
+        "day_of_week", "is_harvest_season", "is_diwali_window",
     )
     unavailable_at_forecast: tuple[str, ...] = (
         "aqi", "boundary_layer_height_m", "corridor_fire_count_d1", "corridor_mean_aod_d1",
@@ -74,17 +77,9 @@ class ForecastSpec:
     higher_is_better: bool = False
 
     @property
-    def horizon_steps(self) -> int:
-        return self.horizon_hours // self.granularity_hours
-
-    @property
-    def context_steps(self) -> int:
-        return self.context_hours // self.granularity_hours
-
-    @property
     def max_train_days(self) -> int:
-        # Leave headroom for the horizon/context the service appends.
-        return (self.max_series_steps * self.granularity_hours) // 24 - 5
+        # One step per day; leave headroom for context + horizon.
+        return self.max_series_steps - self.context_steps - self.horizon_steps
 
 
 HOTSPOT = HotspotSpec()

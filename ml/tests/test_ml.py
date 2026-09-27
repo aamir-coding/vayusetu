@@ -53,19 +53,20 @@ def test_forecast_columns_exist_in_training_sql():
     assert f.horizon_hours == 72  # PRODUCT_SPEC Feature 3
 
 
-def test_forecast_fits_automl_series_cap():
-    # AutoML Forecasting rejects series longer than 3000 steps (first live run:
-    # 8078 hourly steps). A full year at 3-hourly steps must fit.
+def test_forecast_fits_automl_limits():
+    # AutoML Forecasting: series <= 3000 steps (1st run: 8078 hourly steps)
+    # and granularity 1 hour or 1 day only (2nd run rejected 3-hourly).
     f = specs.FORECAST
-    assert f.granularity_hours == 3 and 72 % f.granularity_hours == 0 and 168 % f.granularity_hours == 0
-    assert (f.horizon_steps, f.context_steps) == (24, 56)
-    assert f.max_train_days * 24 // f.granularity_hours <= f.max_series_steps
-    assert f.max_train_days >= 365  # every season stays in training
+    assert f.granularity_unit == "day"
+    assert (f.horizon_steps, f.context_steps) == (3, 14)  # +24/+48/+72 h
+    assert f.max_train_days >= 365 and f.max_train_days + f.context_steps + f.horizon_steps <= f.max_series_steps
+    assert "hour_ist" not in f.available_at_forecast
     sql = training_sql.render("forecast", "p")
     scoring = (REPO / "data/schemas/features/forecast_input.sql").read_text(encoding="utf-8")
-    bucket = "DIV(UNIX_SECONDS("
-    assert "10800" in sql and bucket in sql and "10800" in scoring and bucket in scoring  # same step, both sides
-    assert "INTERVAL 3 HOUR" in scoring
+    ist_day = "TIMESTAMP(DATE(ts, 'Asia/Kolkata'), 'Asia/Kolkata')"
+    assert ist_day in sql and "HAVING COUNT(*) >= 16" in sql  # CPCB 24 h completeness
+    assert "TIMESTAMP(d, 'Asia/Kolkata') AS ts" in scoring and "INTERVAL 3 DAY" in scoring
+    assert "hour_ist" not in scoring
 
 
 def test_hotspot_training_allows_missing_numeric_values():
