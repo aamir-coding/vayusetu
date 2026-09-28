@@ -11,9 +11,53 @@
     "sourceHash": "eb355944b92d1058",
     "text": "ਮੁੱਖ ਨੈਵੀਗੇਸ਼ਨ"
   },
+  "nav.home": {
+    "sourceHash": "f7b4b233ae4e8fb7",
+    "text": "ਵਾਯੂਸੇਤੂ ਘਰ"
+  },
   "common.remove": {
     "sourceHash": "c3812fc4acb861d5",
     "text": "ਹਟਾਓ"
+  },
+  "capture.eyebrow": {
+    "sourceHash": "16f776fa58d22446",
+    "text": "ਨਵੀਂ ਰਿਪੋਰਟ"
+  },
+  "capture.stepPhoto": {
+    "sourceHash": "d84eebada93efee1",
+    "text": "ਫੋਟੋ"
+  },
+  "capture.stepPlace": {
+    "sourceHash": "15b61974b2707a7b",
+    "text": "ਟਿਕਾਣਾ"
+  },
+  "capture.stepSend": {
+    "sourceHash": "f6f4688ff23d50c6",
+    "text": "ਭੇਜੋ"
+  },
+  "capture.needPhoto": {
+    "sourceHash": "d94effb0868e173a",
+    "text": "ਜਾਰੀ ਰੱਖਣ ਲਈ ਇੱਕ ਫੋਟੋ ਸ਼ਾਮਲ ਕਰੋ"
+  },
+  "capture.needPlace": {
+    "sourceHash": "fe3d2fd33f9a8907",
+    "text": "ਜਾਰੀ ਰੱਖਣ ਲਈ ਟਿਕਾਣਾ ਸ਼ਾਮਲ ਕਰੋ"
+  },
+  "capture.readyToSend": {
+    "sourceHash": "7009cfb34a7cdc2f",
+    "text": "ਸਭ ਤਿਆਰ ਹੈ। ਜਦੋਂ ਤੁਸੀਂ ਤਿਆਰ ਹੋਵੋ ਤਾਂ ਭੇਜੋ।"
+  },
+  "capture.photoReady": {
+    "sourceHash": "c0c59a7e110d516c",
+    "text": "ਫੋਟੋ ਤਿਆਰ ਹੈ"
+  },
+  "capture.tapToOpen": {
+    "sourceHash": "f2a90377a05e7f24",
+    "text": "ਕੈਮਰਾ ਖੋਲ੍ਹਣ ਲਈ ਟੈਪ ਕਰੋ"
+  },
+  "capture.voiceHint": {
+    "sourceHash": "140fb5b3309896d2",
+    "text": "ਤੁਹਾਡੀ ਆਪਣੀ ਭਾਸ਼ਾ ਵਿੱਚ, 10 ਸਕਿੰਟਾਂ ਤੱਕ"
   },
   "result.clarifyTitle": {
     "sourceHash": "5ed5854e252b567c",
@@ -67,9 +111,61 @@
     "sourceHash": "08aabf8812e02122",
     "text": "ਫੋਟੋ ਅਤੇ ਸੈਂਸਰ ਡੇਟਾ ਸਹਿਮਤ ਹਨ {{pct}} %"
   },
+  "result.found": {
+    "sourceHash": "e669b2967d3669e5",
+    "text": "ਸਾਨੂੰ ਕੀ ਮਿਲਿਆ"
+  },
+  "result.shareCta": {
+    "sourceHash": "29887a5ff9846ccc",
+    "text": "ਸਾਂਝਾ ਕਰੋ"
+  },
+  "result.shareText": {
+    "sourceHash": "a76443c0b64471d6",
+    "text": "ਮੈਂ ਹੁਣੇ ਹੀ ਵਾਯੂਸੇਤੂ 'ਤੇ ਆਪਣੇ ਨੇੜੇ {{source}} ਦੀ ਰਿਪੋਰਟ ਕੀਤੀ ਹੈ। ਕੀ ਤੁਸੀਂ ਜਿੱਥੇ ਰਹਿੰਦੇ ਹੋ ਉੱਥੇ ਪ੍ਰਦੂਸ਼ਣ ਦੇਖੋਗੇ? ਇਸਦੀ ਵੀ ਰਿਪੋਰਟ ਕਰੋ:"
+  },
+  "result.shareCopied": {
+    "sourceHash": "6fce532784a1989e",
+    "text": "ਕਾਪੀ ਕੀਤਾ: ਸਾਂਝਾ ਕਰਨ ਲਈ ਇਸਨੂੰ ਕਿਤੇ ਵੀ ਪੇਸਟ ਕਰੋ"
+  },
+  "result.nextTitle": {
+    "sourceHash": "8f9b77e6e0b4eeba",
+    "text": "ਅੱਗੇ ਕੀ ਹੁੰਦਾ ਹੈ?"
+  },
+  "result.stepReceived": {
+    "sourceHash": "11cd5a5b091a5ab8",
+    "text": "ਤੁਹਾਡੀ ਰਿਪੋਰਟ ਪ੍ਰਾਪਤ ਹੋ ਗਈ ਹੈ।"
+  },
+  "result.stepAnalysed": {
+    "sourceHash": "a9f96525be5c733a",
+    "text": "ਵਿਸ਼ਲੇਸ਼ਣ ਕੀਤਾ ਗਿਆ, ਅਤੇ ਤੁਹਾਨੂੰ ਸਲਾਹ ਭੇਜੀ ਗਈ"
+  },
+  "result.stepOfficials": {
+    "sourceHash": "2b47144e8421f7d6",
+    "text": "ਇਸ ਖੇਤਰ ਦੇ ਅਧਿਕਾਰੀ ਹੁਣ ਇਸਨੂੰ ਦੇਖ ਸਕਦੇ ਹਨ।"
+  },
+  "result.stepReview": {
+    "sourceHash": "d8af14777327f9da",
+    "text": "ਇੱਕ ਅਧਿਕਾਰੀ ਧਿਆਨ ਨਾਲ ਦੇਖੇਗਾ, ਕਿਉਂਕਿ ਤੁਹਾਡੀ ਫੋਟੋ ਅਤੇ ਨੇੜਲੇ ਸੈਂਸਰ ਅਸਹਿਮਤ ਹਨ।"
+  },
+  "result.stepFollow": {
+    "sourceHash": "3c667a872480c481",
+    "text": "ਮੇਰੀਆਂ ਰਿਪੋਰਟਾਂ ਦੇ ਅਧੀਨ ਕੀ ਹੁੰਦਾ ਹੈ, ਇਸਦੀ ਪਾਲਣਾ ਕਰੋ"
+  },
   "reports.awaitingAnswer": {
     "sourceHash": "1a6227e081977c7d",
     "text": "ਜਵਾਬ ਦੀ ਲੋੜ ਹੈ"
+  },
+  "reports.count_one": {
+    "sourceHash": "72606258eff646ec",
+    "text": "{{count}} ਰਿਪੋਰਟ"
+  },
+  "reports.count_other": {
+    "sourceHash": "d152cb15564753cc",
+    "text": "{{count}} ਰਿਪੋਰਟਾਂ"
+  },
+  "reports.newReport": {
+    "sourceHash": "16f776fa58d22446",
+    "text": "ਨਵੀਂ ਰਿਪੋਰਟ"
   },
   "theme.toDark": {
     "sourceHash": "9b7878aef90b527c",
@@ -94,10 +190,6 @@
   "tour.skip": {
     "sourceHash": "a25582e96b799c86",
     "text": "ਗਾਈਡ ਛੱਡੋ"
-  },
-  "tour.progress": {
-    "sourceHash": "487fcaf37ab97ea0",
-    "text": "{{current}} {{total}}"
   },
   "tour.welcomeTitle": {
     "sourceHash": "7f6a521bdadaacaf",

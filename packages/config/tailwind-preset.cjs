@@ -45,6 +45,7 @@ module.exports = {
         // Warm marigold accent — citizen-pwa only, used sparingly (primary
         // capture CTA glow, success confirmations). Never used on data.
         accent: {
+          50: '#FEF8EC',
           300: '#F9CD82',
           400: '#F5B04E',
           500: '#EFA22A',
@@ -100,9 +101,27 @@ module.exports = {
           '0%, 100%': { transform: 'scale(1)', opacity: '0.55' },
           '50%': { transform: 'scale(1.06)', opacity: '0.85' },
         },
+        // Aurora backdrop (ui-components): slow, transform-only drift.
+        'drift-a': { '0%, 100%': { transform: 'translate3d(0,0,0) scale(1)' }, '50%': { transform: 'translate3d(8%,6%,0) scale(1.08)' } },
+        'drift-b': { '0%, 100%': { transform: 'translate3d(0,0,0) scale(1)' }, '50%': { transform: 'translate3d(-7%,8%,0) scale(1.12)' } },
+        'drift-c': { '0%, 100%': { transform: 'translate3d(0,0,0) scale(1.05)' }, '50%': { transform: 'translate3d(6%,-6%,0) scale(0.95)' } },
+        // Camera viewfinder scan line; recording level bars.
+        scan: { '0%': { transform: 'translateY(0)' }, '100%': { transform: 'translateY(100%)' } },
+        level: { '0%, 100%': { transform: 'scaleY(0.3)' }, '50%': { transform: 'scaleY(1)' } },
+        // A new alert arriving in the queue.
+        arrive: { '0%': { boxShadow: '0 0 0 0 rgba(31,148,140,0.55)' }, '100%': { boxShadow: '0 0 0 14px rgba(31,148,140,0)' } },
+        // Filling bars (severity, progress).
+        grow: { '0%': { transform: 'scaleX(0)' }, '100%': { transform: 'scaleX(1)' } },
       },
       animation: {
         breathe: 'breathe 4.5s ease-in-out infinite',
+        'drift-a': 'drift-a 22s ease-in-out infinite',
+        'drift-b': 'drift-b 28s ease-in-out infinite',
+        'drift-c': 'drift-c 34s ease-in-out infinite',
+        scan: 'scan 2.4s ease-in-out infinite alternate',
+        level: 'level 0.9s ease-in-out infinite',
+        arrive: 'arrive 1.2s ease-out 3',
+        grow: 'grow 0.7s cubic-bezier(.2,.8,.2,1) both',
       },
     },
   },
