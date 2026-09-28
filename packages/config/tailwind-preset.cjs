@@ -15,24 +15,33 @@
  * Deshmukh and Ms. Iyer's mental model of these colors comes from other
  * government displays, not from us.
  */
+// Light/dark: chrome colours resolve from CSS variables in theme.css, so a
+// class like `text-slate-500` is right in both themes. Hex values for the
+// light theme live there now.
+const v = (name) => `rgb(var(--vs-${name}) / <alpha-value>)`;
+const scale = (name, shades) => Object.fromEntries(shades.map((s) => [s, v(`${name}-${s}`)]));
+const ALL = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
+
 module.exports = {
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
         // Bridge teal — the brand ramp. Never used for AQI/severity/GRAP data.
-        brand: {
-          50: '#EFFAF9',
-          100: '#D3F1EE',
-          200: '#A8E3DD',
-          300: '#74CFC6',
-          400: '#3FB3AA',
-          500: '#1F948C',
-          600: '#157B76',
-          700: '#146560',
-          800: '#14514E',
-          900: '#133F3D',
-          950: '#072423',
-        },
+        brand: scale('brand', ALL),
+        slate: scale('slate', ALL),
+        emerald: scale('emerald', [50, 200, 600, 700, 800]),
+        red: scale('red', [50, 200, 600, 700, 800]),
+        amber: scale('amber', [50, 200, 700, 800]),
+        blue: scale('blue', [50, 200, 600, 700, 800]),
+        indigo: scale('indigo', [50, 700]),
+        yellow: scale('yellow', [800]),
+        orange: scale('orange', [800]),
+        // Cards and panels (was bg-white). `white` itself stays white: it is
+        // text on coloured fills.
+        surface: v('surface'),
+        // Always-dark panels (login backdrop, camera frame, overlays).
+        night: '#0E2224',
         // Warm marigold accent — citizen-pwa only, used sparingly (primary
         // capture CTA glow, success confirmations). Never used on data.
         accent: {
@@ -43,8 +52,8 @@ module.exports = {
           700: '#B3690F',
         },
         // Cool-neutral background — deliberately not warm cream.
-        paper: '#F5F8F7',
-        ink: '#0E2224',
+        paper: v('paper'),
+        ink: v('ink'),
         // CPCB National AQI Bulletin 6-category scale — faithful hues.
         aqi: {
           good: '#4CAF50',

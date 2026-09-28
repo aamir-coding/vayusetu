@@ -1,4 +1,16 @@
 {
+  "nav.help": {
+    "sourceHash": "9c870aa6e5e93270",
+    "text": "यह काम किस प्रकार करता है"
+  },
+  "nav.about": {
+    "sourceHash": "f75867c5d2385dac",
+    "text": "वायुसेतु के बारे में"
+  },
+  "nav.primary": {
+    "sourceHash": "eb355944b92d1058",
+    "text": "मुख्य नेविगेशन"
+  },
   "common.remove": {
     "sourceHash": "c3812fc4acb861d5",
     "text": "निकालना"
@@ -58,5 +70,89 @@
   "reports.awaitingAnswer": {
     "sourceHash": "1a6227e081977c7d",
     "text": "उत्तर की आवश्यकता है"
+  },
+  "theme.toDark": {
+    "sourceHash": "9b7878aef90b527c",
+    "text": "डार्क मोड"
+  },
+  "theme.toLight": {
+    "sourceHash": "b4fcfbee4fb937d7",
+    "text": "लाइट मोड"
+  },
+  "tour.next": {
+    "sourceHash": "1ff57a29d7c9d11b",
+    "text": "अगला"
+  },
+  "tour.back": {
+    "sourceHash": "76900f1bfd16c8d4",
+    "text": "पीछे"
+  },
+  "tour.done": {
+    "sourceHash": "9b2a6a7c31e616c1",
+    "text": "रिपोर्टिंग शुरू करें"
+  },
+  "tour.skip": {
+    "sourceHash": "a25582e96b799c86",
+    "text": "स्किप गाइड"
+  },
+  "tour.progress": {
+    "sourceHash": "487fcaf37ab97ea0",
+    "text": "{{total}} का {{current}}"
+  },
+  "tour.welcomeTitle": {
+    "sourceHash": "7f6a521bdadaacaf",
+    "text": "वायुसेतु में आपका स्वागत है"
+  },
+  "tour.welcomeBody": {
+    "sourceHash": "cb505c101be673fe",
+    "text": "क्या आपको धुआं, धूल या जलता हुआ ढेर दिखाई दिया? एक मिनट से भी कम समय में इसकी सूचना दें, और उस क्षेत्र के लिए जिम्मेदार अधिकारी को सूचित कर दिया जाएगा। तरीका यह है:"
+  },
+  "tour.photoTitle": {
+    "sourceHash": "3f0b88cfa24df0bc",
+    "text": "इसे चटकाएं"
+  },
+  "tour.photoBody": {
+    "sourceHash": "32af84a79733aa1d",
+    "text": "जो कुछ भी आपको दिखाई दे, उसकी तस्वीर खींच लें, या पहले से खींची गई किसी तस्वीर को चुन लें। तस्वीर जितनी स्पष्ट होगी, उतना अच्छा होगा।"
+  },
+  "tour.voiceTitle": {
+    "sourceHash": "f650705c64e2769b",
+    "text": "बोलिए (वैकल्पिक)"
+  },
+  "tour.voiceBody": {
+    "sourceHash": "405907166f7cc10b",
+    "text": "अपनी भाषा में एक छोटा सा वॉइस नोट जोड़ें: क्या जल रहा है, और कब से जल रहा है।"
+  },
+  "tour.locationTitle": {
+    "sourceHash": "26dc5e5265eddbbc",
+    "text": "कहाँ है?"
+  },
+  "tour.locationBody": {
+    "sourceHash": "4ae6882009c4d992",
+    "text": "आपकी लोकेशन से हमें पता चलता है कि यह किसका क्षेत्र है। अगर GPS बंद है, तो 'बदलें' पर टैप करें और लोकेशन टाइप करें।"
+  },
+  "tour.sendTitle": {
+    "sourceHash": "f6f4688ff23d50c6",
+    "text": "भेजना"
+  },
+  "tour.sendBody": {
+    "sourceHash": "fbb7c85a570fb79f",
+    "text": "कुछ ही सेकंड में आपको पता चल जाएगा कि हमें क्या मिला और सुरक्षित रहने के लिए क्या सलाह दी गई है, जिसे आप सुन भी सकते हैं।"
+  },
+  "tour.reportsTitle": {
+    "sourceHash": "5ddbbbc2f37428e8",
+    "text": "अपनी रिपोर्टों पर नज़र रखें"
+  },
+  "tour.reportsBody": {
+    "sourceHash": "81e94cb572d58f0b",
+    "text": "आप जो भी रिपोर्ट भेजते हैं, उसका परिणाम और अधिकारियों द्वारा आपसे पूछे गए सभी प्रश्न यहां मौजूद होते हैं।"
+  },
+  "tour.helpTitle": {
+    "sourceHash": "906ff3e577702605",
+    "text": "क्या आपको इसकी दोबारा जरूरत है?"
+  },
+  "tour.helpBody": {
+    "sourceHash": "22fb9fd98aa23b8a",
+    "text": "गाइड को दोबारा देखने के लिए किसी भी समय इस बटन को टैप करें।"
   }
 }

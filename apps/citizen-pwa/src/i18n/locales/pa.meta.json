@@ -1,4 +1,16 @@
 {
+  "nav.help": {
+    "sourceHash": "9c870aa6e5e93270",
+    "text": "ਇਹ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ"
+  },
+  "nav.about": {
+    "sourceHash": "f75867c5d2385dac",
+    "text": "ਵਾਯੂਸੇਤੂ ਬਾਰੇ"
+  },
+  "nav.primary": {
+    "sourceHash": "eb355944b92d1058",
+    "text": "ਮੁੱਖ ਨੈਵੀਗੇਸ਼ਨ"
+  },
   "common.remove": {
     "sourceHash": "c3812fc4acb861d5",
     "text": "ਹਟਾਓ"
@@ -58,5 +70,89 @@
   "reports.awaitingAnswer": {
     "sourceHash": "1a6227e081977c7d",
     "text": "ਜਵਾਬ ਦੀ ਲੋੜ ਹੈ"
+  },
+  "theme.toDark": {
+    "sourceHash": "9b7878aef90b527c",
+    "text": "ਡਾਰਕ ਮੋਡ"
+  },
+  "theme.toLight": {
+    "sourceHash": "b4fcfbee4fb937d7",
+    "text": "ਲਾਈਟ ਮੋਡ"
+  },
+  "tour.next": {
+    "sourceHash": "1ff57a29d7c9d11b",
+    "text": "ਅਗਲਾ"
+  },
+  "tour.back": {
+    "sourceHash": "76900f1bfd16c8d4",
+    "text": "ਪਿੱਛੇ"
+  },
+  "tour.done": {
+    "sourceHash": "9b2a6a7c31e616c1",
+    "text": "ਰਿਪੋਰਟ ਕਰਨਾ ਸ਼ੁਰੂ ਕਰੋ"
+  },
+  "tour.skip": {
+    "sourceHash": "a25582e96b799c86",
+    "text": "ਗਾਈਡ ਛੱਡੋ"
+  },
+  "tour.progress": {
+    "sourceHash": "487fcaf37ab97ea0",
+    "text": "{{current}} {{total}}"
+  },
+  "tour.welcomeTitle": {
+    "sourceHash": "7f6a521bdadaacaf",
+    "text": "ਵਾਯੂਸੇਤੂ ਵਿੱਚ ਤੁਹਾਡਾ ਸਵਾਗਤ ਹੈ।"
+  },
+  "tour.welcomeBody": {
+    "sourceHash": "cb505c101be673fe",
+    "text": "ਕੀ ਤੁਸੀਂ ਧੂੰਆਂ, ਧੂੜ ਜਾਂ ਸੜਦਾ ਢੇਰ ਦੇਖਿਆ ਹੈ? ਇੱਕ ਮਿੰਟ ਦੇ ਅੰਦਰ ਇਸਦੀ ਰਿਪੋਰਟ ਕਰੋ, ਅਤੇ ਉਸ ਖੇਤਰ ਲਈ ਜ਼ਿੰਮੇਵਾਰ ਅਧਿਕਾਰੀ ਨੂੰ ਦੱਸਿਆ ਜਾਵੇਗਾ। ਇੱਥੇ ਕਿਵੇਂ ਹੈ।"
+  },
+  "tour.photoTitle": {
+    "sourceHash": "3f0b88cfa24df0bc",
+    "text": "ਇਸਨੂੰ ਖਿੱਚੋ"
+  },
+  "tour.photoBody": {
+    "sourceHash": "32af84a79733aa1d",
+    "text": "ਜੋ ਤੁਸੀਂ ਦੇਖਦੇ ਹੋ ਉਸਦੀ ਇੱਕ ਫੋਟੋ ਖਿੱਚੋ, ਜਾਂ ਉਹ ਚੁਣੋ ਜੋ ਤੁਸੀਂ ਪਹਿਲਾਂ ਹੀ ਲਈ ਹੈ। ਜਿੰਨਾ ਸਾਫ਼, ਓਨਾ ਹੀ ਵਧੀਆ।"
+  },
+  "tour.voiceTitle": {
+    "sourceHash": "f650705c64e2769b",
+    "text": "ਇਹ ਕਹੋ (ਵਿਕਲਪਿਕ)"
+  },
+  "tour.voiceBody": {
+    "sourceHash": "405907166f7cc10b",
+    "text": "ਆਪਣੀ ਭਾਸ਼ਾ ਵਿੱਚ ਇੱਕ ਛੋਟਾ ਵੌਇਸ ਨੋਟ ਸ਼ਾਮਲ ਕਰੋ: ਕੀ ਸੜ ਰਿਹਾ ਹੈ, ਇਹ ਕਿੰਨੇ ਸਮੇਂ ਤੋਂ ਚੱਲ ਰਿਹਾ ਹੈ।"
+  },
+  "tour.locationTitle": {
+    "sourceHash": "26dc5e5265eddbbc",
+    "text": "ਉਹ ਕਿਥੇ ਹੈ?"
+  },
+  "tour.locationBody": {
+    "sourceHash": "4ae6882009c4d992",
+    "text": "ਤੁਹਾਡਾ ਟਿਕਾਣਾ ਸਾਨੂੰ ਦੱਸਦਾ ਹੈ ਕਿ ਇਹ ਕਿਸਦਾ ਖੇਤਰ ਹੈ। ਜੇਕਰ GPS ਬੰਦ ਹੈ, ਤਾਂ ਬਦਲੋ 'ਤੇ ਟੈਪ ਕਰੋ ਅਤੇ ਇਸਨੂੰ ਟਾਈਪ ਕਰੋ।"
+  },
+  "tour.sendTitle": {
+    "sourceHash": "f6f4688ff23d50c6",
+    "text": "ਭੇਜੋ"
+  },
+  "tour.sendBody": {
+    "sourceHash": "fbb7c85a570fb79f",
+    "text": "ਕੁਝ ਸਕਿੰਟਾਂ ਵਿੱਚ ਤੁਸੀਂ ਦੇਖੋਗੇ ਕਿ ਸਾਨੂੰ ਕੀ ਮਿਲਿਆ ਅਤੇ ਸੁਰੱਖਿਅਤ ਰਹਿਣ ਦੀ ਸਲਾਹ, ਜਿਸਨੂੰ ਤੁਸੀਂ ਸੁਣ ਵੀ ਸਕਦੇ ਹੋ।"
+  },
+  "tour.reportsTitle": {
+    "sourceHash": "5ddbbbc2f37428e8",
+    "text": "ਆਪਣੀਆਂ ਰਿਪੋਰਟਾਂ ਨੂੰ ਟਰੈਕ ਕਰੋ"
+  },
+  "tour.reportsBody": {
+    "sourceHash": "81e94cb572d58f0b",
+    "text": "ਤੁਹਾਡੇ ਵੱਲੋਂ ਭੇਜੀ ਗਈ ਹਰ ਰਿਪੋਰਟ ਇੱਥੇ ਹੈ, ਇਸਦੇ ਨਤੀਜੇ ਅਤੇ ਅਧਿਕਾਰੀਆਂ ਦੁਆਰਾ ਪੁੱਛੇ ਗਏ ਹਰ ਚੀਜ਼ ਦੇ ਨਾਲ।"
+  },
+  "tour.helpTitle": {
+    "sourceHash": "906ff3e577702605",
+    "text": "ਕੀ ਇਸਦੀ ਦੁਬਾਰਾ ਲੋੜ ਹੈ?"
+  },
+  "tour.helpBody": {
+    "sourceHash": "22fb9fd98aa23b8a",
+    "text": "ਗਾਈਡ ਨੂੰ ਦੁਬਾਰਾ ਚਲਾਉਣ ਲਈ ਕਿਸੇ ਵੀ ਸਮੇਂ ਇਸ ਬਟਨ 'ਤੇ ਟੈਪ ਕਰੋ।"
   }
 }
