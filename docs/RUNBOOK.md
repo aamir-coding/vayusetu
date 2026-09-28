@@ -130,11 +130,14 @@ m = aiplatform.Model("projects/…/models/<id>")
 m.versioning_registry.add_version_aliases(["default"], version="<previous version id>")
 ```
 
-**Relabel a model version.** Always address the version explicitly (`@<id>`). The SDK's `Model.update()` writes to whichever version holds `default` (see the hotspot model card). A label update **merges**, so delete a key with a field-path mask. Pending: removing the stale threshold label on hotspot v1:
-```bash
-M=projects/818188514572/locations/asia-south1/models/4203279021359759360
-curl -X PATCH -H "Authorization: Bearer $(gcloud auth print-access-token)" -H "Content-Type: application/json" \
-  --data '{"labels":{}}' "https://asia-south1-aiplatform.googleapis.com/v1/$M@1?updateMask=labels.vayusetu-threshold"
+**Relabel a model version.** Always address the version explicitly (`@<id>`). The SDK's `Model.update()` writes to whichever version holds `default` (see the hotspot model card). A label update **merges**: keys you leave out are kept. So send the full label set, and overwrite a stale key rather than dropping it.
+
+Pending: the stale threshold on hotspot v1 becomes `none` (PowerShell):
+```powershell
+$M = "projects/818188514572/locations/asia-south1/models/4203279021359759360"
+$T = gcloud auth print-access-token
+$Body = '{"labels":{"vayusetu-model-type":"hotspot","vayusetu-gate":"failed","vayusetu-gate-value":"0_2923","vayusetu-gate-metric":"auprc","vayusetu-feature-schema":"hs-v1","vayusetu-state":"dl","vayusetu-train-start":"2025-09-27","vayusetu-train-end":"2026-09-27","vayusetu-train-rows":"540134","vayusetu-threshold":"none"}}'
+Invoke-RestMethod -Method Patch -Uri "https://asia-south1-aiplatform.googleapis.com/v1/${M}@1?updateMask=labels" -Headers @{ Authorization = "Bearer $T" } -ContentType "application/json" -Body $Body
 ```
 
 ## 4. Incidents
