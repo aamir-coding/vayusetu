@@ -60,8 +60,13 @@ export async function handleAnalysisCompleted(
 
   const now = deps.now();
   const since = new Date(now.getTime() - 3 * 3_600_000).toISOString();
-  const subs = (await db.collection('submissions').where('h3Index', '==', event.h3Index).where('uploadedAt', '>=', since).get())
-    .docs.map((d) => d.data() as Submission);
+  // orderBy DESC is load-bearing: without it Firestore sorts the range field
+  // ASCENDING, which needs an index nobody declared -- only (h3Index,
+  // uploadedAt DESC) exists -- and every fast-path event failed live with
+  // FAILED_PRECONDITION until the 28 Sep rehearsal caught it.
+  const subs = (
+    await db.collection('submissions').where('h3Index', '==', event.h3Index).where('uploadedAt', '>=', since).orderBy('uploadedAt', 'desc').get()
+  ).docs.map((d) => d.data() as Submission);
   // One vote per citizen: evidence is DISTINCT people, so one phone (or a
   // spammer) re-reporting the same spot cannot push a cell to an alert alone.
   const byUser = new Map<string, AnalysisResult>();
