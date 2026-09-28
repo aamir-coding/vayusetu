@@ -21,6 +21,7 @@ import {
   TabsList,
   TabsTrigger,
   useToast,
+  usePageTitle,
 } from '@vayusetu/ui-components';
 import { useTranslation } from 'react-i18next';
 import type { ResourceType } from '@vayusetu/shared-types';
@@ -42,6 +43,7 @@ const RESOURCE_TYPES: ResourceType[] = [
 
 export function FederationPanel() {
   const { t } = useTranslation();
+  usePageTitle(t('federation.title'), 'VayuSetu');
   const { getToken, session } = useAuth();
   const { push } = useToast();
   const queryClient = useQueryClient();
@@ -85,7 +87,7 @@ export function FederationPanel() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-xl font-bold text-ink">{t('federation.title')}</h1>
+        <h1 className="hidden text-xl font-bold text-ink lg:block">{t('federation.title')}</h1>
         <p className="text-sm text-slate-500">{t('federation.subtitle')}</p>
       </div>
 
@@ -157,10 +159,10 @@ export function FederationPanel() {
               <CardTitle className="text-sm">{t('federation.postRequest')}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-wrap items-end gap-3">
-              <div className="flex flex-col gap-1.5">
+              <div className="flex w-full flex-col gap-1.5 sm:w-auto">
                 <Label>{t('federation.resourceType')}</Label>
                 <Select value={resourceType} onValueChange={(v) => setResourceType(v as ResourceType)}>
-                  <SelectTrigger className="w-56">
+                  <SelectTrigger className="w-full sm:w-56">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -172,7 +174,7 @@ export function FederationPanel() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex flex-col gap-1.5">
+              <div className="flex w-full flex-col gap-1.5 sm:w-auto">
                 <Label>{t('federation.quantity')}</Label>
                 <Input type="number" min={1} className="w-24" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
               </div>
@@ -185,7 +187,7 @@ export function FederationPanel() {
           <ul className="flex flex-col gap-2">
             {(resourceData?.items ?? []).map((req) => (
               <li key={req.id}>
-                <Card className="flex items-center justify-between p-4">
+                <Card className="flex flex-wrap items-center justify-between gap-3 p-4">
                   <div>
                     <p className="text-sm font-medium text-ink">
                       {req.quantityNeeded}× {RESOURCE_TYPE_LABEL[req.resourceType]}
@@ -241,7 +243,7 @@ function CrossStateView() {
           {latestWeek ? t('federation.weekSummary', { week: latestWeek, cells: latest.length, states: byState.length }) : t('federation.exchangeIntro')}
         </p>
         <Select value={corridorId} onValueChange={setCorridorId}>
-          <SelectTrigger className="w-56">
+          <SelectTrigger className="w-full sm:w-56">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -257,7 +259,7 @@ function CrossStateView() {
         <EmptyState icon={MapIcon} title={t('federation.noSummaries')} description={t('federation.noSummariesHint')} />
       ) : (
         <div className="grid gap-3 lg:grid-cols-[1fr_16rem]">
-          <div className="overflow-hidden rounded-xl2 border border-slate-200 bg-white">
+          <div className="overflow-hidden rounded-xl2 border border-slate-200 bg-surface">
             <HexMap cells={hexes} center={view.center} zoom={8} height="26rem" mapKey={`x-${corridorId}`} />
           </div>
           <Card>

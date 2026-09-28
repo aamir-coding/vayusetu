@@ -55,6 +55,38 @@
     "sourceHash": "106bc43e5e7cd951",
     "text": "ਇਸ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਸੂਚਨਾਵਾਂ ਬਲਾਕ ਹਨ।"
   },
+  "nav.alertsShort": {
+    "sourceHash": "f62e9267d196c761",
+    "text": "ਚੇਤਾਵਨੀਆਂ"
+  },
+  "nav.hotspotsShort": {
+    "sourceHash": "07d25c2b1b907fd0",
+    "text": "ਹੌਟਸਪੌਟ"
+  },
+  "nav.primary": {
+    "sourceHash": "eb355944b92d1058",
+    "text": "ਮੁੱਖ ਨੈਵੀਗੇਸ਼ਨ"
+  },
+  "nav.menu": {
+    "sourceHash": "99af6606ff9d6cd5",
+    "text": "ਮੀਨੂ"
+  },
+  "nav.closeMenu": {
+    "sourceHash": "6ccd5c7856042d36",
+    "text": "ਮੀਨੂ ਬੰਦ ਕਰੋ"
+  },
+  "nav.settings": {
+    "sourceHash": "6a596ff2b00ae9e2",
+    "text": "ਸੈਟਿੰਗਾਂ ਅਤੇ ਖਾਤਾ"
+  },
+  "nav.help": {
+    "sourceHash": "90c369cb00d5f9c9",
+    "text": "ਮਦਦ ਅਤੇ ਟੂਰ"
+  },
+  "nav.home": {
+    "sourceHash": "f7b4b233ae4e8fb7",
+    "text": "ਵਾਯੂਸੇਤੂ ਘਰ"
+  },
   "role.district_admin": {
     "sourceHash": "6addf13f8f74271d",
     "text": "ਜ਼ਿਲ੍ਹਾ ਪ੍ਰਸ਼ਾਸਕ"
@@ -86,6 +118,10 @@
   "login.failed": {
     "sourceHash": "5ee01ca9e679b23b",
     "text": "ਸਾਈਨ-ਇਨ ਅਸਫਲ ਰਿਹਾ"
+  },
+  "login.citizenLink": {
+    "sourceHash": "92400d8db66e0dd4",
+    "text": "ਪ੍ਰਦੂਸ਼ਣ ਦੀ ਰਿਪੋਰਟ ਕਰਨਾ ਹੈ? ਨਾਗਰਿਕ ਐਪ ਦੀ ਵਰਤੋਂ ਕਰੋ"
   },
   "common.loading": {
     "sourceHash": "dc380888c4e2c776",
@@ -226,6 +262,74 @@
   "alerts.daysAgo": {
     "sourceHash": "477879d991b4f84f",
     "text": "{{count}} ਦਿਨ ਪਹਿਲਾਂ"
+  },
+  "alerts.action.acknowledged": {
+    "sourceHash": "f9236d9e87b6235e",
+    "text": "ਸਵੀਕਾਰ ਕਰੋ"
+  },
+  "alerts.action.in_progress": {
+    "sourceHash": "6a7da0d23cfc0061",
+    "text": "ਕੰਮ ਸ਼ੁਰੂ ਕਰੋ"
+  },
+  "alerts.action.resolved": {
+    "sourceHash": "c8f193b315c86f3a",
+    "text": "ਹੱਲ ਕਰੋ"
+  },
+  "alerts.action.dismissed": {
+    "sourceHash": "48845bff334a50a5",
+    "text": "ਖਾਰਜ ਕਰੋ"
+  },
+  "alerts.action.new": {
+    "sourceHash": "a886d1dc4f128e27",
+    "text": "ਦੁਬਾਰਾ ਖੋਲ੍ਹੋ"
+  },
+  "alerts.greetMorning": {
+    "sourceHash": "d924e3652734a367",
+    "text": "ਸ਼ੁਭ ਸਵੇਰ, {{name}}"
+  },
+  "alerts.greetAfternoon": {
+    "sourceHash": "6aa84b4de627c5a0",
+    "text": "ਸ਼ੁਭ ਦੁਪਹਿਰ, {{name}}"
+  },
+  "alerts.greetEvening": {
+    "sourceHash": "1d281ae2d8e8ee65",
+    "text": "ਸ਼ੁਭ ਸ਼ਾਮ, {{name}}"
+  },
+  "alerts.filterLabel": {
+    "sourceHash": "4c0e2c83749fa6d1",
+    "text": "ਸਥਿਤੀ ਅਨੁਸਾਰ ਅਲਰਟ ਫਿਲਟਰ ਕਰੋ"
+  },
+  "alerts.searchPlaceholder": {
+    "sourceHash": "66c18e8db8074863",
+    "text": "ਖੋਜ ਚੇਤਾਵਨੀਆਂ: ਸਥਾਨ, ਸਰੋਤ, ਕੀਵਰਡ"
+  },
+  "alerts.noMatchTitle": {
+    "sourceHash": "5c1d17e4cec41df4",
+    "text": "ਕੋਈ ਅਲਰਟ ਮੇਲ ਨਹੀਂ ਖਾਂਦਾ"
+  },
+  "alerts.noMatchHint": {
+    "sourceHash": "e005d50a41db52f2",
+    "text": "ਕੋਈ ਹੋਰ ਸ਼ਬਦ ਅਜ਼ਮਾਓ, ਜਾਂ ਖੋਜ ਸਾਫ਼ ਕਰੋ।"
+  },
+  "alerts.updated": {
+    "sourceHash": "c58c19070316e2b7",
+    "text": "{{status}} ਵਜੋਂ ਚਿੰਨ੍ਹਿਤ"
+  },
+  "alerts.updateFailed": {
+    "sourceHash": "e624596771ea1a07",
+    "text": "ਚੇਤਾਵਨੀ ਅੱਪਡੇਟ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕੀ"
+  },
+  "alerts.copyLink": {
+    "sourceHash": "dbf362d4f210c780",
+    "text": "ਲਿੰਕ ਕਾਪੀ ਕਰੋ"
+  },
+  "alerts.linkCopied": {
+    "sourceHash": "d12860c21e78baa5",
+    "text": "ਲਿੰਕ ਕਾਪੀ ਕੀਤਾ ਗਿਆ"
+  },
+  "alerts.notFound": {
+    "sourceHash": "9df831b933b997ce",
+    "text": "ਇਹ ਚੇਤਾਵਨੀ ਤੁਹਾਡੇ ਲਈ ਉਪਲਬਧ ਨਹੀਂ ਹੈ, ਜਾਂ ਹੁਣ ਮੌਜੂਦ ਨਹੀਂ ਹੈ।"
   },
   "hotspots.title": {
     "sourceHash": "2075df611438810b",
@@ -454,5 +558,69 @@
   "federation.stateCells": {
     "sourceHash": "fcf3103acfd219a5",
     "text": "{{count}} ਸੈੱਲ · {{pct}} %"
+  },
+  "theme.toDark": {
+    "sourceHash": "9b7878aef90b527c",
+    "text": "ਡਾਰਕ ਮੋਡ"
+  },
+  "theme.toLight": {
+    "sourceHash": "b4fcfbee4fb937d7",
+    "text": "ਲਾਈਟ ਮੋਡ"
+  },
+  "tour.next": {
+    "sourceHash": "1ff57a29d7c9d11b",
+    "text": "ਅਗਲਾ"
+  },
+  "tour.back": {
+    "sourceHash": "76900f1bfd16c8d4",
+    "text": "ਪਿੱਛੇ"
+  },
+  "tour.done": {
+    "sourceHash": "5ad3dbd1242a4cea",
+    "text": "ਮਿਲ ਗਿਆ"
+  },
+  "tour.skip": {
+    "sourceHash": "5ac614dee51bcf6a",
+    "text": "ਟੂਰ ਛੱਡੋ"
+  },
+  "tour.welcomeTitle": {
+    "sourceHash": "22973e1f89c3623f",
+    "text": "ਜੀ ਆਇਆਂ ਨੂੰ, {{name}}"
+  },
+  "tour.welcomeBody": {
+    "sourceHash": "652ac36d08c3a1a8",
+    "text": "ਤੁਹਾਡੇ ਕੰਸੋਲ ਦਾ ਇੱਕ ਮਿੰਟ ਦਾ ਟੂਰ: ਅਲਰਟ ਕਿੱਥੇ ਆਉਂਦੇ ਹਨ, ਉਨ੍ਹਾਂ 'ਤੇ ਕਿਵੇਂ ਕਾਰਵਾਈ ਕਰਨੀ ਹੈ, ਅਤੇ ਅੱਗੇ ਕਿੱਥੇ ਦੇਖਣਾ ਹੈ।"
+  },
+  "tour.alertsBody": {
+    "sourceHash": "879215142e1090a1",
+    "text": "ਤੁਹਾਡੇ ਅਧਿਕਾਰ ਖੇਤਰ ਲਈ ਨਵੀਆਂ ਪ੍ਰਦੂਸ਼ਣ ਚੇਤਾਵਨੀਆਂ ਇੱਥੇ ਲਾਈਵ ਆਉਂਦੀਆਂ ਹਨ, ਪਹਿਲਾਂ ਸਭ ਤੋਂ ਜ਼ਰੂਰੀ। ਬ੍ਰੀਫਿੰਗ ਪੜ੍ਹਨ ਲਈ ਇੱਕ ਖੋਲ੍ਹੋ, ਫਿਰ ਇਸਨੂੰ ਅੱਗੇ ਵਧਾਓ: ਸਵੀਕਾਰ ਕਰੋ, ਪ੍ਰਗਤੀ ਵਿੱਚ ਹੈ, ਹੱਲ ਹੋ ਗਿਆ ਹੈ। ਹਰ ਕਦਮ ਰਿਕਾਰਡ ਕੀਤਾ ਜਾਂਦਾ ਹੈ।"
+  },
+  "tour.hotspotsBody": {
+    "sourceHash": "841c103335694346",
+    "text": "ਹਰ ਆਂਢ-ਗੁਆਂਢ ਸੈੱਲ ਨੂੰ ਹਰ ਘੰਟੇ ਪ੍ਰਦੂਸ਼ਣ ਲਈ ਸਕੋਰ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। ਲਾਲ ਸੈੱਲਾਂ ਨੂੰ ਧਿਆਨ ਦੇਣ ਦੀ ਲੋੜ ਹੁੰਦੀ ਹੈ; ਇੱਕ ਅੰਬਰ ਰੂਪਰੇਖਾ ਕਿਸੇ ਵੀ ਮਾਨੀਟਰ ਤੋਂ ਦੂਰ ਇੱਕ ਲੁਕਵੇਂ ਹੌਟਸਪੌਟ ਨੂੰ ਦਰਸਾਉਂਦੀ ਹੈ। ਇਸਦੇ ਸਿਗਨਲਾਂ ਅਤੇ 7-ਦਿਨਾਂ ਦੇ ਇਤਿਹਾਸ ਲਈ ਇੱਕ ਸੈੱਲ 'ਤੇ ਟੈਪ ਕਰੋ।"
+  },
+  "tour.forecastBody": {
+    "sourceHash": "7564776351668afa",
+    "text": "ਅਗਲੇ 72 ਘੰਟਿਆਂ ਲਈ ਹਵਾ ਦੀ ਗੁਣਵੱਤਾ, GRAP ਪੜਾਅ ਦੇ ਨਾਲ, ਇਸ ਤੋਂ ਭਾਵ ਹੈ, ਇਸ ਲਈ ਪਾਬੰਦੀਆਂ ਸਿਖਰ ਤੋਂ ਪਹਿਲਾਂ ਸ਼ੁਰੂ ਹੋ ਸਕਦੀਆਂ ਹਨ।"
+  },
+  "tour.federationBody": {
+    "sourceHash": "aaab926ddc806824",
+    "text": "ਦੂਜੇ ਰਾਜਾਂ ਨਾਲ ਰੁਝਾਨਾਂ ਦੀ ਤੁਲਨਾ ਕਰੋ ਅਤੇ ਉਨ੍ਹਾਂ ਦੁਆਰਾ ਸਾਂਝੇ ਕੀਤੇ ਗਏ ਮਾਡਲਾਂ ਨੂੰ ਅਪਣਾਓ। ਸਿਰਫ਼ ਸਾਰਾਂਸ਼ ਸਾਂਝੇ ਕੀਤੇ ਜਾਂਦੇ ਹਨ; ਨਾਗਰਿਕਾਂ ਦੀਆਂ ਰਿਪੋਰਟਾਂ ਕਦੇ ਵੀ ਤੁਹਾਡੇ ਰਾਜ ਤੋਂ ਬਾਹਰ ਨਹੀਂ ਜਾਂਦੀਆਂ।"
+  },
+  "tour.pushTitle": {
+    "sourceHash": "81af1dba0ff62460",
+    "text": "ਇਸ ਟੈਬ ਦੇ ਬੰਦ ਹੋਣ 'ਤੇ ਵੀ ਸੁਚੇਤਨਾਵਾਂ ਪ੍ਰਾਪਤ ਕਰੋ"
+  },
+  "tour.pushBody": {
+    "sourceHash": "63f00babe26c3069",
+    "text": "ਇਸ ਡਿਵਾਈਸ 'ਤੇ ਤੁਰੰਤ ਇੱਕ ਨਵਾਂ ਹੌਟਸਪੌਟ ਤੁਹਾਡੇ ਤੱਕ ਪਹੁੰਚਣ ਲਈ ਚੇਤਾਵਨੀ ਸੂਚਨਾਵਾਂ ਚਾਲੂ ਕਰੋ।"
+  },
+  "tour.helpTitle": {
+    "sourceHash": "607106a1f515566f",
+    "text": "ਮਦਦ ਹਮੇਸ਼ਾ ਉਪਲਬਧ ਹੈ।"
+  },
+  "tour.helpBody": {
+    "sourceHash": "97758818708ca9a3",
+    "text": "ਇਸ ਟੂਰ ਨੂੰ ਦੁਬਾਰਾ ਚਲਾਓ, ਭਾਸ਼ਾ ਜਾਂ ਥੀਮ ਬਦਲੋ, ਅਤੇ ਇੱਥੋਂ ਸਾਈਨ ਆਊਟ ਕਰੋ।"
   }
 }

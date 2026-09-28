@@ -14,10 +14,10 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: 'bg-brand-600 text-white shadow-sm hover:bg-brand-700 active:bg-brand-800',
-        accent: 'bg-accent-500 text-ink shadow-sm hover:bg-accent-600 active:bg-accent-700',
+        primary: 'bg-brand-600 text-white shadow-sm hover:bg-brand-700 active:bg-brand-800 dark:hover:bg-brand-500 dark:active:bg-brand-400',
+        accent: 'bg-accent-500 text-night shadow-sm hover:bg-accent-600 active:bg-accent-700',
         secondary: 'bg-brand-50 text-brand-800 hover:bg-brand-100 active:bg-brand-200',
-        outline: 'border border-slate-300 bg-white text-slate-900 hover:bg-slate-50',
+        outline: 'border border-slate-300 bg-surface text-slate-900 hover:bg-slate-50',
         ghost: 'text-slate-700 hover:bg-slate-100',
         destructive: 'bg-red-600 text-white shadow-sm hover:bg-red-700',
         link: 'text-brand-700 underline-offset-4 hover:underline',

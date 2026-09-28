@@ -15,7 +15,15 @@
     "language": "Language",
     "enablePush": "Enable alert notifications",
     "pushOn": "Alert notifications on",
-    "pushBlocked": "Notifications are blocked in this browser"
+    "pushBlocked": "Notifications are blocked in this browser",
+    "alertsShort": "Alerts",
+    "hotspotsShort": "Hotspots",
+    "primary": "Main navigation",
+    "menu": "Menu",
+    "closeMenu": "Close menu",
+    "settings": "Settings & account",
+    "help": "Help & tour",
+    "home": "VayuSetu home"
   },
   "role": {
     "district_admin": "District Admin",
@@ -27,7 +35,8 @@
     "email": "Email",
     "password": "Password",
     "signIn": "Sign In",
-    "failed": "Sign-in failed"
+    "failed": "Sign-in failed",
+    "citizenLink": "Reporting pollution? Use the citizen app"
   },
   "common": {
     "loading": "Loading",
@@ -72,7 +81,26 @@
     "justNow": "just now",
     "minutesAgo": "{{count}}m ago",
     "hoursAgo": "{{count}}h ago",
-    "daysAgo": "{{count}}d ago"
+    "daysAgo": "{{count}}d ago",
+    "action": {
+      "acknowledged": "Acknowledge",
+      "in_progress": "Start work",
+      "resolved": "Resolve",
+      "dismissed": "Dismiss",
+      "new": "Reopen"
+    },
+    "greetMorning": "Good morning, {{name}}",
+    "greetAfternoon": "Good afternoon, {{name}}",
+    "greetEvening": "Good evening, {{name}}",
+    "filterLabel": "Filter alerts by status",
+    "searchPlaceholder": "Search alerts: place, source, keyword",
+    "noMatchTitle": "No alerts match",
+    "noMatchHint": "Try another word, or clear the search.",
+    "updated": "Marked {{status}}",
+    "updateFailed": "Couldn't update the alert",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "notFound": "This alert isn't available to you, or no longer exists."
   },
   "hotspots": {
     "title": "Hotspot Map",
@@ -140,5 +168,26 @@
     "byState": "By contributing state",
     "byStateHint": "Mean of cell averages, latest week",
     "stateCells": "{{count}} cells · {{pct}}%"
+  },
+  "theme": {
+    "toDark": "Dark mode",
+    "toLight": "Light mode"
+  },
+  "tour": {
+    "next": "Next",
+    "back": "Back",
+    "done": "Got it",
+    "skip": "Skip tour",
+    "progress": "{{current}} of {{total}}",
+    "welcomeTitle": "Welcome, {{name}}",
+    "welcomeBody": "A one-minute tour of your console: where alerts arrive, how to act on them, and where to look ahead.",
+    "alertsBody": "New pollution alerts for your jurisdiction arrive here live, most urgent first. Open one to read the briefing, then move it along: acknowledge, in progress, resolved. Every step is recorded.",
+    "hotspotsBody": "Every neighbourhood cell is scored for pollution each hour. Red cells need attention; an amber outline marks a hidden hotspot far from any monitor. Tap a cell for its signals and 7-day history.",
+    "forecastBody": "Air quality for the next 72 hours, with the GRAP stage it implies, so restrictions can start before the peak.",
+    "federationBody": "Compare trends with other states and adopt models they have shared. Only summaries are shared; citizens' reports never leave your state.",
+    "pushTitle": "Get alerts even when this tab is closed",
+    "pushBody": "Turn on alert notifications so a new hotspot reaches you on this device right away.",
+    "helpTitle": "Help is always here",
+    "helpBody": "Replay this tour, switch language or theme, and sign out from here."
   }
 }

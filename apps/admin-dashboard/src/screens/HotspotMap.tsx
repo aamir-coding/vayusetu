@@ -9,11 +9,13 @@ import {
   SelectTrigger,
   SelectValue,
   Skeleton,
+  usePageTitle,
 } from '@vayusetu/ui-components';
 import { useTranslation } from 'react-i18next';
 import type { CorridorId, HotspotCell } from '@vayusetu/shared-types';
 import { useAuth } from '../hooks/useAuth';
 import { useLiteMode } from '../hooks/useLiteMode';
+import { useChartColors } from '../lib/chartColors';
 import { corridorsApi, hotspotsApi } from '../lib/apiClient';
 import { confidenceColor, type HexDatum } from '../lib/hexGeo';
 import { corridorView, DEFAULT_CORRIDORS } from '../lib/corridors';
@@ -21,6 +23,7 @@ import { HexMap } from '../components/HexMap';
 import { LiteModeTable } from './LiteModeTable';
 
 function CellDetail({ cell, onClose }: { cell: HotspotCell; onClose: () => void }) {
+  const colors = useChartColors();
   const { t } = useTranslation();
   const { getToken } = useAuth();
   const { data, isLoading } = useQuery({
@@ -45,7 +48,7 @@ function CellDetail({ cell, onClose }: { cell: HotspotCell; onClose: () => void 
     [t('hotspots.signals.deltaAqi'), s.nearestMonitorDeltaAQI],
   ];
   return (
-    <aside className="flex flex-col gap-3 rounded-xl2 border border-slate-200 bg-white p-4">
+    <aside className="flex flex-col gap-3 rounded-xl2 border border-slate-200 bg-surface p-4">
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="font-mono text-xs text-slate-500">{cell.h3Index}</p>
@@ -79,8 +82,8 @@ function CellDetail({ cell, onClose }: { cell: HotspotCell; onClose: () => void 
           <ResponsiveContainer width="100%" height={112}>
             <LineChart data={series}>
               <XAxis dataKey="t" hide />
-              <YAxis domain={[0, 100]} width={28} tick={{ fontSize: 10 }} />
-              <Tooltip formatter={(v) => [`${v}%`, 'confidence']} />
+              <YAxis domain={[0, 100]} width={28} tick={{ fontSize: 10, fill: colors.axis }} stroke={colors.grid} />
+              <Tooltip formatter={(v) => [`${v}%`, 'confidence']} {...colors.tooltip} />
               <Line type="monotone" dataKey="score" stroke="#B91C1C" dot={false} strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
@@ -93,6 +96,7 @@ function CellDetail({ cell, onClose }: { cell: HotspotCell; onClose: () => void 
 
 export function HotspotMap() {
   const { t } = useTranslation();
+  usePageTitle(t('hotspots.title'), 'VayuSetu');
   const { getToken } = useAuth();
   const { liteMode } = useLiteMode();
   const [corridorId, setCorridorId] = React.useState<CorridorId>('ncr-airshed');
@@ -110,6 +114,11 @@ export function HotspotMap() {
   });
 
   const cells = React.useMemo(() => hotspotData?.cells ?? [], [hotspotData]);
+  const detailRef = React.useRef<HTMLDivElement>(null);
+  // Phones stack the detail under the map: bring it into view on a tap.
+  React.useEffect(() => {
+    if (selected && window.matchMedia('(max-width: 1023px)').matches) detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [selected]);
   const selectedCell = cells.find((c) => c.h3Index === selected);
   const hiddenCount = cells.filter((c) => c.isHidden).length;
   const view = corridorView(corridorId);
@@ -126,9 +135,9 @@ export function HotspotMap() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-bold text-ink">{t('hotspots.title')}</h1>
+          <h1 className="hidden text-xl font-bold text-ink lg:block">{t('hotspots.title')}</h1>
           <p className="text-sm text-slate-500">
             {t('hotspots.subtitle', { cells: cells.length, hidden: hiddenCount })}
           </p>
@@ -140,7 +149,7 @@ export function HotspotMap() {
             setSelected(null);
           }}
         >
-          <SelectTrigger className="w-56">
+          <SelectTrigger className="w-full sm:w-56">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -161,8 +170,8 @@ export function HotspotMap() {
         <LiteModeTable cells={cells} />
       ) : (
         <div className="grid gap-4 lg:grid-cols-[1fr_20rem]">
-          <div className="overflow-hidden rounded-xl2 border border-slate-200 bg-white">
-            <HexMap cells={hexes} onSelect={setSelected} center={view.center} zoom={view.zoom} mapKey={corridorId} />
+          <div className="overflow-hidden rounded-xl2 border border-slate-200 bg-surface">
+            <HexMap cells={hexes} onSelect={setSelected} center={view.center} zoom={view.zoom} mapKey={corridorId} height="min(32rem, 62svh)" />
             <div className="flex flex-wrap items-center gap-4 border-t border-slate-100 px-4 py-3 text-xs text-slate-500">
               <span className="flex items-center gap-1.5">
                 <EyeOff className="h-3.5 w-3.5 text-accent-600" /> {t('hotspots.hiddenLegend')}
@@ -175,7 +184,9 @@ export function HotspotMap() {
             </div>
           </div>
           {selectedCell ? (
-            <CellDetail cell={selectedCell} onClose={() => setSelected(null)} />
+            <div ref={detailRef} className="scroll-mt-20 animate-in fade-in-0 slide-in-from-bottom-2 duration-300 lg:slide-in-from-right-2">
+              <CellDetail cell={selectedCell} onClose={() => setSelected(null)} />
+            </div>
           ) : (
             <aside className="rounded-xl2 border border-dashed border-slate-200 p-4 text-sm text-slate-500">
               {t('hotspots.selectCell')}

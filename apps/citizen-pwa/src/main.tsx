@@ -1,6 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { App } from './App';
+import { applyTheme, readThemePreference } from '@vayusetu/ui-components';
+
+applyTheme(readThemePreference());
 
 import './i18n';
 import './index.css';

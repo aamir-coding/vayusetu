@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ShieldCheck } from 'lucide-react';
 import { Button, Card, CardContent, Input, Label, useToast } from '@vayusetu/ui-components';
 import { useAuth } from '../../hooks/useAuth';
+import { BackLink } from '../../components/BackLink';
 
 export function PhoneAuthScreen() {
   const { t } = useTranslation();
@@ -50,7 +51,8 @@ export function PhoneAuthScreen() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-col items-center gap-2 pt-4 text-center">
+      <BackLink fallback="/capture" label={t('common.back')} />
+      <div className="flex flex-col items-center gap-2 text-center">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-50">
           <ShieldCheck className="h-6 w-6 text-brand-600" aria-hidden="true" />
         </div>

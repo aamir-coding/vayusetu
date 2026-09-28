@@ -44,7 +44,7 @@ export function LiteModeTable({ cells }: { cells: HotspotCell[] }) {
   }, [cells, sortKey, sortDir]);
 
   return (
-    <div className="overflow-x-auto rounded-xl2 border border-slate-200 bg-white">
+    <div className="overflow-x-auto rounded-xl2 border border-slate-200 bg-surface">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
