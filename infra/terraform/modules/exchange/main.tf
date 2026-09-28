@@ -14,6 +14,11 @@ locals {
     "aiplatform.googleapis.com",
     "iam.googleapis.com",
     "cloudresourcemanager.googleapis.com",
+    # portal.tf: the national landing page
+    "firebase.googleapis.com",
+    "firebasehosting.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "storage.googleapis.com",
   ]
 }
 

@@ -1,0 +1,25 @@
+# Cloud Build pipeline -- apps/portal, the national landing page, on the
+# National Exchange project's Hosting site (infra/terraform/modules/exchange/portal.tf).
+# Static HTML: test, then `firebase deploy`. Runs as cloudbuild-portal, which
+# can publish Hosting releases and nothing else.
+#
+# From the repo root (P = vayusetu-exchange-dev):
+#   gcloud builds submit --project $P --region asia-south1 --config infra/cloudbuild/portal.yaml \
+#     --gcs-source-staging-dir=gs://$P-portal-build/source \
+#     --service-account=projects/$P/serviceAccounts/cloudbuild-portal@$P.iam.gserviceaccount.com .
+options:
+  logging: CLOUD_LOGGING_ONLY
+timeout: 600s
+steps:
+  - id: test
+    name: node:20-slim
+    dir: apps/portal
+    entrypoint: node
+    args: ['--test', 'test/portal.test.mjs']
+  - id: deploy
+    name: node:20-slim
+    dir: apps/portal
+    entrypoint: bash
+    args:
+      - -c
+      - npx --yes firebase-tools@13 deploy --only hosting --project "$PROJECT_ID" --non-interactive

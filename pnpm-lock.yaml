@@ -561,6 +561,8 @@ importers:
 
   apps/ingestion-jobs: {}
 
+  apps/portal: {}
+
   apps/submission-service:
     dependencies:
       '@fastify/cors':
