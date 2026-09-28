@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
-const firebase = JSON.parse(readFileSync(new URL('../firebase.json', import.meta.url), 'utf8'));
+const firebase = JSON.parse(readFileSync(new URL('../hosting.json', import.meta.url), 'utf8'));
 
 test('every state door points at a deployed app', () => {
   const links = new Set([...html.matchAll(/href="(https:\/\/[^"]+\.web\.app)"/g)].map((m) => m[1]));
