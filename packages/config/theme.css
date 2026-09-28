@@ -1,0 +1,122 @@
+/*
+ * Light/dark theme tokens for every VayuSetu frontend. The Tailwind preset
+ * (tailwind-preset.cjs) reads these as `rgb(var(--vs-*) / <alpha>)`, so
+ * existing classes (bg-surface, text-slate-500, border-slate-200,
+ * bg-brand-50 ...) follow the theme with no per-screen `dark:` variants.
+ *
+ * `.dark` on <html> switches the set; index.html sets it before first paint
+ * (no flash), and ThemeToggle (ui-components) changes it.
+ *
+ * NOT themed, on purpose: the aqi / severity / grap data scales (their
+ * colours carry meaning officials already know), `night` (always-dark
+ * panels), and `white` (text on coloured fills stays white).
+ */
+:root {
+  color-scheme: light;
+  --vs-surface: 255 255 255;
+  --vs-paper: 245 248 247;
+  --vs-ink: 14 34 36;
+
+  --vs-slate-50: 248 250 252;
+  --vs-slate-100: 241 245 249;
+  --vs-slate-200: 226 232 240;
+  --vs-slate-300: 203 213 225;
+  --vs-slate-400: 148 163 184;
+  --vs-slate-500: 100 116 139;
+  --vs-slate-600: 71 85 105;
+  --vs-slate-700: 51 65 85;
+  --vs-slate-800: 30 41 59;
+  --vs-slate-900: 15 23 42;
+  --vs-slate-950: 2 6 23;
+
+  --vs-brand-50: 239 250 249;
+  --vs-brand-100: 211 241 238;
+  --vs-brand-200: 168 227 221;
+  --vs-brand-300: 116 207 198;
+  --vs-brand-400: 63 179 170;
+  --vs-brand-500: 31 148 140;
+  --vs-brand-600: 21 123 118;
+  --vs-brand-700: 20 101 96;
+  --vs-brand-800: 20 81 78;
+  --vs-brand-900: 19 63 61;
+  --vs-brand-950: 7 36 35;
+
+  --vs-emerald-50: 236 253 245;
+  --vs-emerald-200: 167 243 208;
+  --vs-emerald-600: 5 150 105;
+  --vs-emerald-700: 4 120 87;
+  --vs-emerald-800: 6 95 70;
+  --vs-red-50: 254 242 242;
+  --vs-red-200: 254 202 202;
+  --vs-red-600: 220 38 38;
+  --vs-red-700: 185 28 28;
+  --vs-red-800: 153 27 27;
+  --vs-amber-50: 255 251 235;
+  --vs-amber-200: 253 230 138;
+  --vs-amber-700: 180 83 9;
+  --vs-amber-800: 146 64 14;
+  --vs-blue-50: 239 246 255;
+  --vs-blue-200: 191 219 254;
+  --vs-blue-600: 37 99 235;
+  --vs-blue-700: 29 78 216;
+  --vs-blue-800: 30 64 175;
+  --vs-indigo-50: 238 242 255;
+  --vs-indigo-700: 67 56 202;
+  --vs-yellow-800: 133 77 14;
+  --vs-orange-800: 154 52 18;
+}
+
+.dark {
+  color-scheme: dark;
+  --vs-surface: 17 26 33;
+  --vs-paper: 10 16 21;
+  --vs-ink: 230 238 239;
+
+  --vs-slate-50: 22 33 41;
+  --vs-slate-100: 29 42 50;
+  --vs-slate-200: 42 57 66;
+  --vs-slate-300: 64 81 91;
+  --vs-slate-400: 122 139 150;
+  --vs-slate-500: 152 167 178;
+  --vs-slate-600: 180 193 202;
+  --vs-slate-700: 205 215 222;
+  --vs-slate-800: 225 232 237;
+  --vs-slate-900: 238 242 245;
+  --vs-slate-950: 248 250 251;
+
+  --vs-brand-50: 14 42 41;
+  --vs-brand-100: 17 56 54;
+  --vs-brand-200: 22 80 76;
+  --vs-brand-300: 36 116 110;
+  --vs-brand-400: 52 160 152;
+  --vs-brand-500: 63 179 170;
+  --vs-brand-600: 34 146 138;
+  --vs-brand-700: 110 205 196;
+  --vs-brand-800: 150 222 214;
+  --vs-brand-900: 196 238 233;
+  --vs-brand-950: 230 248 246;
+
+  --vs-emerald-50: 6 44 34;
+  --vs-emerald-200: 6 95 70;
+  --vs-emerald-600: 52 211 153;
+  --vs-emerald-700: 110 231 183;
+  --vs-emerald-800: 167 243 208;
+  --vs-red-50: 60 18 18;
+  --vs-red-200: 127 29 29;
+  --vs-red-600: 248 113 113;
+  --vs-red-700: 252 165 165;
+  --vs-red-800: 254 202 202;
+  --vs-amber-50: 58 38 6;
+  --vs-amber-200: 120 53 15;
+  --vs-amber-700: 252 211 77;
+  --vs-amber-800: 253 230 138;
+  --vs-blue-50: 17 29 58;
+  --vs-blue-200: 30 58 138;
+  --vs-blue-600: 96 165 250;
+  --vs-blue-700: 147 197 253;
+  --vs-blue-800: 191 219 254;
+  --vs-indigo-50: 30 27 75;
+  --vs-indigo-700: 165 180 252;
+  --vs-yellow-800: 253 224 71;
+  --vs-orange-800: 253 186 116;
+}

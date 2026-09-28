@@ -5,7 +5,10 @@
   },
   "nav": {
     "capture": "Report",
-    "reports": "My Reports"
+    "reports": "My Reports",
+    "help": "How it works",
+    "about": "About VayuSetu",
+    "primary": "Main navigation"
   },
   "common": {
     "retry": "Retry",
@@ -124,5 +127,30 @@
   },
   "language": {
     "choose": "Choose your language"
+  },
+  "theme": {
+    "toDark": "Dark mode",
+    "toLight": "Light mode"
+  },
+  "tour": {
+    "next": "Next",
+    "back": "Back",
+    "done": "Start reporting",
+    "skip": "Skip guide",
+    "progress": "{{current}} of {{total}}",
+    "welcomeTitle": "Welcome to VayuSetu",
+    "welcomeBody": "Seen smoke, dust or a burning pile? Report it in under a minute, and the official responsible for that area is told. Here's how.",
+    "photoTitle": "Snap it",
+    "photoBody": "Take a photo of what you see, or choose one you already took. The clearer, the better.",
+    "voiceTitle": "Say it (optional)",
+    "voiceBody": "Add a short voice note in your own language: what's burning, how long it's been going.",
+    "locationTitle": "Where is it?",
+    "locationBody": "Your location tells us whose area it is. If GPS is off, tap Change and type it in.",
+    "sendTitle": "Send",
+    "sendBody": "In a few seconds you'll see what we found and advice to stay safe, which you can also listen to.",
+    "reportsTitle": "Track your reports",
+    "reportsBody": "Every report you send is here, with its result and anything officials ask you.",
+    "helpTitle": "Need this again?",
+    "helpBody": "Tap this button any time to replay the guide."
   }
 }

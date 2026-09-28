@@ -74,10 +74,10 @@ export function AlertQueue() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-bold text-ink">{t('alerts.title')}</h1>
-          <p className="flex items-center gap-2 text-sm text-slate-500">
+          <h1 className="hidden text-xl font-bold text-ink lg:block">{t('alerts.title')}</h1>
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500">
             {t('alerts.subtitle')}
             <span className={live ? 'flex items-center gap-1 text-emerald-600' : 'flex items-center gap-1 text-slate-400'}>
               <span className={live ? 'h-2 w-2 animate-pulse rounded-full bg-emerald-500' : 'h-2 w-2 rounded-full bg-slate-300'} />
@@ -85,8 +85,8 @@ export function AlertQueue() {
             </span>
           </p>
         </div>
-        <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as AlertStatus | 'all')}>
-          <TabsList>
+        <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as AlertStatus | 'all')} className="-mx-4 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0 sm:pb-0">
+          <TabsList className="w-max">
             <TabsTrigger value="all">{t('alerts.all')}</TabsTrigger>
             {(['new', 'acknowledged', 'in_progress', 'resolved'] as const).map((s) => (
               <TabsTrigger key={s} value={s}>
@@ -110,31 +110,39 @@ export function AlertQueue() {
             const nextOptions = ALERT_STATUS_SUGGESTED_NEXT[alert.status];
             return (
               <li key={alert.id}>
-                <Card className="flex items-center gap-4 p-4">
-                  <GrapLadder stage={alert.impliedGrapStage} />
-                  <button type="button" onClick={() => setSelected(alert)} className="min-w-0 flex-1 text-left">
-                    <p className="truncate text-sm font-semibold text-ink">{alert.title}</p>
-                    <p className="mt-0.5 truncate text-xs text-slate-400">
-                      {t(`corridor.${alert.corridorId}`, { defaultValue: alert.corridorId })} · {relativeTime(alert.createdAt, t)}
-                    </p>
-                  </button>
-                  <SeverityBadge severity={alert.severity} />
-                  <AlertStatusBadge status={alert.status} />
-                  <div className="flex shrink-0 gap-1.5">
-                    {nextOptions.map((next) => {
-                      const Icon = STATUS_ICON[next];
-                      return (
-                        <Button
-                          key={next}
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateStatus.mutate({ id: alert.id, status: next })}
-                          loading={updateStatus.isPending && updateStatus.variables?.id === alert.id && updateStatus.variables.status === next}
-                        >
-                          <Icon className="h-3.5 w-3.5" />
-                        </Button>
-                      );
-                    })}
+                <Card className="flex flex-col gap-3 p-4 transition-shadow hover:shadow-md sm:flex-row sm:items-center sm:gap-4">
+                  <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+                    <GrapLadder stage={alert.impliedGrapStage} />
+                    <button type="button" onClick={() => setSelected(alert)} className="min-w-0 flex-1 text-left">
+                      <p className="line-clamp-2 text-sm font-semibold text-ink sm:truncate">{alert.title}</p>
+                      <p className="mt-0.5 truncate text-xs text-slate-400">
+                        {t(`corridor.${alert.corridorId}`, { defaultValue: alert.corridorId })} · {relativeTime(alert.createdAt, t)}
+                      </p>
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <SeverityBadge severity={alert.severity} />
+                    <AlertStatusBadge status={alert.status} />
+                    <div className="ml-auto flex shrink-0 gap-1.5 sm:ml-0">
+                      {nextOptions.map((next) => {
+                        const Icon = STATUS_ICON[next];
+                        const label = t(`alerts.action.${next}`);
+                        return (
+                          <Button
+                            key={next}
+                            size="sm"
+                            variant="outline"
+                            aria-label={label}
+                            title={label}
+                            onClick={() => updateStatus.mutate({ id: alert.id, status: next })}
+                            loading={updateStatus.isPending && updateStatus.variables?.id === alert.id && updateStatus.variables.status === next}
+                          >
+                            <Icon className="h-3.5 w-3.5" />
+                            <span className="sm:hidden xl:inline">{label}</span>
+                          </Button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </Card>
               </li>
@@ -143,7 +151,7 @@ export function AlertQueue() {
       </ul>
 
       <Dialog open={Boolean(selected)} onOpenChange={(open) => !open && setSelected(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="sm:max-w-lg">
           {selected && (
             <>
               <DialogHeader>

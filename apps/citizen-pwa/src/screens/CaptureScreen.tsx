@@ -277,8 +277,8 @@ export function CaptureScreen() {
       )}
 
       {/* ---------------- Photo ---------------- */}
-      <Card className="overflow-hidden">
-        <div className="relative aspect-[4/3] w-full bg-ink">
+      <Card className="overflow-hidden" data-tour="photo">
+        <div className="relative aspect-[4/3] w-full bg-night">
           {photoUrl ? (
             <img src={photoUrl} alt="" className="h-full w-full object-cover" />
           ) : cameraActive ? (
@@ -324,7 +324,7 @@ export function CaptureScreen() {
       </Card>
 
       {/* ---------------- Voice note ---------------- */}
-      <Card>
+      <Card data-tour="voice">
         <CardContent className="flex items-center gap-3 pt-5">
           {audioUrl ? (
             <>
@@ -346,7 +346,7 @@ export function CaptureScreen() {
       </Card>
 
       {/* ---------------- Location ---------------- */}
-      <Card>
+      <Card data-tour="location">
         <CardContent className="flex flex-col gap-3 pt-5">
           <div className="flex items-center gap-2 text-sm">
             <MapPin className="h-4 w-4 shrink-0 text-brand-600" aria-hidden="true" />
@@ -396,7 +396,7 @@ export function CaptureScreen() {
         </Card>
       )}
 
-      <Button size="lg" onClick={handleSubmit} loading={submitting} disabled={cameraActive}>
+      <Button size="lg" data-tour="send" onClick={handleSubmit} loading={submitting} disabled={cameraActive}>
         {submitting ? t('capture.submitting') : t('capture.submit')}
       </Button>
     </div>

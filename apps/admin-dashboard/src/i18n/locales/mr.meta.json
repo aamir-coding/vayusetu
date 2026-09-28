@@ -55,6 +55,38 @@
     "sourceHash": "106bc43e5e7cd951",
     "text": "या ब्राउझरमध्ये सूचना अवरोधित केल्या आहेत."
   },
+  "nav.alertsShort": {
+    "sourceHash": "f62e9267d196c761",
+    "text": "सूचना"
+  },
+  "nav.hotspotsShort": {
+    "sourceHash": "07d25c2b1b907fd0",
+    "text": "हॉटस्पॉट्स"
+  },
+  "nav.primary": {
+    "sourceHash": "eb355944b92d1058",
+    "text": "मुख्य नेव्हिगेशन"
+  },
+  "nav.menu": {
+    "sourceHash": "99af6606ff9d6cd5",
+    "text": "मेनू"
+  },
+  "nav.closeMenu": {
+    "sourceHash": "6ccd5c7856042d36",
+    "text": "मेनू बंद करा"
+  },
+  "nav.settings": {
+    "sourceHash": "6a596ff2b00ae9e2",
+    "text": "सेटिंग्ज आणि खाते"
+  },
+  "nav.help": {
+    "sourceHash": "90c369cb00d5f9c9",
+    "text": "मदत आणि दौरा"
+  },
+  "nav.home": {
+    "sourceHash": "f7b4b233ae4e8fb7",
+    "text": "वायुसेतू घर"
+  },
   "role.district_admin": {
     "sourceHash": "6addf13f8f74271d",
     "text": "जिल्हा प्रशासन"
@@ -86,6 +118,10 @@
   "login.failed": {
     "sourceHash": "5ee01ca9e679b23b",
     "text": "साइन-इन अयशस्वी झाले"
+  },
+  "login.citizenLink": {
+    "sourceHash": "92400d8db66e0dd4",
+    "text": "प्रदूषणाची तक्रार करायची आहे का? नागरिक ॲप वापरा."
   },
   "common.loading": {
     "sourceHash": "dc380888c4e2c776",
@@ -226,6 +262,26 @@
   "alerts.daysAgo": {
     "sourceHash": "477879d991b4f84f",
     "text": "{{count}} दिवसांपूर्वी"
+  },
+  "alerts.action.acknowledged": {
+    "sourceHash": "f9236d9e87b6235e",
+    "text": "स्वीकृती"
+  },
+  "alerts.action.in_progress": {
+    "sourceHash": "6a7da0d23cfc0061",
+    "text": "काम सुरू करा"
+  },
+  "alerts.action.resolved": {
+    "sourceHash": "c8f193b315c86f3a",
+    "text": "निराकरण करा"
+  },
+  "alerts.action.dismissed": {
+    "sourceHash": "48845bff334a50a5",
+    "text": "बरखास्त करा"
+  },
+  "alerts.action.new": {
+    "sourceHash": "a886d1dc4f128e27",
+    "text": "पुन्हा उघडा"
   },
   "hotspots.title": {
     "sourceHash": "2075df611438810b",
@@ -454,5 +510,73 @@
   "federation.stateCells": {
     "sourceHash": "fcf3103acfd219a5",
     "text": "{{count}} पेशी · {{pct}} %"
+  },
+  "theme.toDark": {
+    "sourceHash": "9b7878aef90b527c",
+    "text": "डार्क मोड"
+  },
+  "theme.toLight": {
+    "sourceHash": "b4fcfbee4fb937d7",
+    "text": "प्रकाश मोड"
+  },
+  "tour.next": {
+    "sourceHash": "1ff57a29d7c9d11b",
+    "text": "पुढील"
+  },
+  "tour.back": {
+    "sourceHash": "76900f1bfd16c8d4",
+    "text": "मागे"
+  },
+  "tour.done": {
+    "sourceHash": "5ad3dbd1242a4cea",
+    "text": "समजलं."
+  },
+  "tour.skip": {
+    "sourceHash": "5ac614dee51bcf6a",
+    "text": "दौरा वगळा"
+  },
+  "tour.progress": {
+    "sourceHash": "487fcaf37ab97ea0",
+    "text": "{{total}} पैकी {{current}}"
+  },
+  "tour.welcomeTitle": {
+    "sourceHash": "22973e1f89c3623f",
+    "text": "स्वागत आहे, {{name}}"
+  },
+  "tour.welcomeBody": {
+    "sourceHash": "652ac36d08c3a1a8",
+    "text": "तुमच्या कन्सोलचा एक मिनिटाचा आढावा: सूचना कोठे येतात, त्यावर कशी कारवाई करावी आणि पुढे काय पाहावे."
+  },
+  "tour.alertsBody": {
+    "sourceHash": "879215142e1090a1",
+    "text": "तुमच्या कार्यक्षेत्रासाठीचे नवीन प्रदूषण अलर्ट येथे थेट येतात, सर्वात तातडीचे अलर्ट प्रथम येतात. माहिती वाचण्यासाठी एक अलर्ट उघडा, आणि मग त्याला पुढे न्या: स्वीकारा, प्रगतीपथावर, निराकरण झाले. प्रत्येक टप्प्याची नोंद ठेवली जाते."
+  },
+  "tour.hotspotsBody": {
+    "sourceHash": "841c103335694346",
+    "text": "प्रत्येक तासाला परिसरातील प्रत्येक सेलच्या प्रदूषणाची नोंद ठेवली जाते. लाल रंगाच्या सेलकडे लक्ष देण्याची गरज आहे; पिवळसर रंगाची बाह्यरेषा कोणत्याही मॉनिटरपासून दूर असलेला एक छुपा हॉटस्पॉट दर्शवते. त्याचे सिग्नल आणि ७-दिवसांचा इतिहास पाहण्यासाठी सेलवर टॅप करा."
+  },
+  "tour.forecastBody": {
+    "sourceHash": "7564776351668afa",
+    "text": "पुढील ७२ तासांसाठी हवेची गुणवत्ता, आणि त्यावरून सूचित होणारी GRAP स्टेज, जेणेकरून उच्चांकापूर्वीच निर्बंध सुरू होऊ शकतील."
+  },
+  "tour.federationBody": {
+    "sourceHash": "aaab926ddc806824",
+    "text": "इतर राज्यांशी प्रवृत्तींची तुलना करा आणि त्यांनी सामायिक केलेले नमुने स्वीकारा. केवळ सारांश सामायिक केले जातात; नागरिकांचे अहवाल कधीही तुमच्या राज्याबाहेर जात नाहीत."
+  },
+  "tour.pushTitle": {
+    "sourceHash": "81af1dba0ff62460",
+    "text": "हा टॅब बंद असतानाही सूचना मिळवा"
+  },
+  "tour.pushBody": {
+    "sourceHash": "63f00babe26c3069",
+    "text": "अलर्ट नोटिफिकेशन्स चालू करा, जेणेकरून नवीन हॉटस्पॉट आल्यास तो तुम्हाला या डिव्हाइसवर लगेच मिळेल."
+  },
+  "tour.helpTitle": {
+    "sourceHash": "607106a1f515566f",
+    "text": "मदत नेहमीच उपलब्ध आहे."
+  },
+  "tour.helpBody": {
+    "sourceHash": "97758818708ca9a3",
+    "text": "ही टूर पुन्हा प्ले करा, भाषा किंवा थीम बदला आणि येथून साइन आउट करा."
   }
 }

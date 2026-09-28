@@ -15,6 +15,7 @@ import {
 import { useAuth } from '../hooks/useAuth';
 import { analysisApi, submissionsApi } from '../lib/apiClient';
 import { ClarifyCard } from '../components/ClarifyCard';
+import { BackLink } from '../components/BackLink';
 
 const IN_FLIGHT = new Set(['queued', 'uploading', 'pending_analysis']);
 
@@ -114,7 +115,10 @@ export function SnapshotResult() {
 
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="text-xl font-bold text-ink">{t('result.title')}</h1>
+      <div className="flex flex-col gap-1">
+        <BackLink fallback="/reports" label={t('common.back')} />
+        <h1 className="text-xl font-bold text-ink">{t('result.title')}</h1>
+      </div>
 
       {pending && <ClarifyCard submissionId={submissionId} pending={pending} />}
 

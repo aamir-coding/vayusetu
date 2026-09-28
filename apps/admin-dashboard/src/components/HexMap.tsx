@@ -1,7 +1,23 @@
 import * as React from 'react';
 import { APIProvider, Map, useMap } from '@vis.gl/react-google-maps';
 import { cellToLatLng } from 'h3-js';
+import { useTheme } from '@vayusetu/ui-components';
 import { HIDDEN_STROKE, confidenceColor, hexesToGeoJson, type HexDatum } from '../lib/hexGeo';
+
+/** Google's "night" styling (no map ID needed); hexes keep their data colours. */
+const DARK_MAP_STYLES: google.maps.MapTypeStyle[] = [
+  { elementType: 'geometry', stylers: [{ color: '#1b2630' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#1b2630' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#8a9ba8' }] },
+  { featureType: 'administrative', elementType: 'geometry', stylers: [{ color: '#3a4a55' }] },
+  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2c3a44' }] },
+  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#212d36' }] },
+  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#3b4b56' }] },
+  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0e1a22' }] },
+  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#4e6270' }] },
+];
 
 const MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -66,7 +82,7 @@ function SchematicPlot({ cells, onSelect }: { cells: HexDatum[]; onSelect?: (h3I
   }, [cells]);
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="Hotspot confidence map (schematic)">
-      <rect x={0} y={0} width={W} height={H} rx={12} fill="#F5F8F7" />
+      <rect x={0} y={0} width={W} height={H} rx={12} className="fill-slate-50" />
       {points.map(({ cell, x, y }) => (
         <g key={cell.h3Index} transform={`translate(${x}, ${y})`} onClick={() => onSelect?.(cell.h3Index)} className="cursor-pointer">
           {cell.highlight && <circle r={20} fill="none" stroke={HIDDEN_STROKE} strokeWidth={2} strokeDasharray="4 3" />}
@@ -94,6 +110,7 @@ export function HexMap({
   /** Changing it remounts the map (e.g. per corridor). */
   mapKey?: string;
 }) {
+  const { resolved } = useTheme();
   if (!MAPS_KEY) {
     return (
       <div className="p-4">
@@ -104,10 +121,15 @@ export function HexMap({
   return (
     <APIProvider apiKey={MAPS_KEY} language="en" region="IN">
       <Map
-        key={mapKey}
+        // colorScheme is fixed at creation, so the theme is part of the key.
+        key={`${mapKey ?? 'map'}-${resolved}`}
         defaultCenter={center}
         defaultZoom={zoom}
-        gestureHandling="greedy"
+        colorScheme={resolved === 'dark' ? 'DARK' : 'LIGHT'}
+        styles={resolved === 'dark' ? DARK_MAP_STYLES : undefined}
+        // auto = one-finger page scroll on phones (two fingers pan the map),
+        // direct panning on desktop. 'greedy' trapped the page on phones.
+        gestureHandling="auto"
         mapTypeControl={false}
         streetViewControl={false}
         style={{ width: '100%', height }}

@@ -34,8 +34,8 @@ export const AQI_CATEGORY_LABEL: Record<AQICategory, string> = {
 /** Tailwind bg/text pair per AQI category — solid blocks, matching how CPCB and most AQI apps signal urgency at a glance. */
 export const AQI_CATEGORY_CLASS: Record<AQICategory, string> = {
   good: 'bg-aqi-good text-white',
-  satisfactory: 'bg-aqi-satisfactory text-ink',
-  moderate: 'bg-aqi-moderate text-ink',
+  satisfactory: 'bg-aqi-satisfactory text-night',
+  moderate: 'bg-aqi-moderate text-night',
   poor: 'bg-aqi-poor text-white',
   very_poor: 'bg-aqi-veryPoor text-white',
   severe: 'bg-aqi-severe text-white',
