@@ -1,7 +1,7 @@
 """Vertex AI Pipelines (KFP v2) retrain DAGs for both models.
 
   build training table (BigQuery) -> AutoML training (new version under the
-  same registry model, federation labels) -> evaluate on the time-held-out
+  same registry model, federation labels) -> evaluate on the held-out
   TEST split -> promote to alias `default` only if it clears the quality gate
   AND beats the current default -> record the evaluation in BigQuery.
 
@@ -143,12 +143,27 @@ def evaluate_and_promote(project: str, location: str, model_version: str, model_
     evaluation = candidate.list_model_evaluations()[0]
     metrics = evaluation.to_dict().get("metrics", {})
 
-    def slice_metric(resource_name: str, label: str):
+    def positive_slice(resource_name: str, label: str) -> dict:
         client = ModelServiceClient(client_options={"api_endpoint": f"{location}-aiplatform.googleapis.com"})
         for s in client.list_model_evaluation_slices(parent=resource_name):
             if s.slice_.dimension == "annotationSpec" and s.slice_.value == label:
-                return dict(s.metrics).get(metric)
-        return None
+                return dict(s.metrics)
+        return {}
+
+    def slice_metric(resource_name: str, label: str):
+        return positive_slice(resource_name, label).get(metric)
+
+    # Classifiers: the confidence threshold with the best F1 on the TEST
+    # split -- hotspot-service's HIDDEN_MIN_CONFIDENCE is set from it when the
+    # model goes live (a fixed 0.6 on a 15%-base-rate model flags ~nothing).
+    best_threshold = None
+    if positive_class:
+        curve = [dict(c) for c in positive_slice(evaluation.resource_name, positive_class).get("confidenceMetrics", [])]
+        scored = [c for c in curve if c.get("f1Score") is not None and 0 < c.get("confidenceThreshold", 0) < 1]
+        if scored:
+            best = max(scored, key=lambda c: c["f1Score"])
+            best_threshold = {"threshold": best["confidenceThreshold"], "f1": best["f1Score"],
+                              "precision": best.get("precision"), "recall": best.get("recall")}
 
     value = slice_metric(evaluation.resource_name, positive_class) if positive_class else metrics.get(metric)
     better = (lambda a, b: a > b) if higher_is_better else (lambda a, b: a < b)
@@ -167,12 +182,24 @@ def evaluate_and_promote(project: str, location: str, model_version: str, model_
                                  else evals[0].to_dict().get("metrics", {}).get(metric))
     beats_current = current_value is None or (value is not None and better(value, current_value))
     decision = "promoted" if passes_gate and beats_current else "rejected"
-    candidate.update(labels={
+    # Label THIS version. The SDK's Model.update() always writes the
+    # UNVERSIONED name -- i.e. whichever version holds `default` -- so it
+    # labelled the PREVIOUS version (live: v2's passed/0.5503 landed on v1).
+    # UpdateModel on the versioned name with a labels mask edits only this one.
+    from google.cloud.aiplatform_v1.types import Model as ModelProto
+    from google.protobuf import field_mask_pb2
+
+    labels = {
         **(candidate.labels or {}),
         "vayusetu-gate": "passed" if decision == "promoted" else "failed",
         "vayusetu-gate-metric": metric.lower()[:63],
         "vayusetu-gate-value": ("na" if value is None else f"{value:.4f}".replace(".", "_")),
-    })
+        **({"vayusetu-threshold": f"{best_threshold['threshold']:.3f}".replace(".", "_")} if best_threshold else {}),
+    }
+    ModelServiceClient(client_options={"api_endpoint": f"{location}-aiplatform.googleapis.com"}).update_model(
+        model=ModelProto(name=candidate.versioned_resource_name, labels=labels),
+        update_mask=field_mask_pb2.FieldMask(paths=["labels"]),
+    )
     if decision == "promoted":
         registry.add_version_aliases(["default"], version=candidate.version_id)
 
@@ -183,7 +210,9 @@ def evaluate_and_promote(project: str, location: str, model_version: str, model_
         "value": value,
         "previous_default_value": current_value,
         "decision": decision,
-        "all_metrics": json.dumps({k: v for k, v in metrics.items() if isinstance(v, (int, float))}),
+        "all_metrics": json.dumps({**{k: v for k, v in metrics.items() if isinstance(v, (int, float))},
+                                   **({f"gate_{metric}": value} if positive_class else {}),
+                                   **({"best_f1_threshold": best_threshold} if best_threshold else {})}),
         "training_rows": stats.get("rows"),
         "training_positives": stats.get("positives"),
         "evaluated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),

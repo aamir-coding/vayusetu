@@ -32,6 +32,15 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
     trustProxy: true,
   });
 
+  // API responses are per-user. Without an explicit no-store, the Firebase
+  // Hosting CDN caches error responses (a 404 for 10 min, keyed on the URL
+  // alone -- Authorization is not in Vary) and replays them to EVERY caller:
+  // on 28 Sep one citizen's "no profile yet" 404 for /users/me was served to
+  // all users, and registered citizens could not send reports.
+  app.addHook('onSend', async (_request, reply) => {
+    if (!reply.hasHeader('cache-control')) void reply.header('cache-control', 'private, no-store');
+  });
+
   await app.register(cors, { origin: env.CORS_ORIGIN === '*' ? true : env.CORS_ORIGIN.split(',') });
   await app.register(errorHandlerPlugin);
 

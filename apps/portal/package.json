@@ -1,0 +1,11 @@
+{
+  "name": "@vayusetu/portal",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The national landing page (https://vayusetu.web.app): one link that sends citizens and officials to their state's apps. Static HTML, no build step.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/portal.test.mjs"
+  }
+}

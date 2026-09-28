@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VayuSetu — the air bridge</title>
+<meta name="description" content="VayuSetu turns a citizen's photo of pollution into a verified hotspot and a live alert on an official's desk — in minutes. Delhi NCR and Mumbai-Pune.">
+<meta property="og:title" content="VayuSetu — the air bridge">
+<meta property="og:description" content="Report the air you breathe. Gemini reads it, satellites confirm it, and the right official is alerted in minutes.">
+<meta name="theme-color" content="#0b1424">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2l12 7v14l-12 7-12-7V9z' fill='%2334d3a0'/%3E%3Cpath d='M8 19c3-5 13-5 16 0' stroke='%230b1424' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&family=Mukta:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #eef3f8;
+    --ink-2: #b6c3d3;
+    --ink-3: #7f8fa3;
+    --night: #0b1424;
+    --panel: rgba(18, 30, 50, 0.72);
+    --panel-solid: #121e32;
+    --line: rgba(255, 255, 255, 0.10);
+    --mint: #34d3a0;
+    --sky: #5cc8ff;
+    --amber: #f2a33a;
+    --good: #55a84f; --satisfactory: #a3c853; --moderate: #f4d23c;
+    --poor: #f29c33; --very-poor: #e93f33; --severe: #af2d24;
+    --radius: 18px;
+    --display: 'Sora', 'Mukta', system-ui, sans-serif;
+    --body: 'Inter', 'Mukta', system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  html[lang="hi"] { --display: 'Mukta', 'Sora', sans-serif; --body: 'Mukta', 'Inter', sans-serif; }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--night); color: var(--ink); font: 16px/1.6 var(--body); overflow-x: hidden; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--sky); outline-offset: 3px; border-radius: 8px; }
+  .wrap { width: min(1160px, 100% - 32px); margin-inline: auto; }
+
+  /* ---------- the sky: smog that clears as you scroll ---------- */
+  #sky { position: fixed; inset: 0; z-index: -2; background: linear-gradient(180deg, var(--sky-top, #3a2f27), var(--sky-bottom, #151515)); transition: background 0.2s linear; }
+  #smog { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; }
+
+  /* ---------- nav ---------- */
+  nav { position: fixed; top: 0; inset-inline: 0; z-index: 20; transition: background 0.3s, backdrop-filter 0.3s; }
+  nav.solid { background: rgba(11, 20, 36, 0.78); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 12px; }
+  .brand { display: flex; align-items: center; gap: 10px; font: 700 18px var(--display); text-decoration: none; }
+  .brand svg { width: 28px; height: 28px; }
+  .nav-links { display: flex; align-items: center; gap: 6px; }
+  .nav-links a { text-decoration: none; color: var(--ink-2); font-size: 14px; padding: 8px 12px; border-radius: 999px; }
+  .nav-links a:hover { color: var(--ink); background: var(--line); }
+  .lang { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+  .lang button { all: unset; cursor: pointer; font: 600 13px var(--body); padding: 5px 11px; border-radius: 999px; color: var(--ink-2); }
+  .lang button[aria-pressed="true"] { background: var(--ink); color: var(--night); }
+  @media (max-width: 720px) { .nav-links a { display: none; } }
+
+  /* ---------- hero ---------- */
+  .hero { min-height: 100svh; display: grid; place-items: center; text-align: center; padding: 96px 0 72px; position: relative; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font: 600 13px var(--body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); padding: 6px 14px; border: 1px solid var(--line); border-radius: 999px; background: rgba(0,0,0,0.18); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 0 rgba(52,211,160,0.7); animation: ping 2s infinite; }
+  @keyframes ping { 70% { box-shadow: 0 0 0 10px rgba(52,211,160,0); } 100% { box-shadow: 0 0 0 0 rgba(52,211,160,0); } }
+  h1 { font: 800 clamp(48px, 10vw, 120px)/0.95 var(--display); letter-spacing: -0.03em; margin: 24px 0 8px; }
+  h1 .deva { display: block; font: 700 clamp(22px, 4vw, 40px)/1.2 'Mukta', sans-serif; letter-spacing: 0; color: var(--ink-2); margin-top: 10px; }
+  .tagline { font: 600 clamp(20px, 3vw, 30px)/1.3 var(--display); max-width: 26ch; margin: 22px auto 10px; }
+  .tagline em { font-style: normal; background: linear-gradient(90deg, var(--amber), var(--mint)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lede { color: var(--ink-2); max-width: 56ch; margin: 0 auto 32px; font-size: clamp(16px, 2vw, 18px); }
+  .ctas { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; font: 600 16px var(--body); text-decoration: none; padding: 14px 22px; border-radius: 999px; border: 1px solid transparent; transition: transform 0.15s, background 0.2s, border-color 0.2s; cursor: pointer; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-primary { background: var(--mint); color: #062a1f; }
+  .btn-ghost { border-color: rgba(255,255,255,0.28); color: var(--ink); background: rgba(0,0,0,0.2); }
+  .btn-ghost:hover { border-color: var(--ink); }
+  .scroll-hint { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); color: var(--ink-3); font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .scroll-hint span { width: 22px; height: 34px; border: 2px solid var(--ink-3); border-radius: 12px; position: relative; }
+  .scroll-hint span::after { content: ''; position: absolute; left: 50%; top: 6px; width: 4px; height: 7px; margin-left: -2px; border-radius: 2px; background: var(--ink-2); animation: wheel 1.6s infinite; }
+  @keyframes wheel { to { transform: translateY(10px); opacity: 0; } }
+  .aqi-strip { display: flex; justify-content: center; gap: 4px; margin-top: 40px; }
+  .aqi-strip i { width: 36px; height: 6px; border-radius: 3px; opacity: 0.85; }
+
+  /* ---------- sections ---------- */
+  section { padding: 110px 0; }
+  .kicker { font: 600 13px var(--body); letter-spacing: 0.1em; text-transform: uppercase; color: var(--mint); }
+  h2 { font: 700 clamp(32px, 5vw, 56px)/1.05 var(--display); letter-spacing: -0.02em; margin: 10px 0 16px; max-width: 18ch; }
+  .sub { color: var(--ink-2); max-width: 60ch; font-size: 18px; }
+
+  /* ---------- the story (sticky map + steps) ---------- */
+  .story { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; margin-top: 48px; }
+  .stage { position: sticky; top: 88px; height: min(640px, calc(100svh - 120px)); border-radius: 28px; background: var(--panel); border: 1px solid var(--line); overflow: hidden; backdrop-filter: blur(6px); }
+  .stage svg { width: 100%; height: 100%; display: block; }
+  .hex { transition: fill 1.2s ease, opacity 1.2s ease; stroke: rgba(11,20,36,0.9); stroke-width: 1.5; }
+  .stage-label { position: absolute; top: 16px; left: 18px; font: 600 12px var(--body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+  .meter { position: absolute; left: 18px; right: 18px; bottom: 18px; background: rgba(11,20,36,0.86); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+  .meter-top { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-2); }
+  .meter-top b { font: 700 20px var(--display); color: var(--ink); font-variant-numeric: tabular-nums; }
+  .bar { position: relative; height: 10px; border-radius: 5px; background: rgba(255,255,255,0.08); margin-top: 8px; }
+  .bar-fill { position: absolute; inset: 0 auto 0 0; width: 2%; border-radius: 5px; background: linear-gradient(90deg, var(--satisfactory), var(--poor), var(--very-poor)); transition: width 1.2s cubic-bezier(.2,.8,.2,1); }
+  .bar-line { position: absolute; left: 60%; top: -5px; bottom: -5px; width: 2px; background: var(--ink); }
+  .bar-line::after { content: attr(data-label); position: absolute; top: -20px; left: -18px; font-size: 11px; color: var(--ink-2); white-space: nowrap; }
+  .overlay { position: absolute; opacity: 0; transform: translateY(10px) scale(0.98); transition: opacity 0.5s, transform 0.5s; pointer-events: none; }
+  .overlay.on { opacity: 1; transform: none; }
+  .gem-card { top: 44px; right: 16px; width: 236px; background: rgba(11,20,36,0.92); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; font-size: 13px; }
+  .gem-card .t { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--sky); }
+  .gem-card .row { display: flex; justify-content: space-between; margin-top: 6px; color: var(--ink-2); }
+  .gem-card .row b { color: var(--ink); }
+  .gem-card .advice { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); font-family: 'Mukta', sans-serif; color: var(--ink); }
+  .toast { top: 44px; left: 16px; width: 250px; background: #fff; color: #10161f; border-radius: 14px; padding: 12px 14px; font-size: 13px; box-shadow: 0 18px 40px rgba(0,0,0,0.4); }
+  .toast .t { font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .toast .t::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--very-poor); }
+  .toast p { margin: 4px 0 0; color: #3b4656; }
+  .pin { opacity: 0; transform: translateY(-30px); transition: opacity 0.4s, transform 0.6s cubic-bezier(.3,1.6,.5,1); }
+  .pin.on { opacity: 1; transform: none; }
+  .ripple { fill: none; stroke: var(--very-poor); stroke-width: 2; opacity: 0; }
+  .alerting .ripple { animation: ripple 2.4s infinite; }
+  .alerting .ripple:nth-of-type(2) { animation-delay: 0.8s; }
+  .alerting .ripple:nth-of-type(3) { animation-delay: 1.6s; }
+  @keyframes ripple { from { r: 10; opacity: 0.9; } to { r: 110; opacity: 0; } }
+  .steps { display: flex; flex-direction: column; }
+  .step { min-height: 72svh; display: flex; flex-direction: column; justify-content: center; opacity: 0.35; transition: opacity 0.4s; }
+  .step.active { opacity: 1; }
+  .step .n { font: 700 14px var(--display); color: var(--night); background: var(--ink-2); width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; margin-bottom: 14px; transition: background 0.4s; }
+  .step.active .n { background: var(--mint); }
+  .step h3 { font: 700 clamp(24px, 3vw, 34px)/1.15 var(--display); margin: 0 0 10px; }
+  .step p { color: var(--ink-2); margin: 0; font-size: 17px; max-width: 42ch; }
+  .step .tag { display: inline-block; margin-top: 14px; font-size: 12px; color: var(--ink-3); border: 1px solid var(--line); padding: 4px 10px; border-radius: 999px; }
+  @media (max-width: 880px) {
+    .story { grid-template-columns: 1fr; gap: 0; }
+    .stage { top: 64px; height: 46svh; z-index: 2; background: var(--panel-solid); border-radius: 0 0 24px 24px; margin-inline: -16px; }
+    .step { min-height: 62svh; }
+    .gem-card { width: 200px; font-size: 12px; }
+    .toast { width: 210px; font-size: 12px; }
+  }
+
+  /* ---------- stats ---------- */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 44px; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+  .stat b { display: block; font: 800 clamp(30px, 4vw, 44px)/1 var(--display); letter-spacing: -0.02em; }
+  .stat span { color: var(--ink-2); font-size: 14px; }
+  @media (max-width: 880px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+  /* ---------- states + bridge ---------- */
+  .states { position: relative; display: grid; grid-template-columns: 1fr 200px 1fr; align-items: center; gap: 0; margin-top: 56px; }
+  .state { background: var(--panel-solid); border: 1px solid var(--line); border-radius: 24px; padding: 28px; position: relative; overflow: hidden; }
+  .state::before { content: ''; position: absolute; inset: -40% -40% auto auto; width: 260px; height: 260px; border-radius: 50%; background: radial-gradient(circle, var(--glow) 0%, transparent 70%); opacity: 0.35; }
+  .state h3 { font: 700 28px/1.1 var(--display); margin: 0; position: relative; }
+  .state .where { color: var(--ink-2); margin: 6px 0 20px; font-size: 14px; position: relative; }
+  .state .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; position: relative; }
+  .chip { font-size: 12px; color: var(--ink-2); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; }
+  .doors { display: grid; gap: 10px; position: relative; }
+  .door { display: flex; align-items: center; gap: 14px; text-decoration: none; padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--line); transition: background 0.2s, border-color 0.2s, transform 0.15s; }
+  .door:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.3); transform: translateX(3px); }
+  .door .ic { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; flex: none; }
+  .door .ic svg { width: 22px; height: 22px; }
+  .door b { display: block; font-weight: 600; }
+  .door small { color: var(--ink-3); font-size: 13px; }
+  .door .arrow { margin-left: auto; color: var(--ink-3); font-size: 20px; }
+  .citizen .ic { background: rgba(52,211,160,0.16); color: var(--mint); }
+  .official .ic { background: rgba(92,200,255,0.16); color: var(--sky); }
+  .bridge { position: relative; height: 100%; min-height: 220px; display: grid; place-items: center; }
+  .bridge svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .bridge path { fill: none; stroke: url(#bridgeGrad); stroke-width: 2; stroke-dasharray: 6 8; animation: flow 1.4s linear infinite; }
+  @keyframes flow { to { stroke-dashoffset: -28; } }
+  .hub { position: relative; z-index: 1; text-align: center; background: var(--night); border: 1px solid rgba(255,255,255,0.25); border-radius: 18px; padding: 12px 14px; font-size: 12px; color: var(--ink-2); max-width: 170px; }
+  .hub b { display: block; color: var(--ink); font: 700 14px var(--display); }
+  .bridge-note { margin-top: 28px; display: flex; gap: 14px; align-items: flex-start; background: rgba(92,200,255,0.07); border: 1px solid rgba(92,200,255,0.25); border-radius: var(--radius); padding: 18px 20px; color: var(--ink-2); }
+  .bridge-note svg { flex: none; width: 24px; height: 24px; color: var(--sky); margin-top: 2px; }
+  @media (max-width: 880px) {
+    .states { grid-template-columns: 1fr; gap: 0; }
+    .bridge { min-height: 150px; }
+    .bridge svg { transform: rotate(90deg) scale(0.7); }
+  }
+
+  /* ---------- google stack ---------- */
+  .stack { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 36px; }
+  .stack span { font-size: 14px; padding: 9px 14px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); }
+  .stack span b { color: var(--sky); font-weight: 600; }
+
+  footer { padding: 48px 0 64px; border-top: 1px solid var(--line); color: var(--ink-3); font-size: 14px; }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; }
+
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.8s, transform 0.8s; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+<div id="sky" aria-hidden="true"></div>
+<canvas id="smog" aria-hidden="true"></canvas>
+
+<nav id="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="VayuSetu home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2l12 7v14l-12 7-12-7V9z" fill="#34d3a0"/><path d="M8 19c3-5 13-5 16 0" stroke="#0b1424" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
+      VayuSetu
+    </a>
+    <div class="nav-links">
+      <a href="#how" data-i18n="navHow">How it works</a>
+      <a href="#states" data-i18n="navStates">Choose your state</a>
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-lang="en" aria-pressed="true">EN</button>
+        <button type="button" data-lang="hi" aria-pressed="false">हिं</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main id="top">
+  <header class="hero">
+    <div class="wrap">
+      <span class="eyebrow"><i class="dot"></i><span data-i18n="eyebrow">Live in Delhi NCR &amp; Mumbai-Pune</span></span>
+      <h1>VayuSetu<span class="deva">वायुसेतु · the air bridge</span></h1>
+      <p class="tagline" data-i18n-html="tagline">Every breath, <em>heard</em>.<br>Every hotspot, <em>seen</em>.</p>
+      <p class="lede" data-i18n="lede">Photograph the smoke you're breathing. Gemini reads it in seconds, satellites and sensors confirm it, and the official responsible for that street is alerted in minutes — in your language.</p>
+      <div class="ctas">
+        <a class="btn btn-primary" href="#states" data-i18n="ctaReport">Report pollution</a>
+        <a class="btn btn-ghost" href="#how" data-i18n="ctaHow">See how it works</a>
+      </div>
+      <div class="aqi-strip" aria-hidden="true">
+        <i style="background:var(--good)"></i><i style="background:var(--satisfactory)"></i><i style="background:var(--moderate)"></i><i style="background:var(--poor)"></i><i style="background:var(--very-poor)"></i><i style="background:var(--severe)"></i>
+      </div>
+    </div>
+    <div class="scroll-hint" aria-hidden="true"><span></span><em data-i18n="scroll" style="font-style:normal">Scroll to clear the air</em></div>
+  </header>
+
+  <section id="how" aria-labelledby="how-title">
+    <div class="wrap">
+      <p class="kicker" data-i18n="howKicker">From a photo to an alert</p>
+      <h2 id="how-title" data-i18n="howTitle">Delhi has ~40 official monitors for 1,500 km². Pollution starts between them.</h2>
+      <p class="sub" data-i18n="howSub">A garbage fire two kilometres from the nearest monitor never shows up on the official map. VayuSetu makes every citizen a sensor — and makes sure someone acts.</p>
+
+      <div class="story">
+        <div class="stage" id="stage" data-step="0" aria-hidden="true">
+          <div class="stage-label">Central Delhi · H3 cells, 0.7 km²</div>
+          <svg id="hexmap" viewBox="0 0 600 560" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="overlay gem-card" id="gem">
+            <div class="t">✦ Gemini on Vertex AI</div>
+            <div class="row"><span>Source</span><b>Open waste burning</b></div>
+            <div class="row"><span>Severity</span><b>4 / 5 · Severe</b></div>
+            <div class="row"><span>Confidence</span><b>0.95</b></div>
+            <div class="advice">खुले में कचरा जलने का धुआँ — खिड़कियाँ बंद रखें, इस इलाके से दूर रहें। ▶</div>
+          </div>
+          <div class="overlay toast" id="toast">
+            <div class="t">New hotspot alert</div>
+            <p>Karol Bagh, Central Delhi · confidence 0.61 · 2 citizens + satellite · Gemini briefing ready</p>
+          </div>
+          <div class="meter">
+            <div class="meter-top"><span>Hotspot confidence for this cell</span><b id="score">0.02</b></div>
+            <div class="bar"><div class="bar-fill" id="fill"></div><div class="bar-line" data-label="alert line 0.6"></div></div>
+          </div>
+        </div>
+
+        <div class="steps">
+          <article class="step" data-step="1">
+            <span class="n">1</span>
+            <h3 data-i18n="s1t">Rina snaps the smoke</h3>
+            <p data-i18n="s1p">No typing, no forms. A photo — or a voice note in Hindi, Punjabi, Marathi or English. It works on a patchy 2G connection and queues offline.</p>
+            <span class="tag">Firebase · Speech-to-Text · offline queue</span>
+          </article>
+          <article class="step" data-step="2">
+            <span class="n">2</span>
+            <h3 data-i18n="s2t">Gemini reads the air</h3>
+            <p data-i18n="s2p">In seconds it names the source, estimates severity and visibility, cross-checks the nearest monitor and satellite aerosol, and speaks advice back in her language.</p>
+            <span class="tag">Gemini 3.7 Flash · Cloud Text-to-Speech</span>
+          </article>
+          <article class="step" data-step="3">
+            <span class="n">3</span>
+            <h3 data-i18n="s3t">A second citizen tips the scale</h3>
+            <p data-i18n="s3p">Independent reports from the same spot are fused with an AutoML model over Sentinel-5P, MODIS fire and weather. Two distinct people push the cell past the alert line — one phone can never do it alone.</p>
+            <span class="tag">Vertex AI AutoML · Earth Engine · BigQuery</span>
+          </article>
+          <article class="step" data-step="4">
+            <span class="n">4</span>
+            <h3 data-i18n="s4t">The right official knows — now</h3>
+            <p data-i18n="s4p">The alert goes only to the officer whose district contains it, with a Gemini briefing where every claim cites a signal. Every action after that is audited.</p>
+            <span class="tag">Gemini 3.1 Pro · Pub/Sub · Firebase Cloud Messaging</span>
+          </article>
+        </div>
+      </div>
+
+      <div class="stats reveal">
+        <div class="stat"><b data-count="53990">0</b><span data-i18n="stat1">0.7 km² cells watched across two states</span></div>
+        <div class="stat"><b>72 h</b><span data-i18n="stat2">air-quality forecast per corridor, with GRAP stages</span></div>
+        <div class="stat"><b>4</b><span data-i18n="stat3">languages — English, हिन्दी, ਪੰਜਾਬੀ, मराठी</span></div>
+        <div class="stat"><b data-count="27">0</b><span data-i18n="stat4">adversarial red-team cases Gemini now passes</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="states" aria-labelledby="states-title">
+    <div class="wrap">
+      <p class="kicker" data-i18n="statesKicker">Choose your state</p>
+      <h2 id="states-title" data-i18n="statesTitle">Two states. One bridge. Your data stays home.</h2>
+      <p class="sub" data-i18n="statesSub">Each state runs its own VayuSetu. Citizens report to their state; officials sign in to theirs.</p>
+
+      <div class="states">
+        <article class="state reveal" style="--glow: var(--amber)">
+          <h3>Delhi NCR</h3>
+          <p class="where">Delhi · Haryana · Uttar Pradesh · Rajasthan</p>
+          <div class="meta"><span class="chip">35,031 cells</span><span class="chip">75 monitors</span><span class="chip">EN · हिं · ਪੰ</span></div>
+          <div class="doors">
+            <a class="door citizen" href="https://vayusetu-ncr-dev.web.app">
+              <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h3l2-3h8l2 3h3v13H3z"/><circle cx="12" cy="13" r="4"/></svg></span>
+              <span><b data-i18n="doorCitizen">Report pollution</b><small data-i18n="doorCitizenSub">For citizens · no sign-up</small></span><span class="arrow">→</span>
+            </a>
+            <a class="door official" href="https://vayusetu-ncr-dev-admin.web.app">
+              <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg></span>
+              <span><b data-i18n="doorOfficial">Officials' dashboard</b><small data-i18n="doorOfficialSub">Alerts · hotspot map · forecast</small></span><span class="arrow">→</span>
+            </a>
+          </div>
+        </article>
+
+        <div class="bridge" aria-hidden="true">
+          <svg viewBox="0 0 200 220" preserveAspectRatio="none">
+            <defs><linearGradient id="bridgeGrad" x1="0" x2="1"><stop offset="0" stop-color="#f2a33a"/><stop offset="1" stop-color="#5cc8ff"/></linearGradient></defs>
+            <path d="M0 110 C 60 20, 140 20, 200 110"/>
+            <path d="M0 110 C 60 200, 140 200, 200 110"/>
+          </svg>
+          <div class="hub"><b>National Exchange</b><span data-i18n="hub">weekly summaries &amp; trained models only</span></div>
+        </div>
+
+        <article class="state reveal" style="--glow: var(--sky)">
+          <h3>Mumbai-Pune</h3>
+          <p class="where">Maharashtra</p>
+          <div class="meta"><span class="chip">18,959 cells</span><span class="chip">46 monitors</span><span class="chip">EN · मरा · हिं</span></div>
+          <div class="doors">
+            <a class="door citizen" href="https://vayusetu-mh-dev.web.app">
+              <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h3l2-3h8l2 3h3v13H3z"/><circle cx="12" cy="13" r="4"/></svg></span>
+              <span><b data-i18n="doorCitizen">Report pollution</b><small data-i18n="doorCitizenSub">For citizens · no sign-up</small></span><span class="arrow">→</span>
+            </a>
+            <a class="door official" href="https://vayusetu-mh-dev-admin.web.app">
+              <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg></span>
+              <span><b data-i18n="doorOfficial">Officials' dashboard</b><small data-i18n="doorOfficialSub">Alerts · hotspot map · forecast</small></span><span class="arrow">→</span>
+            </a>
+          </div>
+        </article>
+      </div>
+
+      <div class="bridge-note reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+        <span data-i18n="bridgeNote">Air doesn't stop at state borders, so neither should what we learn. Every state keeps its citizens' reports in its own Google Cloud project. Only k-anonymised weekly summaries and trained models cross the bridge — and only a national administrator can import another state's model.</span>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="stack-title" style="padding-top:40px">
+    <div class="wrap">
+      <p class="kicker" data-i18n="stackKicker">Built entirely on Google</p>
+      <h2 id="stack-title" data-i18n="stackTitle">One stack, end to end.</h2>
+      <div class="stack reveal">
+        <span><b>Gemini</b> Flash · Pro · image</span>
+        <span><b>Vertex AI</b> AutoML · Pipelines · Model Registry</span>
+        <span><b>Earth Engine</b> Sentinel-5P · MODIS · FIRMS</span>
+        <span><b>BigQuery</b></span>
+        <span><b>Cloud Run</b> services + jobs</span>
+        <span><b>Pub/Sub</b> · Cloud Scheduler</span>
+        <span><b>Firestore</b></span>
+        <span><b>Firebase</b> Hosting · Auth · FCM</span>
+        <span><b>Maps Platform</b> Maps JS · Air Quality · Weather · Geocoding</span>
+        <span><b>Speech</b> Speech-to-Text · Text-to-Speech</span>
+        <span><b>Cloud Translation</b></span>
+        <span><b>Cloud Monitoring</b></span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>VayuSetu · वायुसेतु — a hackathon project. Development environment: data and alerts are for demonstration.</span>
+    <span>Delhi NCR · Mumbai-Pune · National Exchange</span>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- i18n (English / Hindi) ---------- */
+  const HI = {
+    navHow: 'यह कैसे काम करता है', navStates: 'अपना राज्य चुनें',
+    eyebrow: 'दिल्ली एनसीआर और मुंबई-पुणे में लाइव',
+    tagline: 'हर साँस <em>सुनी जाए</em>।<br>हर हॉटस्पॉट <em>दिखे</em>।',
+    lede: 'जिस धुएँ में आप साँस ले रहे हैं, उसकी फ़ोटो लें। Gemini कुछ ही सेकंड में उसे पढ़ता है, उपग्रह और सेंसर उसकी पुष्टि करते हैं, और उस सड़क के ज़िम्मेदार अधिकारी को मिनटों में सूचना मिलती है — आपकी भाषा में।',
+    ctaReport: 'प्रदूषण की रिपोर्ट करें', ctaHow: 'देखें यह कैसे काम करता है', scroll: 'हवा साफ़ करने के लिए स्क्रॉल करें',
+    howKicker: 'एक फ़ोटो से अलर्ट तक',
+    howTitle: 'दिल्ली में 1,500 वर्ग किमी के लिए ~40 सरकारी मॉनिटर हैं। प्रदूषण उनके बीच से शुरू होता है।',
+    howSub: 'निकटतम मॉनिटर से दो किलोमीटर दूर जलता कचरा सरकारी नक्शे पर कभी नहीं दिखता। VayuSetu हर नागरिक को एक सेंसर बनाता है — और सुनिश्चित करता है कि कोई कार्रवाई करे।',
+    s1t: 'रीना धुएँ की फ़ोटो लेती है', s1p: 'न टाइपिंग, न फ़ॉर्म। एक फ़ोटो — या हिन्दी, पंजाबी, मराठी या अंग्रेज़ी में एक वॉइस नोट। कमज़ोर 2G पर भी चलता है और ऑफ़लाइन कतार में रहता है।',
+    s2t: 'Gemini हवा को पढ़ता है', s2p: 'कुछ ही सेकंड में यह स्रोत पहचानता है, गंभीरता और दृश्यता का अनुमान लगाता है, नज़दीकी मॉनिटर और उपग्रह डेटा से मिलान करता है, और उसकी भाषा में सलाह सुनाता है।',
+    s3t: 'दूसरा नागरिक पलड़ा झुका देता है', s3p: 'एक ही जगह की स्वतंत्र रिपोर्टों को Sentinel-5P, MODIS और मौसम पर चलने वाले AutoML मॉडल के साथ जोड़ा जाता है। दो अलग लोग सेल को अलर्ट रेखा के पार ले जाते हैं — एक फ़ोन अकेले कभी नहीं।',
+    s4t: 'सही अधिकारी को तुरंत पता चलता है', s4p: 'अलर्ट सिर्फ़ उसी अधिकारी को जाता है जिसके ज़िले में वह जगह है, Gemini की ब्रीफ़िंग के साथ जिसमें हर दावे का स्रोत दिया गया है। उसके बाद की हर कार्रवाई दर्ज होती है।',
+    stat1: 'दो राज्यों में निगरानी में 0.7 वर्ग किमी के सेल', stat2: 'हर कॉरिडोर के लिए वायु गुणवत्ता पूर्वानुमान, GRAP चरणों के साथ', stat3: 'भाषाएँ — English, हिन्दी, ਪੰਜਾਬੀ, मराठी', stat4: 'रेड-टीम मामले जिन्हें Gemini अब पार करता है',
+    statesKicker: 'अपना राज्य चुनें', statesTitle: 'दो राज्य। एक सेतु। आपका डेटा आपके राज्य में।',
+    statesSub: 'हर राज्य अपना VayuSetu चलाता है। नागरिक अपने राज्य को रिपोर्ट करते हैं; अधिकारी अपने राज्य में साइन इन करते हैं।',
+    doorCitizen: 'प्रदूषण की रिपोर्ट करें', doorCitizenSub: 'नागरिकों के लिए · कोई साइन-अप नहीं',
+    doorOfficial: 'अधिकारियों का डैशबोर्ड', doorOfficialSub: 'अलर्ट · हॉटस्पॉट नक्शा · पूर्वानुमान',
+    hub: 'सिर्फ़ साप्ताहिक सारांश और प्रशिक्षित मॉडल',
+    bridgeNote: 'हवा राज्य की सीमाओं पर नहीं रुकती, तो सीख भी नहीं रुकनी चाहिए। हर राज्य अपने नागरिकों की रिपोर्ट अपने Google Cloud प्रोजेक्ट में रखता है। सेतु पार सिर्फ़ k-अनामीकृत साप्ताहिक सारांश और प्रशिक्षित मॉडल जाते हैं — और किसी दूसरे राज्य का मॉडल सिर्फ़ राष्ट्रीय प्रशासक ही ला सकता है।',
+    stackKicker: 'पूरी तरह Google पर निर्मित', stackTitle: 'एक स्टैक, शुरू से अंत तक।',
+  };
+  const EN = {};
+  document.querySelectorAll('[data-i18n]').forEach((el) => { EN[el.dataset.i18n] = el.textContent; });
+  document.querySelectorAll('[data-i18n-html]').forEach((el) => { EN[el.dataset.i18nHtml] = el.innerHTML; });
+  function setLang(lang) {
+    const dict = lang === 'hi' ? HI : EN;
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach((el) => { const v = dict[el.dataset.i18n]; if (v) el.textContent = v; });
+    document.querySelectorAll('[data-i18n-html]').forEach((el) => { const v = dict[el.dataset.i18nHtml]; if (v) el.innerHTML = v; });
+    document.querySelectorAll('.lang button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+    try { localStorage.setItem('vs-lang', lang); } catch (_) {}
+  }
+  document.querySelectorAll('.lang button').forEach((b) => b.addEventListener('click', () => setLang(b.dataset.lang)));
+  let saved = null;
+  try { saved = localStorage.getItem('vs-lang'); } catch (_) {}
+  if (saved === 'hi' || (!saved && /^hi\b/.test(navigator.language || ''))) setLang('hi');
+
+  /* ---------- sky + smog that clears as you scroll ---------- */
+  const sky = document.getElementById('sky');
+  const nav = document.getElementById('nav');
+  const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+  const rgb = (c) => `rgb(${c.join(',')})`;
+  const SMOG_TOP = [74, 60, 47], SMOG_BOT = [30, 27, 26], CLEAR_TOP = [16, 44, 82], CLEAR_BOT = [11, 20, 36];
+  let clarity = 0;
+  function onScroll() {
+    const h = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+    clarity = Math.min(1, window.scrollY / (h * 0.45));
+    sky.style.setProperty('--sky-top', rgb(mix(SMOG_TOP, CLEAR_TOP, clarity)));
+    sky.style.setProperty('--sky-bottom', rgb(mix(SMOG_BOT, CLEAR_BOT, clarity)));
+    nav.classList.toggle('solid', window.scrollY > 40);
+  }
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  const canvas = document.getElementById('smog');
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0, puffs = [];
+  function resize() {
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    W = innerWidth; H = innerHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const n = Math.round(Math.min(46, (W * H) / 26000));
+    puffs = Array.from({ length: n }, () => ({
+      x: Math.random() * W, y: Math.random() * H, r: 80 + Math.random() * 200,
+      vx: 0.08 + Math.random() * 0.25, vy: (Math.random() - 0.5) * 0.08, a: 0.05 + Math.random() * 0.08,
+    }));
+  }
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const fade = 1 - clarity * 0.92;
+    for (const p of puffs) {
+      if (!reduced) { p.x += p.vx; p.y += p.vy; if (p.x - p.r > W) p.x = -p.r; }
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
+      g.addColorStop(0, `rgba(170,150,125,${p.a * fade})`);
+      g.addColorStop(1, 'rgba(170,150,125,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+    }
+    if (!reduced) requestAnimationFrame(draw);
+  }
+  addEventListener('resize', () => { resize(); if (reduced) draw(); });
+  resize(); draw();
+  if (reduced) addEventListener('scroll', draw, { passive: true });
+
+  /* ---------- the hex map ---------- */
+  const svg = document.getElementById('hexmap');
+  const NS = 'http://www.w3.org/2000/svg';
+  const R = 21, HW = Math.sqrt(3) * R;
+  const COLORS = ['#55a84f', '#a3c853', '#f4d23c', '#f29c33', '#e93f33', '#af2d24'];
+  const cells = [];
+  let seed = 7;
+  const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const noise = (x, y) => Math.sin(x * 0.021 + 1.3) * Math.cos(y * 0.027 - 0.4) + Math.sin((x + y) * 0.013) * 0.6;
+  const hexPath = (cx, cy) => {
+    let d = '';
+    for (let i = 0; i < 6; i++) {
+      const a = Math.PI / 180 * (60 * i - 30);
+      d += (i ? 'L' : 'M') + (cx + R * Math.cos(a)).toFixed(1) + ' ' + (cy + R * Math.sin(a)).toFixed(1);
+    }
+    return d + 'Z';
+  };
+  for (let row = 0; row < 17; row++) {
+    for (let col = 0; col < 16; col++) {
+      const cx = 36 + col * HW + (row % 2) * HW / 2, cy = 40 + row * R * 1.5;
+      const dx = (cx - 300) / 270, dy = (cy - 262) / 235;
+      if (dx * dx + dy * dy + noise(cx * 3, cy * 3) * 0.12 > 1) continue;
+      const base = Math.max(0, Math.min(3, 1.1 + noise(cx, cy) * 1.1 + rand() * 0.6));
+      const el = document.createElementNS(NS, 'path');
+      el.setAttribute('d', hexPath(cx, cy));
+      el.setAttribute('class', 'hex');
+      svg.appendChild(el);
+      cells.push({ el, cx, cy, base });
+    }
+  }
+  const hot = cells.reduce((best, c) => (Math.hypot(c.cx - 300, c.cy - 250) < Math.hypot(best.cx - 300, best.cy - 250) ? c : best), cells[0]);
+  const neighbours = cells.filter((c) => c !== hot && Math.hypot(c.cx - hot.cx, c.cy - hot.cy) < HW * 1.1);
+  const paint = (c, level, opacity) => { c.el.style.fill = COLORS[Math.max(0, Math.min(5, Math.round(level)))]; c.el.style.opacity = opacity; };
+  function breathe() {
+    for (const c of cells) paint(c, c.base + (rand() - 0.5) * 0.8, 0.5 + rand() * 0.25);
+  }
+
+  const layer = document.createElementNS(NS, 'g');
+  svg.appendChild(layer);
+  layer.innerHTML = `
+    <g id="ripples" transform="translate(${hot.cx} ${hot.cy})">
+      <circle class="ripple" r="10"/><circle class="ripple" r="10"/><circle class="ripple" r="10"/>
+    </g>
+    <g transform="translate(${hot.cx - 10} ${hot.cy - 6})"><g class="pin" id="pinA">
+      <g transform="translate(-12 -34)"><path d="M12 0C5.4 0 0 5.2 0 11.6 0 20 12 34 12 34s12-14 12-22.4C24 5.2 18.6 0 12 0z" fill="#34d3a0"/><circle cx="12" cy="11.5" r="4.5" fill="#0b1424"/></g>
+    </g></g>
+    <g transform="translate(${hot.cx + 12} ${hot.cy + 4})"><g class="pin" id="pinB">
+      <g transform="translate(-12 -34)"><path d="M12 0C5.4 0 0 5.2 0 11.6 0 20 12 34 12 34s12-14 12-22.4C24 5.2 18.6 0 12 0z" fill="#5cc8ff"/><circle cx="12" cy="11.5" r="4.5" fill="#0b1424"/></g>
+    </g></g>`;
+
+  const stage = document.getElementById('stage');
+  const gem = document.getElementById('gem'), toast = document.getElementById('toast');
+  const pinA = layer.querySelector('#pinA'), pinB = layer.querySelector('#pinB');
+  const scoreEl = document.getElementById('score'), fill = document.getElementById('fill');
+  const SCORES = [0.02, 0.02, 0.37, 0.61, 0.61];
+  let shown = 0.02, raf = 0;
+  function animateScore(to) {
+    cancelAnimationFrame(raf);
+    const from = shown, t0 = performance.now();
+    const tick = (t) => {
+      const k = reduced ? 1 : Math.min(1, (t - t0) / 1100);
+      shown = from + (to - from) * (1 - Math.pow(1 - k, 3));
+      scoreEl.textContent = shown.toFixed(2);
+      if (k < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    fill.style.width = Math.max(2, to * 100) + '%';
+  }
+  function setStep(n) {
+    if (+stage.dataset.step === n) return;
+    stage.dataset.step = n;
+    pinA.classList.toggle('on', n >= 1);
+    gem.classList.toggle('on', n === 2);
+    pinB.classList.toggle('on', n >= 3);
+    toast.classList.toggle('on', n >= 4);
+    stage.classList.toggle('alerting', n >= 4);
+    paint(hot, n >= 3 ? 5 : n >= 2 ? 3.6 : hot.base, n >= 2 ? 1 : 0.7);
+    for (const c of neighbours) paint(c, n >= 3 ? 3.4 : c.base, n >= 3 ? 0.85 : 0.6);
+    animateScore(SCORES[n]);
+    document.querySelectorAll('.step').forEach((s) => s.classList.toggle('active', +s.dataset.step === n));
+  }
+  breathe();
+  if (!reduced) setInterval(() => { breathe(); const n = +stage.dataset.step; if (n >= 2) { stage.dataset.step = -1; setStep(n); } }, 2600);
+
+  const stepObs = new IntersectionObserver((entries) => {
+    for (const e of entries) if (e.isIntersecting) setStep(+e.target.dataset.step);
+  }, { rootMargin: '-45% 0px -45% 0px' });
+  document.querySelectorAll('.step').forEach((s) => stepObs.observe(s));
+
+  /* ---------- reveal + counters ---------- */
+  const revealObs = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue;
+      e.target.classList.add('in');
+      e.target.querySelectorAll('[data-count]').forEach((el) => {
+        const to = +el.dataset.count, t0 = performance.now();
+        const tick = (t) => {
+          const k = reduced ? 1 : Math.min(1, (t - t0) / 1400);
+          el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))).toLocaleString('en-IN');
+          if (k < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      });
+      revealObs.unobserve(e.target);
+    }
+  }, { threshold: 0.2 });
+  document.querySelectorAll('.reveal').forEach((el) => revealObs.observe(el));
+})();
+</script>
+</body>
+</html>

@@ -129,6 +129,40 @@ describe('analysis.completed fast path', () => {
     expect(publishHotspotUpdated).not.toHaveBeenCalled();
   });
 
+  it('a visible fire counts even when flagged for monitor disagreement (the hidden-hotspot case)', async () => {
+    // 27 Sep rehearsal: fire photo, confidence 0.95, flagged because modeled AQI read 64.
+    const flagged = { needsHumanReview: true, plumeDetected: true, confidenceScore: 0.95, crossValidation: { agreementScore: 0.2 } };
+    seedReport('u1', flagged);
+    seedReport('u2', flagged);
+    const { deps, publishHotspotUpdated } = fastDeps();
+    await push(await app(deps), { submissionId: 'u2', h3Index: H3, corridorId: 'ncr-airshed' });
+    const doc = (await fakeDb.collection('hotspots').doc(`${H3}_2026-11-03T02`).get()).data()!;
+    expect(doc).toMatchObject({ contributingSignals: { citizenReportCount: 2 } });
+    expect(doc.hotspotConfidenceScore).toBeGreaterThanOrEqual(0.6); // two citizens, severity 4
+    expect(publishHotspotUpdated).toHaveBeenCalled();
+  });
+
+  it('diffuse haze still needs agreement; a flagged plume-less report does not count', async () => {
+    seedReport('h1', { sourceClassification: 'vehicular_smog', crossValidation: { agreementScore: 0.2 } });
+    seedReport('h2', { sourceClassification: 'open_waste_burning', needsHumanReview: true, plumeDetected: false, confidenceScore: 0.95 });
+    seedReport('h3', { sourceClassification: 'open_waste_burning', needsHumanReview: true, plumeDetected: true, confidenceScore: 0.7 });
+    const { deps } = fastDeps();
+    await push(await app(deps), { submissionId: 'h3', h3Index: H3, corridorId: 'ncr-airshed' });
+    expect((await fakeDb.collection('hotspots').doc(`${H3}_2026-11-03T02`).get()).exists).toBe(false); // no qualifying reports
+  });
+
+  it('counts distinct citizens, not reports: one person re-reporting cannot alert alone', async () => {
+    for (const id of ['r1', 'r2', 'r3']) {
+      seedReport(id, { plumeDetected: true, confidenceScore: 0.9 });
+      fakeDb.collection('submissions').seed(id, { id, h3Index: H3, uploadedAt: '2026-11-03T02:30:00.000Z', userId: 'same-citizen' });
+    }
+    const { deps, publishHotspotUpdated } = fastDeps();
+    await push(await app(deps), { submissionId: 'r3', h3Index: H3, corridorId: 'ncr-airshed' });
+    const doc = (await fakeDb.collection('hotspots').doc(`${H3}_2026-11-03T02`).get()).data()!;
+    expect(doc).toMatchObject({ contributingSignals: { citizenReportCount: 1 } });
+    expect(publishHotspotUpdated).not.toHaveBeenCalled();
+  });
+
   it('acks unknown cells and contract violations; rejects foreign push tokens', async () => {
     const { deps } = fastDeps();
     const a = await app(deps);

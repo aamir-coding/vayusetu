@@ -126,3 +126,28 @@ variable "firebase_vapid_public_key" {
   type    = string
   default = ""
 }
+
+variable "alert_emails" {
+  type    = list(string)
+  default = []
+}
+
+variable "billing_account_id" {
+  type    = string
+  default = ""
+}
+
+variable "monthly_budget" {
+  type    = number
+  default = 15000
+}
+
+variable "hotspot_model_every_hours" {
+  type    = number
+  default = 1
+}
+
+variable "hotspot_model_hidden_min_confidence" {
+  type    = string
+  default = ""
+}

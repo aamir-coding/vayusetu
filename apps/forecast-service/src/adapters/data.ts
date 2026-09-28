@@ -2,10 +2,21 @@ import { getBigQuery, getDb } from '@vayusetu/gcp-clients';
 import type { Corridor, ForecastRun } from '@vayusetu/shared-types';
 import type { InputRow } from '../scoring/forecasters.js';
 
+/**
+ * The BigQuery client wraps TIMESTAMP/DATE/DATETIME/TIME/NUMERIC as
+ * BigQuery{Timestamp,Date,...} objects with a `.value`. Unwrap ONLY those:
+ * a STRUCT that happens to have a `value` field (AutoML Forecasting's
+ * predicted_aqi {value, quantile_values, quantile_predictions}) must stay
+ * intact -- flattening it lost every live model prediction ("covered 0/3").
+ */
+export function isBigQueryWrapper(v: unknown): v is { value: unknown } {
+  return Boolean(v) && typeof v === 'object' && 'value' in (v as object) && /^Big/.test((v as object).constructor?.name ?? '');
+}
+
 function plain(row: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(row)) {
-    out[k] = v && typeof v === 'object' && 'value' in (v as object) ? (v as { value: unknown }).value : v;
+    out[k] = isBigQueryWrapper(v) ? v.value : v;
   }
   return out;
 }

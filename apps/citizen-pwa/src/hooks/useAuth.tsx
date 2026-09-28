@@ -80,6 +80,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const confirmationRef = React.useRef<ConfirmationResult | null>(null);
   const recaptchaRef = React.useRef<RecaptchaVerifier | null>(null);
 
+  // Resolves once the first signed-in identity exists (real or mock).
+  // getToken() awaits it: on a fresh load / deep link (e.g. /result/:id from
+  // My Reports or a notification) queries run before Firebase restores the
+  // session, and throwing there rendered "couldn't be analyzed" (27 Sep).
+  const identityReady = React.useRef<{ promise: Promise<void>; resolve: () => void } | null>(null);
+  if (!identityReady.current) {
+    let resolve!: () => void;
+    const promise = new Promise<void>((r) => (resolve = r));
+    identityReady.current = { promise, resolve };
+  }
+
   // --- boot: sign in anonymously (real) or load the mock session ---
   React.useEffect(() => {
     if (!isFirebaseConfigured || !firebaseAuth) {
@@ -87,6 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUid(session.uid);
       setIsAnonymous(!session.phoneNumber);
       setReady(true);
+      identityReady.current?.resolve();
       return;
     }
 
@@ -104,16 +116,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUid(firebaseUser.uid);
       setIsAnonymous(firebaseUser.isAnonymous);
       setReady(true);
+      identityReady.current?.resolve();
     });
     return unsubscribe;
   }, []);
 
   const getToken = React.useCallback(async (): Promise<string> => {
+    // Wait (bounded) for the session instead of failing the first queries.
+    await Promise.race([identityReady.current!.promise, new Promise((r) => setTimeout(r, 15_000))]);
     if (isFirebaseConfigured && firebaseAuth?.currentUser) {
       return firebaseAuth.currentUser.getIdToken();
     }
-    if (!uid) throw new Error('Not signed in yet');
-    return `mock-token:${uid}`;
+    const mockUid = uid ?? (isFirebaseConfigured ? null : loadMockSession().uid);
+    if (!mockUid) throw new Error('Not signed in yet');
+    return `mock-token:${mockUid}`;
   }, [uid]);
 
   const ensureRegistered = React.useCallback<AuthContextValue['ensureRegistered']>(
@@ -133,11 +149,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           : navigator.language?.startsWith('mr')
             ? 'mr-IN'
             : 'en-IN';
-      const created = await usersApi.register(token, {
-        displayName: opts?.displayName?.trim() || 'Citizen Reporter',
-        preferredLanguage: opts?.preferredLanguage ?? detectedLang,
-        role: opts?.role ?? 'citizen',
-      });
+      let created: User;
+      try {
+        created = await usersApi.register(token, {
+          displayName: opts?.displayName?.trim() || 'Citizen Reporter',
+          preferredLanguage: opts?.preferredLanguage ?? detectedLang,
+          role: opts?.role ?? 'citizen',
+        });
+      } catch (err) {
+        // 409 = the profile exists (e.g. a stale "not found" earlier, or a
+        // registration that raced another tab): registration is idempotent.
+        if (!(err instanceof ApiClientError) || err.status !== 409) throw err;
+        created = await usersApi.me(token);
+      }
       setUser(created);
       return created;
     },

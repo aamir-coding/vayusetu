@@ -22,6 +22,15 @@ export interface FeatureRow {
   has_monitor_within_radius: boolean;
   nearest_station_id: string | null;
   nearest_station_distance_km: number | null;
+  h3_res6?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  built_frac?: number | null;
+  crops_frac?: number | null;
+  trees_frac?: number | null;
+  bare_frac?: number | null;
+  night_lights?: number | null;
+  population_density?: number | null;
   sat_no2: number | null;
   sat_aerosol_index: number | null;
   sat_aod: number | null;
@@ -89,6 +98,29 @@ export function classify(
   if (citizenMode && citizenMode !== 'indeterminate' && citizenMode !== 'no_visible_pollution') return citizenMode;
   if ((r.sat_fire_count ?? 0) > 0) return r.is_harvest_season ? 'crop_residue_burning' : 'mixed';
   return 'unknown';
+}
+
+/** True for scores from a registered Vertex model (not the heuristic or citizen-only evidence). */
+export function isModelVersion(modelVersion: string | undefined): boolean {
+  return Boolean(modelVersion) && !modelVersion!.startsWith('heuristic') && modelVersion !== 'citizen-evidence';
+}
+
+/**
+ * Put a model probability on the SAME confidence scale as the heuristic, so
+ * hotspotConfidenceScore means one thing whichever scorer ran that hour.
+ * The model's tuned best-F1 threshold `t` lands exactly on `anchor`
+ * (HIDDEN_MIN_CONFIDENCE, also alert-service's `watch` level); monotone,
+ * piecewise linear, 0 -> 0 and 1 -> 1, so ranking is unchanged.
+ *
+ * Why: v2's probabilities top out around 0.2-0.3 (threshold 0.27) while the
+ * heuristic's hidden/alert/map thresholds are 0.6 / 0.6 / 0.25. Uncalibrated,
+ * model hours published an empty map and could never alert, and a cell's
+ * 7-day history jumped scale every 6 hours as the scorers alternated.
+ */
+export function calibrate(p: number, t: number | undefined, anchor: number): number {
+  if (t === undefined || !(t > 0 && t < 1) || !Number.isFinite(p)) return p;
+  const x = Math.min(1, Math.max(0, p));
+  return x <= t ? (anchor * x) / t : anchor + ((1 - anchor) * (x - t)) / (1 - t);
 }
 
 /** `${h3Index}_${YYYY-MM-DDTHH}` -- the id alert-service and the dashboard expect. */
@@ -160,10 +192,14 @@ const round = (x: number, dp: number) => Math.round(x * 10 ** dp) / 10 ** dp;
 /** Which scored cells go to Firestore (the heatmap) and which raise hotspot.updated. */
 export function selectForPublication(
   cells: ScoredCell[],
-  opts: { firestoreMinScore: number; firestoreMaxCells: number; alertMinScore: number; alertMaxPerCorridor: number },
+  opts: { firestoreMinScore: number; firestoreMinCells?: number; firestoreMaxCells: number; alertMinScore: number; alertMaxPerCorridor: number },
 ): { firestore: ScoredCell[]; alerts: ScoredCell[] } {
   const ranked = [...cells].sort((a, b) => b.score - a.score);
-  const firestore = ranked.filter((c) => c.score >= opts.firestoreMinScore).slice(0, opts.firestoreMaxCells);
+  // The live map shows every cell above the floor, and never fewer than the
+  // top `firestoreMinCells` -- a clean-air hour still shows where it is
+  // relatively worst (low scores render grey), instead of an empty map.
+  const minCells = opts.firestoreMinCells ?? 0;
+  const firestore = ranked.filter((c, i) => i < minCells || c.score >= opts.firestoreMinScore).slice(0, opts.firestoreMaxCells);
   const perCorridor = new Map<string, number>();
   const alerts = ranked.filter((c) => {
     if (c.score < opts.alertMinScore) return false;
