@@ -36,16 +36,18 @@ module "mh_dev" {
   enable_ingestion_schedules      = var.enable_ingestion_schedules
 
   # Phase 1 AI layer
-  enable_analysis_push_subscription = var.enable_analysis_push_subscription
-  enable_hotspot_push_subscription  = var.enable_hotspot_push_subscription
-  enable_model_schedules            = var.enable_model_schedules
-  hotspot_scorer                    = var.hotspot_scorer
-  hotspot_model                     = var.hotspot_model
-  forecaster                        = var.forecaster
-  briefing_generator                = var.briefing_generator
-  deploy_firestore_rules            = var.deploy_firestore_rules
-  forecast_model                    = var.forecast_model
-  ml_pipeline_submitters            = var.ml_pipeline_submitters
+  enable_analysis_push_subscription   = var.enable_analysis_push_subscription
+  enable_hotspot_push_subscription    = var.enable_hotspot_push_subscription
+  enable_model_schedules              = var.enable_model_schedules
+  hotspot_scorer                      = var.hotspot_scorer
+  hotspot_model                       = var.hotspot_model
+  hotspot_model_every_hours           = var.hotspot_model_every_hours
+  hotspot_model_hidden_min_confidence = var.hotspot_model_hidden_min_confidence
+  forecaster                          = var.forecaster
+  briefing_generator                  = var.briefing_generator
+  deploy_firestore_rules              = var.deploy_firestore_rules
+  forecast_model                      = var.forecast_model
+  ml_pipeline_submitters              = var.ml_pipeline_submitters
 
   labels = {
     corridor    = "mumbai-pune-corridor"
