@@ -26,3 +26,9 @@ variable "member_states" {
     error_message = "Keys are 2-letter LGD state codes; service_account is a service-account email."
   }
 }
+
+variable "portal_site_id" {
+  description = "Firebase Hosting site for the national landing page: https://<id>.web.app. Globally unique across Firebase."
+  type        = string
+  default     = "vayusetu"
+}
