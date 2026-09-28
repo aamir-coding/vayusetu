@@ -6,6 +6,7 @@ Live system: NCR (`vayusetu-ncr-dev`). The second state is Mumbai-Pune (`vayuset
 | Who | Device | URL | Account |
 |---|---|---|---|
 | **Rina**, citizen (Hindi) | phone, or Chrome mobile emulation | https://vayusetu-ncr-dev.web.app | anonymous (automatic) |
+| second and **third** citizen | two more phones, or two more browser profiles | same | anonymous; each profile is a distinct citizen |
 | **Officer Deshmukh**, district admin | laptop window 1 | https://vayusetu-ncr-dev-admin.web.app | `district_admin@vayu.com` |
 | **Ms. Iyer**, state admin | laptop window 2 (separate profile) | same | `state_admin@vayu.com` |
 
@@ -20,7 +21,7 @@ Chirag signs in to the admin accounts; nobody else handles those passwords.
    The newest `hotspot-score-hourly` and `forecast-score` runs should have succeeded within the last hour and 6 hours. The Forecast view shows `model projects/…/models/…@1`.
 3. **Monitoring is clean.** The dashboard "VayuSetu ncr-dev — operations" (once `monitoring.tf` is applied) shows no open incidents. Billing must be enabled (see RUNBOOK "429 / billing").
 4. **Two report photos** on the phone, both of the **same spot**, e.g. roadside garbage burning. `packages/gemini-client/redteam/images/garbage_fire.jpg` works if you have no real one.
-5. **Location:** allow location on the phone, or type it manually (Anand Vihar is 28.6469, 77.3152).
+5. **Location: Karol Bagh, 28.65041, 77.19009** (type it manually: Report → Change → Latitude/Longitude). This is the centre of H3 cell `883da11623fffff`, inside **DL-CENTRAL**, Deshmukh's district. Alerts are routed by the district of the cell's *centre*. Do **not** use Anand Vihar: that cell straddles the Delhi–UP border, and its alert went to UP-GHAZIABAD, which neither demo account can see (28 Sep rehearsal).
 6. **Notifications:** in Deshmukh's window, click "Enable alert notifications" (needs the VAPID key; without it, the live queue still updates via Firestore).
 
 ## 3. Script
@@ -40,12 +41,14 @@ Chirag signs in to the admin accounts; nobody else handles those passwords.
 | 7:20 | Google stack | architecture slide | Gemini (Flash, Pro, image) · Vertex AI AutoML + Pipelines + Model Registry · Earth Engine · BigQuery · Cloud Run + Jobs + Scheduler · Pub/Sub · Firestore · Firebase Hosting/Auth/FCM · Maps JS, Air Quality, Weather, Geocoding · Speech-to-Text, Text-to-Speech, Translation · Cloud Monitoring |
 | 8:00 | End | | |
 
-## 4. Why *two* citizens (the maths, so nobody is surprised)
-Alerts fire when a cell's fused confidence crosses **0.6**. Citizen evidence is `p = 1 − e^(−0.35·n·severity/3)`, where **n = distinct citizens**, one vote each:
+## 4. Why two, and sometimes three, citizens (the maths, so nobody is surprised)
+Alerts fire when a cell's fused confidence crosses **0.6**. Citizen evidence is `p = 1 − e^(−0.35·n·s/3)`, where **n = distinct citizens** (one vote each) and **s = their average severity**:
 - one severity-4 citizen ≈ 0.37
-- **two** ≈ 0.61
+- **two** at severity 4 ≈ 0.61, which alerts on its own
+- two at 4 and 3 (s = 3.5) ≈ 0.56, which does **not** alert unless the model already rates the cell ≥ 0.1
+- **three** at 3.5 ≈ 0.71
 
-Fused with the model score of that cell, `1 − (1 − p_model)(1 − p_citizen)`, two citizens alert even where the model sees nothing. **Send the second report from a second phone, or a second browser profile.** The same phone re-reporting counts once, which is the anti-spam rule.
+The fused score is `1 − (1 − p_model)(1 − p_citizen)`. Between the 6-hourly model runs the model score of a quiet cell is ~0.02, so it adds almost nothing. Gemini rated the *same* photo 4 and then 3 in rehearsal. **So:** send the second report from a second phone or profile; if the cell hasn't turned red ~20 s after its result card appears, send the third. The same phone re-reporting counts once, which is the anti-spam rule.
 
 **A report counts** when Gemini is confident (≥ 0.5) and either:
 - it shows a **visible plume from a point source** (fire, stubble, stack, dust) at confidence ≥ 0.8, *even if the nearest monitor disagrees* (that disagreement is what makes it a hidden hotspot, and the report still goes to officials for review); or
@@ -70,6 +73,7 @@ This rehearsal also exposed a design flaw. That flagged fire could **never** mov
 |---|---|
 | Result spins > 30 s | Cold start; wait, or show the report from My Reports. The warm-up in §2 prevents it. |
 | Report says "flagged for review" | That's a feature: say "Gemini and the monitor disagree, so a human decides". It still reaches officials. |
-| No alert after two reports | Both came from one device (counts once), or a report had no visible plume (§4). Send from another device, or open an existing alert from the queue. |
+| No alert after two reports | Average severity came out under 4 (§4): send the third citizen. Or both came from one device (counts once), or a report had no visible plume. Fallback: open an existing alert from the queue. |
+| Alert created but not in Deshmukh's queue | The cell's centre is in another district (§2.5): use the Karol Bagh coordinates. Ms. Iyer (state admin) sees every DL district. |
 | Admin shows 429 / nothing loads | Billing: RUNBOOK "429 / billing". Fallback: the local mock demo, `pnpm --filter @vayusetu/admin-dashboard dev` + `pnpm --filter @vayusetu/citizen-pwa dev`, where every screen works offline with fixtures. |
 | Map is empty | The hourly scorer hasn't run: `gcloud run jobs execute hotspot-score-hourly-ncr-dev --region asia-south1`. |

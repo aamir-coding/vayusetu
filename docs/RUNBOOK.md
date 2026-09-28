@@ -223,6 +223,18 @@ Spend is tracked against `monthly_budget` (₹15,000 for dev).
   - Runbook §4 "429 / billing" tells platform 429s apart from app 429s.
 - **Follow-up:** confirm what disabled billing (a credit or trial exhaustion vs a payment issue) and keep a backup payment method on the billing account.
 
+### 2026-09-28 — NCR/MH: found in the live rehearsal (two latent bugs)
+1. **Citizen reports never reached the heatmap.**
+   - hotspot-service's fast-path query failed on every `analysis.completed` with `9 FAILED_PRECONDITION: The query requires an index`, and the events dead-lettered.
+   - Cause: a range on `uploadedAt` with no `orderBy` sorts ascending, but only `(h3Index, uploadedAt DESC)` exists.
+   - Fixed in the query. The unit-test Firestore fake now enforces the indexes declared in Terraform, so this class of bug fails in CI. It was the second one; Week 1's was the first.
+   - **If you see `requires an index` in any log:** it's a query/index mismatch. Fix the query, or declare the index in `firestore.tf`. Don't click the console's "create index" link, because Terraform would then fight it.
+2. **The Hosting CDN replayed one user's response to everyone.**
+   - A 404 from `GET /api/v1/users/me` was cached for 10 minutes (`X-Cache: HIT`, `Cache-Control: max-age=600`). Its cache key ignores `Authorization`.
+   - For those 10 minutes every citizen got "no profile". Registration returned 409 and reports could not be sent.
+   - Fixed: every API response is now `Cache-Control: private, no-store`.
+   - **Check after any Hosting or API change:** `curl -sI https://<project>.web.app/api/v1/users/me` must show `cache-control: private, no-store` and no `x-cache: HIT`.
+
 ## 6. Earth Engine licence (budget line)
 
 - **Today:** both state projects run under **noncommercial / research registration**, which is free and appropriate for the hackathon pilot.
