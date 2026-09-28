@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 
 const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
 const firebase = JSON.parse(readFileSync(new URL('../hosting.json', import.meta.url), 'utf8'));
@@ -28,10 +28,25 @@ test('no third-party scripts; only Google Fonts is loaded', () => {
   assert.deepEqual([...new Set(external)].sort(), ['https://fonts.googleapis.com', 'https://fonts.gstatic.com']);
 });
 
+test('reads like a product, not a project: no event or tech-stack talk', () => {
+  const text = html.replace(/<script[\s\S]*?<\/script>/g, (m) => m.slice(m.indexOf('const HI'), m.indexOf('const EN'))).replace(/<[^>]+>/g, ' ');
+  for (const word of ['hackathon', 'Gemini', 'Google', 'Vertex', 'Firebase', 'BigQuery', 'Cloud Run', 'Earth Engine', 'three.js']) {
+    assert.ok(!new RegExp(word, 'i').test(text), `landing page mentions "${word}"`);
+  }
+});
+
+test('the 3D hero is bundled, lazy-loaded and within its budget', () => {
+  const bundle = statSync(new URL('../public/assets/scene.js', import.meta.url));
+  assert.ok(bundle.size < 600_000, `scene.js is ${bundle.size} bytes`);
+  assert.match(html, /import\('\.\/assets\/scene\.js'\)/);
+  assert.match(html, /saveData/); // skipped on data-saver
+});
+
 test('the CSP allows exactly what the page uses', () => {
   const csp = firebase.hosting.headers[0].headers.find((h) => h.key === 'Content-Security-Policy').value;
   assert.match(csp, /font-src https:\/\/fonts\.gstatic\.com/);
   assert.match(csp, /style-src 'unsafe-inline' https:\/\/fonts\.googleapis\.com/);
   assert.match(csp, /frame-ancestors 'none'/);
+  assert.match(csp, /script-src 'self' 'unsafe-inline'/); // the lazily imported scene
   assert.equal(firebase.hosting.site, 'vayusetu');
 });

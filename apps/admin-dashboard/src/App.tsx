@@ -72,6 +72,8 @@ export function App() {
                   <Route element={<AppShell />}>
                     <Route index element={<Navigate to="/alerts" replace />} />
                     <Route path="alerts" element={<AlertQueue />} />
+                    {/* Notification deep links (alert-service: <dashboard>/alerts/<id>) and shared links. */}
+                    <Route path="alerts/:alertId" element={<AlertQueue />} />
                     <Route
                       path="hotspots"
                       element={

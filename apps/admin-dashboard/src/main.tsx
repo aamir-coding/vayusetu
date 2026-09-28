@@ -4,6 +4,9 @@ import { App } from './App';
 import './index.css';
 import './i18n';
 import { useMocks } from './lib/mockMode';
+import { applyTheme, readThemePreference } from '@vayusetu/ui-components';
+
+applyTheme(readThemePreference());
 
 async function enableMockingIfNeeded() {
   if (!useMocks) return;

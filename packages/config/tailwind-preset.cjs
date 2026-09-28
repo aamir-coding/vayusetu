@@ -15,27 +15,37 @@
  * Deshmukh and Ms. Iyer's mental model of these colors comes from other
  * government displays, not from us.
  */
+// Light/dark: chrome colours resolve from CSS variables in theme.css, so a
+// class like `text-slate-500` is right in both themes. Hex values for the
+// light theme live there now.
+const v = (name) => `rgb(var(--vs-${name}) / <alpha-value>)`;
+const scale = (name, shades) => Object.fromEntries(shades.map((s) => [s, v(`${name}-${s}`)]));
+const ALL = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
+
 module.exports = {
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
         // Bridge teal — the brand ramp. Never used for AQI/severity/GRAP data.
-        brand: {
-          50: '#EFFAF9',
-          100: '#D3F1EE',
-          200: '#A8E3DD',
-          300: '#74CFC6',
-          400: '#3FB3AA',
-          500: '#1F948C',
-          600: '#157B76',
-          700: '#146560',
-          800: '#14514E',
-          900: '#133F3D',
-          950: '#072423',
-        },
+        brand: scale('brand', ALL),
+        slate: scale('slate', ALL),
+        emerald: scale('emerald', [50, 200, 600, 700, 800]),
+        red: scale('red', [50, 200, 600, 700, 800]),
+        amber: scale('amber', [50, 200, 700, 800]),
+        blue: scale('blue', [50, 200, 600, 700, 800]),
+        indigo: scale('indigo', [50, 700]),
+        yellow: scale('yellow', [800]),
+        orange: scale('orange', [800]),
+        // Cards and panels (was bg-white). `white` itself stays white: it is
+        // text on coloured fills.
+        surface: v('surface'),
+        // Always-dark panels (login backdrop, camera frame, overlays).
+        night: '#0E2224',
         // Warm marigold accent — citizen-pwa only, used sparingly (primary
         // capture CTA glow, success confirmations). Never used on data.
         accent: {
+          50: '#FEF8EC',
           300: '#F9CD82',
           400: '#F5B04E',
           500: '#EFA22A',
@@ -43,8 +53,8 @@ module.exports = {
           700: '#B3690F',
         },
         // Cool-neutral background — deliberately not warm cream.
-        paper: '#F5F8F7',
-        ink: '#0E2224',
+        paper: v('paper'),
+        ink: v('ink'),
         // CPCB National AQI Bulletin 6-category scale — faithful hues.
         aqi: {
           good: '#4CAF50',
@@ -91,9 +101,27 @@ module.exports = {
           '0%, 100%': { transform: 'scale(1)', opacity: '0.55' },
           '50%': { transform: 'scale(1.06)', opacity: '0.85' },
         },
+        // Aurora backdrop (ui-components): slow, transform-only drift.
+        'drift-a': { '0%, 100%': { transform: 'translate3d(0,0,0) scale(1)' }, '50%': { transform: 'translate3d(8%,6%,0) scale(1.08)' } },
+        'drift-b': { '0%, 100%': { transform: 'translate3d(0,0,0) scale(1)' }, '50%': { transform: 'translate3d(-7%,8%,0) scale(1.12)' } },
+        'drift-c': { '0%, 100%': { transform: 'translate3d(0,0,0) scale(1.05)' }, '50%': { transform: 'translate3d(6%,-6%,0) scale(0.95)' } },
+        // Camera viewfinder scan line; recording level bars.
+        scan: { '0%': { transform: 'translateY(0)' }, '100%': { transform: 'translateY(100%)' } },
+        level: { '0%, 100%': { transform: 'scaleY(0.3)' }, '50%': { transform: 'scaleY(1)' } },
+        // A new alert arriving in the queue.
+        arrive: { '0%': { boxShadow: '0 0 0 0 rgba(31,148,140,0.55)' }, '100%': { boxShadow: '0 0 0 14px rgba(31,148,140,0)' } },
+        // Filling bars (severity, progress).
+        grow: { '0%': { transform: 'scaleX(0)' }, '100%': { transform: 'scaleX(1)' } },
       },
       animation: {
         breathe: 'breathe 4.5s ease-in-out infinite',
+        'drift-a': 'drift-a 22s ease-in-out infinite',
+        'drift-b': 'drift-b 28s ease-in-out infinite',
+        'drift-c': 'drift-c 34s ease-in-out infinite',
+        scan: 'scan 2.4s ease-in-out infinite alternate',
+        level: 'level 0.9s ease-in-out infinite',
+        arrive: 'arrive 1.2s ease-out 3',
+        grow: 'grow 0.7s cubic-bezier(.2,.8,.2,1) both',
       },
     },
   },

@@ -12,13 +12,16 @@ export const DialogContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { hideClose?: boolean }
 >(({ className, children, hideClose, ...props }, ref) => (
   <DialogPrimitive.Portal>
-    <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-ink/40 backdrop-blur-[2px] data-[state=open]:animate-in data-[state=open]:fade-in-0" />
+    <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-night/50 backdrop-blur-[2px] data-[state=open]:animate-in data-[state=open]:fade-in-0" />
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        'fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2',
-        'rounded-xl2 border border-slate-200 bg-white p-6 shadow-card',
-        'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
+        // Phones: a bottom sheet (reachable with a thumb, scrolls when long).
+        // sm+: the centred card.
+        'fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[88dvh] w-full max-w-md overflow-y-auto',
+        'rounded-t-2xl border border-slate-200 bg-surface p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-card',
+        'sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:w-[calc(100%-2rem)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl2 sm:p-6',
+        'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-10 sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=open]:zoom-in-95',
         className,
       )}
       {...props}
@@ -58,5 +61,5 @@ export const DialogDescription = React.forwardRef<
 DialogDescription.displayName = 'DialogDescription';
 
 export function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('mt-6 flex items-center justify-end gap-2', className)} {...props} />;
+  return <div className={cn('mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end', className)} {...props} />;
 }

@@ -1,7 +1,63 @@
 {
+  "nav.help": {
+    "sourceHash": "9c870aa6e5e93270",
+    "text": "यह काम किस प्रकार करता है"
+  },
+  "nav.about": {
+    "sourceHash": "f75867c5d2385dac",
+    "text": "वायुसेतु के बारे में"
+  },
+  "nav.primary": {
+    "sourceHash": "eb355944b92d1058",
+    "text": "मुख्य नेविगेशन"
+  },
+  "nav.home": {
+    "sourceHash": "f7b4b233ae4e8fb7",
+    "text": "वायुसेतु होम"
+  },
   "common.remove": {
     "sourceHash": "c3812fc4acb861d5",
     "text": "निकालना"
+  },
+  "capture.eyebrow": {
+    "sourceHash": "16f776fa58d22446",
+    "text": "नई रिपोर्ट"
+  },
+  "capture.stepPhoto": {
+    "sourceHash": "d84eebada93efee1",
+    "text": "तस्वीर"
+  },
+  "capture.stepPlace": {
+    "sourceHash": "15b61974b2707a7b",
+    "text": "जगह"
+  },
+  "capture.stepSend": {
+    "sourceHash": "f6f4688ff23d50c6",
+    "text": "भेजना"
+  },
+  "capture.needPhoto": {
+    "sourceHash": "d94effb0868e173a",
+    "text": "जारी रखने के लिए एक फ़ोटो जोड़ें"
+  },
+  "capture.needPlace": {
+    "sourceHash": "fe3d2fd33f9a8907",
+    "text": "जारी रखने के लिए स्थान जोड़ें"
+  },
+  "capture.readyToSend": {
+    "sourceHash": "7009cfb34a7cdc2f",
+    "text": "सब तैयार है। जब आप तैयार हों तब भेज दें।"
+  },
+  "capture.photoReady": {
+    "sourceHash": "c0c59a7e110d516c",
+    "text": "फोटो तैयार"
+  },
+  "capture.tapToOpen": {
+    "sourceHash": "f2a90377a05e7f24",
+    "text": "कैमरा खोलने के लिए टैप करें"
+  },
+  "capture.voiceHint": {
+    "sourceHash": "140fb5b3309896d2",
+    "text": "अपनी भाषा में, अधिकतम 10 सेकंड तक"
   },
   "result.clarifyTitle": {
     "sourceHash": "5ed5854e252b567c",
@@ -55,8 +111,140 @@
     "sourceHash": "08aabf8812e02122",
     "text": "फोटो और सेंसर डेटा {{pct}} % तक मेल खाते हैं"
   },
+  "result.found": {
+    "sourceHash": "e669b2967d3669e5",
+    "text": "हमें क्या मिला"
+  },
+  "result.shareCta": {
+    "sourceHash": "29887a5ff9846ccc",
+    "text": "शेयर करना"
+  },
+  "result.shareText": {
+    "sourceHash": "a76443c0b64471d6",
+    "text": "मैंने अभी VayuSetu पर अपने आस-पास के {{source}} की रिपोर्ट की है। क्या आप भी अपने क्षेत्र में प्रदूषण देखते हैं? इसकी रिपोर्ट करें:"
+  },
+  "result.shareCopied": {
+    "sourceHash": "6fce532784a1989e",
+    "text": "कॉपी किया गया: इसे कहीं भी पेस्ट करके शेयर करें"
+  },
+  "result.nextTitle": {
+    "sourceHash": "8f9b77e6e0b4eeba",
+    "text": "आगे क्या होता है"
+  },
+  "result.stepReceived": {
+    "sourceHash": "11cd5a5b091a5ab8",
+    "text": "आपकी रिपोर्ट प्राप्त हो गई है।"
+  },
+  "result.stepAnalysed": {
+    "sourceHash": "a9f96525be5c733a",
+    "text": "विश्लेषण किया गया और आपको सलाह भेजी गई।"
+  },
+  "result.stepOfficials": {
+    "sourceHash": "2b47144e8421f7d6",
+    "text": "इस क्षेत्र के अधिकारी अब इसे देख सकते हैं।"
+  },
+  "result.stepReview": {
+    "sourceHash": "d8af14777327f9da",
+    "text": "एक अधिकारी मामले की गहन जांच करेगा, क्योंकि आपकी तस्वीर और आस-पास के सेंसरों में विरोधाभास है।"
+  },
+  "result.stepFollow": {
+    "sourceHash": "3c667a872480c481",
+    "text": "मेरी रिपोर्ट के अंतर्गत होने वाली घटनाओं पर नज़र रखें।"
+  },
   "reports.awaitingAnswer": {
     "sourceHash": "1a6227e081977c7d",
     "text": "उत्तर की आवश्यकता है"
+  },
+  "reports.count_one": {
+    "sourceHash": "72606258eff646ec",
+    "text": "{{count}} रिपोर्ट"
+  },
+  "reports.count_other": {
+    "sourceHash": "d152cb15564753cc",
+    "text": "{{count}} रिपोर्ट"
+  },
+  "reports.newReport": {
+    "sourceHash": "16f776fa58d22446",
+    "text": "नई रिपोर्ट"
+  },
+  "theme.toDark": {
+    "sourceHash": "9b7878aef90b527c",
+    "text": "डार्क मोड"
+  },
+  "theme.toLight": {
+    "sourceHash": "b4fcfbee4fb937d7",
+    "text": "लाइट मोड"
+  },
+  "tour.next": {
+    "sourceHash": "1ff57a29d7c9d11b",
+    "text": "अगला"
+  },
+  "tour.back": {
+    "sourceHash": "76900f1bfd16c8d4",
+    "text": "पीछे"
+  },
+  "tour.done": {
+    "sourceHash": "9b2a6a7c31e616c1",
+    "text": "रिपोर्टिंग शुरू करें"
+  },
+  "tour.skip": {
+    "sourceHash": "a25582e96b799c86",
+    "text": "स्किप गाइड"
+  },
+  "tour.welcomeTitle": {
+    "sourceHash": "7f6a521bdadaacaf",
+    "text": "वायुसेतु में आपका स्वागत है"
+  },
+  "tour.welcomeBody": {
+    "sourceHash": "cb505c101be673fe",
+    "text": "क्या आपको धुआं, धूल या जलता हुआ ढेर दिखाई दिया? एक मिनट से भी कम समय में इसकी सूचना दें, और उस क्षेत्र के लिए जिम्मेदार अधिकारी को सूचित कर दिया जाएगा। तरीका यह है:"
+  },
+  "tour.photoTitle": {
+    "sourceHash": "3f0b88cfa24df0bc",
+    "text": "इसे चटकाएं"
+  },
+  "tour.photoBody": {
+    "sourceHash": "32af84a79733aa1d",
+    "text": "जो कुछ भी आपको दिखाई दे, उसकी तस्वीर खींच लें, या पहले से खींची गई किसी तस्वीर को चुन लें। तस्वीर जितनी स्पष्ट होगी, उतना अच्छा होगा।"
+  },
+  "tour.voiceTitle": {
+    "sourceHash": "f650705c64e2769b",
+    "text": "बोलिए (वैकल्पिक)"
+  },
+  "tour.voiceBody": {
+    "sourceHash": "405907166f7cc10b",
+    "text": "अपनी भाषा में एक छोटा सा वॉइस नोट जोड़ें: क्या जल रहा है, और कब से जल रहा है।"
+  },
+  "tour.locationTitle": {
+    "sourceHash": "26dc5e5265eddbbc",
+    "text": "कहाँ है?"
+  },
+  "tour.locationBody": {
+    "sourceHash": "4ae6882009c4d992",
+    "text": "आपकी लोकेशन से हमें पता चलता है कि यह किसका क्षेत्र है। अगर GPS बंद है, तो 'बदलें' पर टैप करें और लोकेशन टाइप करें।"
+  },
+  "tour.sendTitle": {
+    "sourceHash": "f6f4688ff23d50c6",
+    "text": "भेजना"
+  },
+  "tour.sendBody": {
+    "sourceHash": "fbb7c85a570fb79f",
+    "text": "कुछ ही सेकंड में आपको पता चल जाएगा कि हमें क्या मिला और सुरक्षित रहने के लिए क्या सलाह दी गई है, जिसे आप सुन भी सकते हैं।"
+  },
+  "tour.reportsTitle": {
+    "sourceHash": "5ddbbbc2f37428e8",
+    "text": "अपनी रिपोर्टों पर नज़र रखें"
+  },
+  "tour.reportsBody": {
+    "sourceHash": "81e94cb572d58f0b",
+    "text": "आप जो भी रिपोर्ट भेजते हैं, उसका परिणाम और अधिकारियों द्वारा आपसे पूछे गए सभी प्रश्न यहां मौजूद होते हैं।"
+  },
+  "tour.helpTitle": {
+    "sourceHash": "906ff3e577702605",
+    "text": "क्या आपको इसकी दोबारा जरूरत है?"
+  },
+  "tour.helpBody": {
+    "sourceHash": "22fb9fd98aa23b8a",
+    "text": "गाइड को दोबारा देखने के लिए किसी भी समय इस बटन को टैप करें।"
   }
 }

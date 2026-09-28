@@ -12,15 +12,19 @@ import {
   SelectTrigger,
   SelectValue,
   Skeleton,
+  usePageTitle,
 } from '@vayusetu/ui-components';
 import { useTranslation } from 'react-i18next';
 import type { CorridorId } from '@vayusetu/shared-types';
 import { useAuth } from '../hooks/useAuth';
+import { useChartColors } from '../lib/chartColors';
 import { useLiteMode } from '../hooks/useLiteMode';
 import { corridorsApi, forecastsApi } from '../lib/apiClient';
 
 export function ForecastView() {
+  const colors = useChartColors();
   const { t } = useTranslation();
+  usePageTitle(t('forecast.title'), 'VayuSetu');
   const { getToken } = useAuth();
   const { liteMode } = useLiteMode();
   const [corridorId, setCorridorId] = React.useState<CorridorId>('ncr-airshed');
@@ -61,13 +65,13 @@ export function ForecastView() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-bold text-ink">{t('forecast.title')}</h1>
+          <h1 className="hidden text-xl font-bold text-ink lg:block">{t('forecast.title')}</h1>
           <p className="text-sm text-slate-500">{t('forecast.subtitle')}</p>
         </div>
         <Select value={corridorId} onValueChange={(v) => setCorridorId(v)}>
-          <SelectTrigger className="w-56">
+          <SelectTrigger className="w-full sm:w-56">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -89,8 +93,8 @@ export function ForecastView() {
       ) : (
         <>
           {liteMode ? (
-            <div className="overflow-hidden rounded-xl2 border border-slate-200 bg-white">
-              <table className="w-full text-sm">
+            <div className="overflow-x-auto rounded-xl2 border border-slate-200 bg-surface">
+              <table className="w-full min-w-[28rem] text-sm">
                 <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   <tr>
                     <th className="px-4 py-2.5">{t('forecast.horizon')}</th>
@@ -118,21 +122,22 @@ export function ForecastView() {
           ) : (
             <Card>
               <CardContent className="pt-5">
-                <ResponsiveContainer width="100%" height={280}>
+                <ResponsiveContainer width="100%" height={260}>
                   <ComposedChart data={chartData} margin={{ top: 8, right: 16, bottom: 0, left: -16 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                    <XAxis dataKey="horizon" tick={{ fontSize: 12, fill: '#64748B' }} />
-                    <YAxis tick={{ fontSize: 12, fill: '#64748B' }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} />
+                    <XAxis dataKey="horizon" tick={{ fontSize: 12, fill: colors.axis }} stroke={colors.grid} />
+                    <YAxis tick={{ fontSize: 12, fill: colors.axis }} stroke={colors.grid} />
                     <Tooltip
                       formatter={(value, name) => (name === 'range' ? undefined : [value, t('forecast.predictedAqi')])}
                       labelFormatter={(label) => `+${label}`}
+                      {...colors.tooltip}
                     />
-                    <Area dataKey="range" stroke="none" fill="#1F948C" fillOpacity={0.15} isAnimationActive={false} />
-                    <Line type="monotone" dataKey="predictedAQI" stroke="#157B76" strokeWidth={2.5} dot={{ r: 5, fill: '#157B76' }} isAnimationActive={false} />
+                    <Area dataKey="range" stroke="none" fill={colors.band} fillOpacity={0.18} isAnimationActive={false} />
+                    <Line type="monotone" dataKey="predictedAQI" stroke={colors.line} strokeWidth={2.5} dot={{ r: 5, fill: colors.line }} />
                   </ComposedChart>
                 </ResponsiveContainer>
 
-                <div className="mt-4 grid grid-cols-3 gap-3">
+                <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
                   {chartData.map((row) => (
                     <div key={row.horizon} className="rounded-lg bg-slate-50 p-3 text-center">
                       <p className="text-xs font-medium text-slate-400">+{row.horizon}</p>
@@ -155,11 +160,11 @@ export function ForecastView() {
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{t('forecast.trendTitle')}</p>
                 <ResponsiveContainer width="100%" height={140}>
                   <ComposedChart data={trend} margin={{ top: 4, right: 16, bottom: 0, left: -16 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                    <XAxis dataKey="run" tick={{ fontSize: 10, fill: '#64748B' }} minTickGap={24} />
-                    <YAxis tick={{ fontSize: 11, fill: '#64748B' }} />
-                    <Tooltip formatter={(v) => [v, '+24h AQI']} labelFormatter={(l) => `Run ${l} UTC`} />
-                    <Line type="monotone" dataKey="aqi24" stroke="#157B76" strokeWidth={2} dot={false} isAnimationActive={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} />
+                    <XAxis dataKey="run" tick={{ fontSize: 10, fill: colors.axis }} minTickGap={24} stroke={colors.grid} />
+                    <YAxis tick={{ fontSize: 11, fill: colors.axis }} stroke={colors.grid} />
+                    <Tooltip formatter={(v) => [v, '+24h AQI']} labelFormatter={(l) => `Run ${l} UTC`} {...colors.tooltip} />
+                    <Line type="monotone" dataKey="aqi24" stroke={colors.line} strokeWidth={2} dot={false} isAnimationActive={false} />
                   </ComposedChart>
                 </ResponsiveContainer>
               </CardContent>

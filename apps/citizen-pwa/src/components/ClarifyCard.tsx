@@ -71,7 +71,7 @@ export function ClarifyCard({
           rows={3}
           placeholder={t('result.clarifyPlaceholder')}
           aria-label={t('result.clarifyPlaceholder')}
-          className="w-full resize-none rounded-lg border border-slate-200 bg-white p-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+          className="w-full resize-none rounded-lg border border-slate-200 bg-surface p-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
         />
         <p className="text-xs text-slate-500">{t('result.clarifyHint')}</p>
         {photoUrl ? (
@@ -81,7 +81,7 @@ export function ClarifyCard({
               type="button"
               onClick={() => setPhoto(null)}
               aria-label={t('common.remove')}
-              className="absolute -right-2 -top-2 rounded-full bg-white p-1 shadow"
+              className="absolute -right-2 -top-2 rounded-full bg-surface p-1 shadow"
             >
               <X className="h-3.5 w-3.5" />
             </button>
