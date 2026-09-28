@@ -70,6 +70,27 @@ The first live report after fix 1 was analysed in 24 s (12 s of it a cold start)
 
 This rehearsal also exposed a design flaw. That flagged fire could **never** move the heatmap, because disagreeing with a distant monitor disqualified it, which is exactly the hidden hotspot the product exists to find. The fast path now counts visible point-source plumes, and counts distinct citizens instead of reports.
 
+On 28 Sep two more blocking bugs surfaced (RUNBOOK §5, 2026-09-28):
+- **The fast path failed on a missing Firestore index**, so no report had ever reached the heatmap.
+- **The Hosting CDN replayed one user's `/users/me` 404 to everyone.**
+
+Both are fixed and deployed to NCR and MH.
+
+**Verified end to end at the demo location (28 Sep, 04:35–04:37 UTC):** two citizens, Karol Bagh `883da11623fffff`.
+| Step | Result |
+|---|---|
+| Citizen 1 report | DL / **DL-CENTRAL**, open waste burning, plume, flagged for review (monitor disagreed) |
+| Same citizen's 2nd report | still **1 vote**: p = 0.37 (anti-spam holds) |
+| Citizen 2 (fresh profile): sign-up → register 201 → report | 2 citizens, p_citizen 0.607, model 0 → **0.6068** |
+| Alert | "Open Waste Burning Watch in Central Delhi near Mandir Marg", `watch`, **DL-CENTRAL**, 5 cited signals, 2 recommended actions; ~40 s after the second Send (11 s of it a cold start) |
+| Recipients | Deshmukh (district, DL-CENTRAL) and Ms. Iyer (state, DL). Push was recorded `failed: no registered FCM token` because neither had enabled notifications, so do §2.6. |
+
+The margin was 0.0068, which is why §4 keeps a third citizen ready.
+
+Anand Vihar (the first attempt) also alerted, at **0.816**, but the alert went to UP-GHAZIABAD, where no demo account sees it. Hence §2.5.
+
+The offline queue also proved itself: a report blocked at 02:17 by the CDN bug was re-sent by itself at 04:28, once the fix was live.
+
 ## 6. If something goes wrong
 | Symptom | Do |
 |---|---|
