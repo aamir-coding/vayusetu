@@ -24,6 +24,32 @@ test.describe('admin dashboard (mock mode)', () => {
     await expect(page).toHaveURL(/\/alerts$/);
   });
 
+  test('notification deep link /alerts/:id opens that alert; closing returns to the queue', async ({ page }) => {
+    // alert-service links push notifications to <dashboard>/alerts/<id>; the
+    // router used to redirect that to /alerts and drop the alert.
+    await signIn(page, 'Officer Deshmukh');
+    const first = page.getByRole('listitem').first().getByRole('button').first();
+    const title = (await first.locator('p').first().textContent())!.trim();
+    await first.click();
+    await expect(page).toHaveURL(/\/alerts\/[^/]+$/);
+    const link = page.url();
+    await page.goto('/alerts');
+    await page.goto(link); // a cold open, as from a notification
+    await expect(page.getByRole('dialog').getByRole('heading', { name: title })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL(/\/alerts$/);
+  });
+
+  test('status tiles filter the queue; search narrows it', async ({ page }) => {
+    await signIn(page, 'Officer Deshmukh');
+    const all = await page.getByRole('listitem').count();
+    await page.getByRole('button', { name: new RegExp(`^\\d+\\s*${en.alerts.status.new}$`) }).click();
+    await expect(page.getByRole('listitem')).not.toHaveCount(all);
+    await page.getByRole('button', { name: new RegExp(`^\\d+\\s*${en.alerts.all}$`) }).click();
+    await page.getByRole('searchbox').fill('zzz-no-such-alert');
+    await expect(page.getByText(en.alerts.noMatchTitle)).toBeVisible();
+  });
+
   test('hotspot map: cells, hidden count, detail panel', async ({ page }) => {
     await signIn(page, 'Ms. Iyer');
     await page.getByRole('link', { name: en.nav.hotspots }).click();

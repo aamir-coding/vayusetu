@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ArrowLeft, ArrowRight, ShieldCheck, UserCog, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, CardContent, Input, Label, ThemeToggle, useToast } from '@vayusetu/ui-components';
+import { Aurora, Button, Card, CardContent, Input, Label, ThemeToggle, usePageTitle, useToast } from '@vayusetu/ui-components';
 import { useAuth } from '../hooks/useAuth';
 import { PORTAL_URL } from '../lib/links';
 
@@ -18,6 +18,7 @@ export function LoginScreen() {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [busy, setBusy] = React.useState(false);
+  usePageTitle(t('login.signIn'), 'VayuSetu');
 
   async function handleRealSignIn(e: React.FormEvent) {
     e.preventDefault();
@@ -32,7 +33,8 @@ export function LoginScreen() {
   }
 
   return (
-    <div className="relative flex min-h-dvh items-center justify-center bg-night px-4 py-16">
+    <div className="relative isolate flex min-h-dvh items-center justify-center overflow-hidden bg-night px-4 py-16">
+      <Aurora className="absolute inset-0 -z-10 opacity-70" />
       <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 py-3" style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}>
         <a href={PORTAL_URL} className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-white/60 transition-colors hover:bg-white/10 hover:text-white">
           <ArrowLeft className="h-4 w-4" aria-hidden="true" /> {t('nav.home')}
@@ -41,7 +43,9 @@ export function LoginScreen() {
       </div>
       <div className="w-full max-w-sm animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
         <div className="mb-6 flex flex-col items-center gap-2 text-center">
-          <img src="/vayusetu-icon.svg" alt="" className="h-12 w-12 rounded-xl" />
+          <a href={PORTAL_URL} title={t('nav.home')} className="rounded-xl transition-transform hover:scale-105">
+            <img src="/vayusetu-icon.svg" alt={t('nav.home')} className="h-12 w-12 rounded-xl shadow-glow" />
+          </a>
           <h1 className="text-lg font-bold text-white">{t('app.loginTitle')}</h1>
           <p className="text-sm text-white/50">{t('app.loginSubtitle')}</p>
         </div>

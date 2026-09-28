@@ -88,7 +88,19 @@
       "resolved": "Resolve",
       "dismissed": "Dismiss",
       "new": "Reopen"
-    }
+    },
+    "greetMorning": "Good morning, {{name}}",
+    "greetAfternoon": "Good afternoon, {{name}}",
+    "greetEvening": "Good evening, {{name}}",
+    "filterLabel": "Filter alerts by status",
+    "searchPlaceholder": "Search alerts: place, source, keyword",
+    "noMatchTitle": "No alerts match",
+    "noMatchHint": "Try another word, or clear the search.",
+    "updated": "Marked {{status}}",
+    "updateFailed": "Couldn't update the alert",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "notFound": "This alert isn't available to you, or no longer exists."
   },
   "hotspots": {
     "title": "Hotspot Map",

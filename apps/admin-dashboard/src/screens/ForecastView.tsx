@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
   Skeleton,
+  usePageTitle,
 } from '@vayusetu/ui-components';
 import { useTranslation } from 'react-i18next';
 import type { CorridorId } from '@vayusetu/shared-types';
@@ -23,6 +24,7 @@ import { corridorsApi, forecastsApi } from '../lib/apiClient';
 export function ForecastView() {
   const colors = useChartColors();
   const { t } = useTranslation();
+  usePageTitle(t('forecast.title'), 'VayuSetu');
   const { getToken } = useAuth();
   const { liteMode } = useLiteMode();
   const [corridorId, setCorridorId] = React.useState<CorridorId>('ncr-airshed');

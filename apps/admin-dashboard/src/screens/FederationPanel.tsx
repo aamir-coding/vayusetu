@@ -21,6 +21,7 @@ import {
   TabsList,
   TabsTrigger,
   useToast,
+  usePageTitle,
 } from '@vayusetu/ui-components';
 import { useTranslation } from 'react-i18next';
 import type { ResourceType } from '@vayusetu/shared-types';
@@ -42,6 +43,7 @@ const RESOURCE_TYPES: ResourceType[] = [
 
 export function FederationPanel() {
   const { t } = useTranslation();
+  usePageTitle(t('federation.title'), 'VayuSetu');
   const { getToken, session } = useAuth();
   const { push } = useToast();
   const queryClient = useQueryClient();

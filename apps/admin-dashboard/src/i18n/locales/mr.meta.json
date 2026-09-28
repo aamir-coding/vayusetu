@@ -283,6 +283,54 @@
     "sourceHash": "a886d1dc4f128e27",
     "text": "पुन्हा उघडा"
   },
+  "alerts.greetMorning": {
+    "sourceHash": "d924e3652734a367",
+    "text": "शुभ सकाळ, {{name}}"
+  },
+  "alerts.greetAfternoon": {
+    "sourceHash": "6aa84b4de627c5a0",
+    "text": "शुभ दुपार, {{name}}"
+  },
+  "alerts.greetEvening": {
+    "sourceHash": "1d281ae2d8e8ee65",
+    "text": "शुभ संध्या, {{name}}"
+  },
+  "alerts.filterLabel": {
+    "sourceHash": "4c0e2c83749fa6d1",
+    "text": "स्थितीनुसार सूचना फिल्टर करा"
+  },
+  "alerts.searchPlaceholder": {
+    "sourceHash": "66c18e8db8074863",
+    "text": "शोध सूचना: ठिकाण, स्रोत, कीवर्ड"
+  },
+  "alerts.noMatchTitle": {
+    "sourceHash": "5c1d17e4cec41df4",
+    "text": "कोणतेही अलर्ट जुळत नाहीत"
+  },
+  "alerts.noMatchHint": {
+    "sourceHash": "e005d50a41db52f2",
+    "text": "दुसरा शब्द वापरून पहा, किंवा शोध रद्द करा."
+  },
+  "alerts.updated": {
+    "sourceHash": "c58c19070316e2b7",
+    "text": "{{status}} ने चिन्हांकित केले"
+  },
+  "alerts.updateFailed": {
+    "sourceHash": "e624596771ea1a07",
+    "text": "अलर्ट अद्ययावत करता आला नाही."
+  },
+  "alerts.copyLink": {
+    "sourceHash": "dbf362d4f210c780",
+    "text": "लिंक कॉपी करा"
+  },
+  "alerts.linkCopied": {
+    "sourceHash": "d12860c21e78baa5",
+    "text": "लिंक कॉपी केली."
+  },
+  "alerts.notFound": {
+    "sourceHash": "9df831b933b997ce",
+    "text": "ही सूचना तुमच्यासाठी उपलब्ध नाही, किंवा आता अस्तित्वात नाही."
+  },
   "hotspots.title": {
     "sourceHash": "2075df611438810b",
     "text": "हॉटस्पॉट नकाशा"

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigationType } from 'react-router-dom';
 import {
   AlertTriangle,
   Bell,
@@ -52,6 +52,11 @@ export function AppShell() {
   const current = items.find((i) => location.pathname.startsWith(i.to));
 
   React.useEffect(() => setMenuOpen(false), [location.pathname]);
+  // New screen -> start at the top; Back keeps where you were.
+  const navType = useNavigationType();
+  React.useEffect(() => {
+    if (navType === 'PUSH') window.scrollTo({ top: 0 });
+  }, [location.pathname, navType]);
 
   const steps = React.useMemo<TourStep[]>(
     () => [
@@ -75,7 +80,7 @@ export function AppShell() {
     <div className="flex min-h-dvh bg-paper">
       {/* Desktop / tablet-landscape: sidebar */}
       <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-slate-200 bg-surface lg:flex">
-        <Brand subtitle={t('app.console')} />
+        <Brand subtitle={t('app.console')} homeLabel={t('nav.home')} />
         <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-3" aria-label={t('nav.primary')}>
           {items.map(({ to, labelKey, tour: tourId, icon: Icon }) => (
             <NavLink
@@ -105,7 +110,9 @@ export function AppShell() {
           className="sticky top-0 z-30 flex items-center gap-2 border-b border-slate-200/70 bg-surface/85 px-3 pb-2 backdrop-blur-md lg:hidden"
           style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }}
         >
-          <img src="/vayusetu-icon.svg" alt="" className="h-8 w-8 rounded-lg" />
+          <a href={PORTAL_URL} title={t('nav.home')} className="shrink-0 rounded-lg">
+            <img src="/vayusetu-icon.svg" alt={t('nav.home')} className="h-8 w-8 rounded-lg" />
+          </a>
           <div className="min-w-0 flex-1">
             <p className="truncate text-[15px] font-bold leading-tight text-ink">{current ? t(current.labelKey) : 'VayuSetu'}</p>
             <p className="truncate text-[11px] leading-tight text-slate-400">
@@ -184,15 +191,15 @@ export function AppShell() {
   );
 }
 
-function Brand({ subtitle }: { subtitle: string }) {
+function Brand({ subtitle, homeLabel }: { subtitle: string; homeLabel: string }) {
   return (
-    <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-4">
-      <img src="/vayusetu-icon.svg" alt="" className="h-7 w-7 rounded-md" />
+    <a href={PORTAL_URL} title={homeLabel} className="group flex items-center gap-2 border-b border-slate-100 px-5 py-4">
+      <img src="/vayusetu-icon.svg" alt="" className="h-7 w-7 rounded-md transition-transform group-hover:-rotate-6 group-hover:scale-105" />
       <div>
         <p className="font-sans text-sm font-bold leading-none text-brand-800">VayuSetu</p>
         <p className="mt-1 text-[11px] leading-none text-slate-400">{subtitle}</p>
       </div>
-    </div>
+    </a>
   );
 }
 
