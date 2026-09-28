@@ -22,4 +22,4 @@ steps:
     entrypoint: bash
     args:
       - -c
-      - npx --yes firebase-tools@13 deploy --only hosting --project "$PROJECT_ID" --non-interactive
+      - npx --yes firebase-tools@13 deploy --config hosting.json --only hosting --project "$PROJECT_ID" --non-interactive
