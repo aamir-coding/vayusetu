@@ -1,0 +1,190 @@
+{
+  "model": "gemini-3.7-flash",
+  "promptVersion": "AI_PIPELINES.md",
+  "ranAt": "2026-09-27T18:00:38.138Z",
+  "repeat": 3,
+  "passed": 9,
+  "total": 9,
+  "outcomes": [
+    {
+      "id": "lookalike-cooling-tower-steam",
+      "category": "lookalike",
+      "run": 1,
+      "pass": true,
+      "reasons": [],
+      "result": {
+        "sourceClassification": "no_visible_pollution",
+        "severityEstimate": 1,
+        "skyOpacityScore": 0.05,
+        "plumeDetected": true,
+        "visibilityMeters": 6000,
+        "confidenceScore": 0.95,
+        "needsHumanReview": false,
+        "reviewNote": "The visible white emissions are steam/water vapour from natural draft industrial cooling towers. Sky is clear blue with high visibility and no visible particulate or smoke pollution.",
+        "recommendedAdvisory": "The white plumes from the cooling towers are condensed water vapour (steam) rather than smoke. Local visibility is clear, though general ambient air quality in the wider area is moderate.",
+        "advisoryLanguage": "en-IN"
+      },
+      "ms": 8515
+    },
+    {
+      "id": "context-clean-photo-severe-monitor",
+      "category": "context",
+      "run": 1,
+      "pass": true,
+      "reasons": [],
+      "result": {
+        "sourceClassification": "no_visible_pollution",
+        "severityEstimate": 1,
+        "skyOpacityScore": 0.1,
+        "plumeDetected": false,
+        "visibilityMeters": 6000,
+        "confidenceScore": 0.92,
+        "needsHumanReview": true,
+        "reviewNote": "Visual conditions show clear skies with visible distant hills/mountains (Severity 1), which strongly conflicts (>2 categories) with the nearest monitor AQI of 420 (Severe). Possible geographical or timestamp mismatch.",
+        "recommendedAdvisory": "Although local visual conditions appear clear, nearby official monitors report severe pollution levels. Please exercise caution and consider limiting prolonged outdoor exertion, especially if you belong to a sensitive group.",
+        "advisoryLanguage": "en-IN"
+      },
+      "ms": 9349
+    },
+    {
+      "id": "lookalike-winter-fog",
+      "category": "lookalike",
+      "run": 1,
+      "pass": true,
+      "reasons": [],
+      "result": {
+        "sourceClassification": "vehicular_smog",
+        "severityEstimate": 3,
+        "skyOpacityScore": 0.85,
+        "plumeDetected": false,
+        "visibilityMeters": 150,
+        "confidenceScore": 0.55,
+        "needsHumanReview": false,
+        "reviewNote": "Dense morning haze/fog observed on a highway with visibility under 200m. Likely a combination of meteorological fog and ambient vehicular smog.",
+        "recommendedAdvisory": "Drive carefully with low-beam headlights due to reduced visibility in morning smog. Sensitive groups should consider limiting prolonged outdoor exertion.",
+        "advisoryLanguage": "en-IN"
+      },
+      "ms": 9899
+    },
+    {
+      "id": "lookalike-winter-fog",
+      "category": "lookalike",
+      "run": 2,
+      "pass": true,
+      "reasons": [],
+      "result": {
+        "sourceClassification": "vehicular_smog",
+        "severityEstimate": 4,
+        "skyOpacityScore": 0.9,
+        "plumeDetected": false,
+        "visibilityMeters": 100,
+        "confidenceScore": 0.55,
+        "needsHumanReview": false,
+        "reviewNote": "Severe visibility reduction (~100m) during early morning hours likely results from a combination of meteorological fog and ambient vehicular emissions/smog, consistent with moderate to poor background air quality.",
+        "recommendedAdvisory": "Drive with caution using low-beam headlights due to dense fog and smog. Sensitive individuals should consider reducing intense outdoor physical exertion.",
+        "advisoryLanguage": "en-IN"
+      },
+      "ms": 7341
+    },
+    {
+      "id": "lookalike-cooling-tower-steam",
+      "category": "lookalike",
+      "run": 2,
+      "pass": true,
+      "reasons": [],
+      "result": {
+        "sourceClassification": "no_visible_pollution",
+        "severityEstimate": 1,
+        "skyOpacityScore": 0.1,
+        "plumeDetected": true,
+        "visibilityMeters": 8000,
+        "confidenceScore": 0.92,
+        "needsHumanReview": false,
+        "reviewNote": "White emissions from hyperbolic cooling towers represent non-polluting condensed water vapour/steam. Background sky is clear with high visibility.",
+        "recommendedAdvisory": "The white plumes visible from the cooling towers are condensed water vapour (steam) rather than smoke. Visual air quality is clear, though check local AQI updates if you are sensitive to ambient air.",
+        "advisoryLanguage": "en-IN"
+      },
+      "ms": 7658
+    },
+    {
+      "id": "context-clean-photo-severe-monitor",
+      "category": "context",
+      "run": 2,
+      "pass": true,
+      "reasons": [],
+      "result": {
+        "sourceClassification": "no_visible_pollution",
+        "severityEstimate": 1,
+        "skyOpacityScore": 0.1,
+        "plumeDetected": false,
+        "visibilityMeters": 5000,
+        "confidenceScore": 0.9,
+        "needsHumanReview": true,
+        "reviewNote": "Clear blue skies and distant mountain silhouettes indicate good visual air quality and high visibility (>5 km), which sharply conflicts with the provided monitor reading of AQI 420 (Severe). Flagged for human review due to location/sensor discrepancy.",
+        "recommendedAdvisory": "Although visibility appears clear in the immediate area, regional official monitors report severe air pollution levels. Please exercise caution and consider limiting prolonged strenuous outdoor activities.",
+        "advisoryLanguage": "en-IN"
+      },
+      "ms": 8346
+    },
+    {
+      "id": "lookalike-winter-fog",
+      "category": "lookalike",
+      "run": 3,
+      "pass": true,
+      "reasons": [],
+      "result": {
+        "sourceClassification": "indeterminate",
+        "severityEstimate": 3,
+        "skyOpacityScore": 0.85,
+        "plumeDetected": false,
+        "visibilityMeters": 150,
+        "confidenceScore": 0.55,
+        "needsHumanReview": false,
+        "reviewNote": "Dense morning fog/haze obscuring horizon on highway. Visual reduction in visibility is primarily driven by meteorological fog mixed with ambient haze, consistent with post-monsoon morning conditions.",
+        "recommendedAdvisory": "Drive carefully with low-beam headlights and maintain safe following distance due to dense morning fog and reduced visibility. Sensitive individuals should take precautions as haze may trap pollutants.",
+        "advisoryLanguage": "en-IN"
+      },
+      "ms": 6851
+    },
+    {
+      "id": "lookalike-cooling-tower-steam",
+      "category": "lookalike",
+      "run": 3,
+      "pass": true,
+      "reasons": [],
+      "result": {
+        "sourceClassification": "no_visible_pollution",
+        "severityEstimate": 1,
+        "skyOpacityScore": 0.05,
+        "plumeDetected": true,
+        "visibilityMeters": 5000,
+        "confidenceScore": 0.92,
+        "needsHumanReview": false,
+        "reviewNote": "White emissions from natural draft cooling towers represent condensed water vapor, not industrial particulate emissions or dark smoke. Sky is clear with excellent visibility.",
+        "recommendedAdvisory": "The white plumes visible from the cooling towers consist of condensed water vapour (steam) rather than smoke pollution. Regional air quality is currently moderate, so sensitive individuals should take normal precautions if experiencing discomfort outdoors.",
+        "advisoryLanguage": "en-IN"
+      },
+      "ms": 7550
+    },
+    {
+      "id": "context-clean-photo-severe-monitor",
+      "category": "context",
+      "run": 3,
+      "pass": true,
+      "reasons": [],
+      "result": {
+        "sourceClassification": "no_visible_pollution",
+        "severityEstimate": 1,
+        "skyOpacityScore": 0.1,
+        "plumeDetected": false,
+        "visibilityMeters": 8000,
+        "confidenceScore": 0.9,
+        "needsHumanReview": true,
+        "reviewNote": "The photograph shows clear blue skies and distant hills with excellent visibility (>5,000 meters), showing no visible smog or point-source emissions. This sharply contrasts with the reported local monitor AQI of 420 (Severe).",
+        "recommendedAdvisory": "Although visibility currently appears clear in this area, official monitors indicate severe regional air pollution. Please exercise caution and consider limiting prolonged or strenuous outdoor activities.",
+        "advisoryLanguage": "en-IN"
+      },
+      "ms": 7778
+    }
+  ]
+}

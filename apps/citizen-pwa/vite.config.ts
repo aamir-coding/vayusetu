@@ -33,13 +33,21 @@ export default defineConfig({
         globIgnores: ['**/mockServiceWorker.js'],
         runtimeCaching: [
           {
-            // Read-only GETs (hotspot/forecast/corridor reference data etc.)
-            // are fine to serve stale-while-revalidate; writes never hit
-            // the cache because submission-service§4.2 has no GET-safe
-            // equivalent for POST /submissions.
-            urlPattern: ({ url, request }) => url.pathname.startsWith('/api/') && request.method === 'GET',
+            // ONLY shared reference data is cached, and only 200s. Per-user
+            // endpoints (/users/me, /submissions, /analysis) always go to the
+            // network: the cache key ignores the Authorization header, and a
+            // 4 s NetworkFirst timeout during a Cloud Run cold start served a
+            // STALE 404 for /users/me after the user had registered, so
+            // registration 409'd and no report could be sent (27 Sep
+            // rehearsal). Also: never serve one citizen's data to another on
+            // a shared phone.
+            urlPattern: ({ url, request }) => request.method === 'GET' && url.pathname.startsWith('/api/v1/corridors'),
             handler: 'NetworkFirst',
-            options: { cacheName: 'vayusetu-api-get', networkTimeoutSeconds: 4 },
+            options: {
+              cacheName: 'vayusetu-reference-v2',
+              networkTimeoutSeconds: 10,
+              cacheableResponse: { statuses: [200] },
+            },
           },
         ],
       },

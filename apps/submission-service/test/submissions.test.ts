@@ -190,6 +190,15 @@ describe('submission-service', () => {
       expect(res.json().role).toBe('field_worker');
     });
 
+    it('no API response is cacheable -- 404, 401 or 200 (the Hosting CDN replayed a 404 to every user)', async () => {
+      const notYet = await app.inject({ method: 'GET', url: '/api/v1/users/me', headers: auth('cdn') });
+      const anon = await app.inject({ method: 'GET', url: '/api/v1/users/me' });
+      await register('cdn');
+      const me = await app.inject({ method: 'GET', url: '/api/v1/users/me', headers: auth('cdn') });
+      expect([notYet.statusCode, anon.statusCode, me.statusCode]).toEqual([404, 401, 200]);
+      for (const res of [notYet, anon, me]) expect(res.headers['cache-control']).toBe('private, no-store');
+    });
+
     it('PATCH /users/me 404s without a profile, merges with one, 400s on empty body', async () => {
       expect(
         (await app.inject({ method: 'PATCH', url: '/api/v1/users/me', headers: auth('ghost'), payload: { displayName: 'x' } }))

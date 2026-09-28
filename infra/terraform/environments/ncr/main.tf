@@ -20,6 +20,11 @@ module "ncr_dev" {
   dashboard_base_url              = var.dashboard_base_url
   firebase_vapid_public_key       = var.firebase_vapid_public_key
 
+  # Monitoring and alerting
+  alert_emails       = var.alert_emails
+  billing_account_id = var.billing_account_id
+  monthly_budget     = var.monthly_budget
+
   # Ingestion (ingestion.tf)
   corridor_ids                    = ["ncr-airshed"]
   cpcb_api_key_secret_populated   = var.cpcb_api_key_secret_populated
@@ -27,16 +32,18 @@ module "ncr_dev" {
   enable_ingestion_schedules      = var.enable_ingestion_schedules
 
   # Phase 1 AI layer
-  enable_analysis_push_subscription = var.enable_analysis_push_subscription
-  enable_hotspot_push_subscription  = var.enable_hotspot_push_subscription
-  enable_model_schedules            = var.enable_model_schedules
-  hotspot_scorer                    = var.hotspot_scorer
-  hotspot_model                     = var.hotspot_model
-  forecaster                        = var.forecaster
-  briefing_generator                = var.briefing_generator
-  deploy_firestore_rules            = var.deploy_firestore_rules
-  forecast_model                    = var.forecast_model
-  ml_pipeline_submitters            = var.ml_pipeline_submitters
+  enable_analysis_push_subscription   = var.enable_analysis_push_subscription
+  enable_hotspot_push_subscription    = var.enable_hotspot_push_subscription
+  enable_model_schedules              = var.enable_model_schedules
+  hotspot_scorer                      = var.hotspot_scorer
+  hotspot_model                       = var.hotspot_model
+  hotspot_model_every_hours           = var.hotspot_model_every_hours
+  hotspot_model_hidden_min_confidence = var.hotspot_model_hidden_min_confidence
+  forecaster                          = var.forecaster
+  briefing_generator                  = var.briefing_generator
+  deploy_firestore_rules              = var.deploy_firestore_rules
+  forecast_model                      = var.forecast_model
+  ml_pipeline_submitters              = var.ml_pipeline_submitters
 
   labels = {
     corridor    = "ncr-airshed"

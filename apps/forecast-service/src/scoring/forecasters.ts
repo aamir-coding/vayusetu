@@ -110,27 +110,53 @@ export function createBatchForecaster(cfg: {
       const outDataset = state.outputInfo?.bigqueryOutputDataset?.replace(/^bq:\/\//, '') ?? `${cfg.project}.${cfg.dataset}`;
       const table = `${outDataset}.${state.outputInfo?.bigqueryOutputTable}`;
       const out = await cfg.readRows(`SELECT station_id, ts, predicted_aqi FROM \`${table}\``);
-      await cfg.readRows(`DROP TABLE IF EXISTS \`${table}\``);
       const predictions: StationPrediction[] = [];
       for (const r of out) {
         const p = parsePrediction(r.predicted_aqi);
         if (p) predictions.push({ stationId: String(r.station_id), ts: new Date(String(r.ts)).toISOString(), ...p });
       }
+      if (predictions.length === 0) {
+        // Keep the table for diagnosis (it expires with the dataset default); say what came back.
+        throw new Error(`batch forecast ${table}: ${out.length} rows, none parsable; sample=${JSON.stringify(out.slice(0, 2))}`);
+      }
+      await cfg.readRows(`DROP TABLE IF EXISTS \`${table}\``);
       return { predictions, modelVersion: versioned };
     },
   };
 }
 
+/** Does every +24/+48/+72 h window [t0+h-24h, t0+h) hold at least one prediction? */
+export function coversAllHorizons(predictions: StationPrediction[], runTs: Date): boolean {
+  const t0 = runTs.getTime();
+  return [24, 48, 72].every((h) =>
+    predictions.some((p) => {
+      const t = new Date(p.ts).getTime();
+      return t >= t0 + (h - 24) * 3_600_000 && t < t0 + h * 3_600_000;
+    }),
+  );
+}
+
+/**
+ * Model first; persistence-v0 if the model call throws OR returns output that
+ * cannot fill all three horizons (first live model run: the batch job
+ * succeeded but no prediction mapped to a horizon, so the run failed and the
+ * corridor kept a stale forecast). Either way the corridor gets a forecast.
+ */
 export function withFallback(primary: Forecaster, log: { error(obj: object, msg: string): void }): Forecaster {
   return {
     name: `${primary.name}+fallback`,
     async forecast(rows, ctx) {
       try {
-        return await primary.forecast(rows, ctx);
+        const out = await primary.forecast(rows, ctx);
+        if (coversAllHorizons(out.predictions, ctx.runTs)) return out;
+        log.error(
+          { forecaster: primary.name, predictions: out.predictions.length, sample: out.predictions.slice(0, 3) },
+          'Model forecast does not cover all horizons; using persistence-v0 for this run',
+        );
       } catch (err) {
         log.error({ err, forecaster: primary.name }, 'Model forecast failed; using persistence-v0 for this run');
-        return persistenceForecaster.forecast(rows, ctx);
       }
+      return persistenceForecaster.forecast(rows, ctx);
     },
   };
 }

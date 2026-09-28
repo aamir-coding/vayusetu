@@ -1,3 +1,7 @@
+locals {
+  citizen_hosting_origins = ["https://${var.project_id}.web.app", "https://${var.project_id}.firebaseapp.com"]
+}
+
 resource "google_storage_bucket" "citizen_media" {
   project                     = var.project_id
   name                        = "${var.project_id}-citizen-media"
@@ -5,8 +9,12 @@ resource "google_storage_bucket" "citizen_media" {
   uniform_bucket_level_access = true
   force_destroy               = var.environment_name != "prod"
 
+  # The PWA PUTs photos/voice notes straight to a signed URL, so the bucket
+  # must allow the citizen Hosting origins. Before this, only the localhost
+  # dev ports were allowed and every upload from the DEPLOYED PWA failed the
+  # CORS preflight (found in the 27 Sep demo rehearsal).
   cors {
-    origin          = var.allowed_upload_origins
+    origin          = distinct(concat(var.allowed_upload_origins, local.citizen_hosting_origins))
     method          = ["GET", "PUT", "POST"]
     response_header = ["*"]
     max_age_seconds = 3600

@@ -51,3 +51,20 @@ run "rejects_malformed_members" {
   }
   expect_failures = [var.member_states]
 }
+
+run "portal_is_one_link_and_its_deployer_can_only_publish_hosting" {
+  command = plan
+
+  assert {
+    condition     = google_firebase_hosting_site.portal.site_id == "vayusetu"
+    error_message = "The national landing page is https://vayusetu.web.app."
+  }
+  assert {
+    condition     = toset([for k, v in google_project_iam_member.portal_deployer : v.role]) == toset(["roles/firebasehosting.admin", "roles/logging.logWriter"])
+    error_message = "The portal deployer publishes Hosting releases and writes build logs -- nothing else."
+  }
+  assert {
+    condition     = google_storage_bucket.portal_build.public_access_prevention == "enforced"
+    error_message = "The build staging bucket is never public."
+  }
+}

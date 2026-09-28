@@ -37,7 +37,7 @@ variable "labels" {
 variable "allowed_upload_origins" {
   type        = list(string)
   default     = ["http://localhost:5173", "http://localhost:5174"]
-  description = "Origins allowed to PUT directly to the citizen-media bucket via signed URL -- the Citizen PWA and Admin Dashboard dev servers by default; add production Firebase Hosting domains once those exist."
+  description = "EXTRA origins allowed to PUT to the citizen-media bucket via signed URL (dev servers by default). The project's own citizen Hosting origins are always added (storage.tf)."
 }
 
 # ---------------------------------------------------------------- Week 2
@@ -263,4 +263,51 @@ variable "firebase_vapid_public_key" {
   type        = string
   default     = ""
   description = "Web-push VAPID PUBLIC key (Firebase console > Cloud Messaging > Web Push certificates; not Terraform-manageable). Empty = the admin dashboard hides the push opt-in."
+}
+
+variable "hotspot_model_every_hours" {
+  type        = number
+  default     = 1
+  description = "With hotspot_scorer = batch: run the model on hours divisible by this (UTC), heuristic between. 6 = one Vertex batch job per 6 h."
+  validation {
+    condition     = var.hotspot_model_every_hours >= 1 && var.hotspot_model_every_hours <= 24
+    error_message = "hotspot_model_every_hours must be 1..24."
+  }
+}
+
+variable "hotspot_model_hidden_min_confidence" {
+  type        = string
+  default     = ""
+  description = "Hidden-hotspot threshold for MODEL scores (the model's tuned best-F1 threshold, registry label vayusetu-threshold). Empty = same as the heuristic's 0.6."
+}
+
+# ---- Monitoring and alerting (monitoring.tf)
+variable "alert_emails" {
+  type        = list(string)
+  default     = []
+  description = "On-call emails for alert policies. Empty = incidents show in the console only."
+}
+
+variable "alert_5xx_per_5m" {
+  type        = number
+  default     = 10
+  description = "5xx responses per service per 5 minutes before alerting."
+}
+
+variable "alert_429_per_5m" {
+  type        = number
+  default     = 20
+  description = "HTTP 429s per service per 5 minutes before alerting."
+}
+
+variable "billing_account_id" {
+  type        = string
+  default     = ""
+  description = "Billing account (XXXXXX-XXXXXX-XXXXXX) for the budget alert. Needs billing.budgets.create on the account; empty = no budget resource."
+}
+
+variable "monthly_budget" {
+  type        = number
+  default     = 15000
+  description = "Monthly budget in the billing account's currency (INR for this project). Alerts at 50/90/100% actual and 100% forecast."
 }

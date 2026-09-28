@@ -100,6 +100,37 @@ Endpoint ownership (fixes the "unowned endpoints" gap): `submission-service` ser
 ### Phase 3 — Week-4 deliverables
 Load tests, Monitoring dashboards and alerting, IAM audit, `openapi.yaml`, runbook (including the Earth Engine commercial-licence budget line), model evaluation write-up and model cards, Pipeline A red-team set, rehearsed demo scenario.
 
+**Status (28 Sep 2026, branch `phase3/docs-ops`, not yet pushed):**
+- Done:
+  - `docs/api/openapi.yaml`: 25 endpoints, with a drift test against `shared-types`.
+  - IAM audit (`docs/security/IAM_AUDIT.md`, 9 findings) and least-privilege IAM in Terraform (`iam.tf`, `iam_scoped.tf`, 6 guard tests).
+  - `monitoring.tf`:
+    - alerts: 5xx, 429 bursts, failed jobs, data freshness, dead letters, uptime
+    - dashboard
+    - opt-in budget
+  - `docs/RUNBOOK.md`, including incident logs for 27 and 28 Sep and the Earth Engine licence line.
+  - Model cards for both models in `docs/models/`. The v1 hotspot metric bug is stated plainly.
+  - Red-team set: 27 cases in 8 categories, 27/27 passing after prompt rules 8–10.
+  - Load-test tool in `packages/loadtest`. It hits read-only endpoints; Chirag runs it with his own token.
+  - Hotspot heatmap: model scores are calibrated, with a top-25 floor.
+  - Mumbai-Pune: all services and both web apps deployed; migrate, seed, land-cover and every backfill completed. It is already an Exchange member.
+  - National landing page **https://vayusetu.web.app** (`apps/portal`), live on the Exchange project (applied 28 Sep with approval: 11 added, 0 changed).
+- Demo rehearsal (`docs/DEMO.md` §5):
+  - The citizen → Gemini → hotspot fast path → alert path now works live.
+  - Seven bugs that blocked it were found and fixed. Each would have broken the live demo:
+    - bucket CORS
+    - a cached `/users/me`, both the service worker and the Hosting CDN
+    - register 409
+    - polling stopped on `queued`
+    - deep links before sign-in
+    - flagged fires never counted
+    - a missing Firestore index
+  - The admin-side beats need Chirag's sign-in.
+- Waiting on Chirag's approval:
+  - `terraform apply` on NCR and MH: IAM scoping, monitoring, CORS convergence, MH staged flags, MH federation sync.
+  - Relabel hotspot v1 in the Model Registry.
+  - Push `phase3/docs-ops` and open the PR.
+
 ## What Chirag needs to do (console / accounts)
 
 Numbered in the order they unblock work. ✅ = done.

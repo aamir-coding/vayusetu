@@ -91,15 +91,18 @@ export const handlers = [
     setTimeout(() => {
       const analyzing = db.submissions.get(submission.id);
       if (analyzing) db.submissions.set(submission.id, { ...analyzing, status: 'pending_analysis' });
-    }, 400);
+    }, 2000); // stays `queued` past the first poll, like a real cold start
     setTimeout(() => {
       const current = db.submissions.get(submission.id);
       if (!current) return;
       const result = fabricateAnalysis(current);
       db.analysisResults.set(submission.id, result);
+      const q = result.pendingClarification;
       db.submissions.set(submission.id, {
         ...current,
         status: result.needsHumanReview ? 'flagged_for_review' : 'analyzed',
+        // Like analysis-service: Pipeline D's question is recorded on the submission too.
+        ...(q ? { clarifications: [{ turn: q.turn, question: q.question, language: q.language, askedAt: new Date().toISOString() }] } : {}),
       });
     }, 3200);
 
