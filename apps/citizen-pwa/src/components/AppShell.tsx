@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigationType } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Camera, CircleHelp, FileText, ShieldCheck } from 'lucide-react';
-import { cn, ThemeToggle, Tour, useTour, type TourStep } from '@vayusetu/ui-components';
+import { Aurora, cn, ThemeToggle, Tour, useTour, type TourStep } from '@vayusetu/ui-components';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { OfflineQueueBanner } from './OfflineQueueBanner';
 import { useAuth } from '../hooks/useAuth';
@@ -18,6 +18,11 @@ export function AppShell() {
   const { t } = useTranslation();
   const { isAnonymous } = useAuth();
   const location = useLocation();
+  const navType = useNavigationType();
+  // New screen -> start at the top; Back keeps where you were.
+  React.useEffect(() => {
+    if (navType === 'PUSH') window.scrollTo({ top: 0 });
+  }, [location.pathname, navType]);
   // First visit: the guide opens on the Report screen, where it points at things.
   const tour = useTour('vayusetu-pwa:tour-v1', { autoStart: location.pathname === '/capture', delayMs: 900 });
 
@@ -35,16 +40,17 @@ export function AppShell() {
   );
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div className="relative isolate flex min-h-dvh flex-col bg-paper">
+      <Aurora className="fixed inset-0 -z-10" />
       <header
-        className="sticky top-0 z-20 border-b border-slate-200/70 bg-surface/80 backdrop-blur-md"
+        className="sticky top-0 z-20 border-b border-slate-200/60 bg-surface/70 backdrop-blur-md"
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
         <div className="mx-auto flex w-full max-w-md items-center gap-0.5 px-3 py-2">
-          <Link to="/capture" className="mr-auto flex items-center gap-2 rounded-lg py-1 pr-2" aria-label={t('nav.capture')}>
-            <img src="/vayusetu-icon.svg" alt="" className="h-7 w-7 rounded-lg" />
+          <a href={PORTAL_URL} className="group mr-auto flex items-center gap-2 rounded-lg py-1 pr-2" title={t('nav.home')}>
+            <img src="/vayusetu-icon.svg" alt="" className="h-7 w-7 rounded-lg transition-transform group-hover:-rotate-6 group-hover:scale-105" />
             <span className="font-sans text-lg font-bold tracking-tight text-brand-800">{t('app.name')}</span>
-          </Link>
+          </a>
           {isAnonymous && (
             <NavLink
               to="/verify"

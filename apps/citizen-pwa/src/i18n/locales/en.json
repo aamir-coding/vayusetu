@@ -8,7 +8,8 @@
     "reports": "My Reports",
     "help": "How it works",
     "about": "About VayuSetu",
-    "primary": "Main navigation"
+    "primary": "Main navigation",
+    "home": "VayuSetu home"
   },
   "common": {
     "retry": "Retry",
@@ -51,7 +52,17 @@
     "reportingAs": "Reporting as",
     "roleCitizen": "Citizen",
     "roleFieldWorker": "Field Worker",
-    "sendFailed": "Could not send report"
+    "sendFailed": "Could not send report",
+    "eyebrow": "New report",
+    "stepPhoto": "Photo",
+    "stepPlace": "Location",
+    "stepSend": "Send",
+    "needPhoto": "Add a photo to continue",
+    "needPlace": "Add the location to continue",
+    "readyToSend": "All set. Send when you're ready.",
+    "photoReady": "Photo ready",
+    "tapToOpen": "Tap to open the camera",
+    "voiceHint": "In your own language, up to 10 seconds"
   },
   "result": {
     "analyzing": "Reading your photo…",
@@ -76,7 +87,17 @@
     "satelliteAod": "Satellite haze (AOD): {{aod}}",
     "yourSensorPm25": "Your sensor PM2.5: {{value}} µg/m³",
     "yourSensorPm10": "Your sensor PM10: {{value}} µg/m³",
-    "agreement": "Photo and sensor data agree {{pct}}%"
+    "agreement": "Photo and sensor data agree {{pct}}%",
+    "found": "What we found",
+    "shareCta": "Share",
+    "shareText": "I just reported {{source}} near me on VayuSetu. See pollution where you live? Report it too:",
+    "shareCopied": "Copied: paste it anywhere to share",
+    "nextTitle": "What happens next",
+    "stepReceived": "Your report was received",
+    "stepAnalysed": "Analysed, and advice sent to you",
+    "stepOfficials": "Officials for this area can now see it",
+    "stepReview": "An official will take a closer look, because your photo and nearby sensors disagree",
+    "stepFollow": "Follow what happens under My Reports"
   },
   "reports": {
     "title": "My Reports",
@@ -84,7 +105,10 @@
     "empty": "No reports yet",
     "emptyHint": "Your reports will show up here once you send your first one.",
     "emptyAction": "Report Now",
-    "awaitingAnswer": "Answer needed"
+    "awaitingAnswer": "Answer needed",
+    "count_one": "{{count}} report",
+    "count_other": "{{count}} reports",
+    "newReport": "New report"
   },
   "auth": {
     "verifyTitle": "Verify your phone",

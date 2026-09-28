@@ -14,3 +14,5 @@ export * from './components/empty-state';
 export * from './lib/theme';
 export * from './components/theme-toggle';
 export * from './components/tour';
+export * from './components/aurora';
+export * from './lib/page';
