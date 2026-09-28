@@ -58,7 +58,7 @@ Headline numbers Vertex reports for v2 (auPRC 0.936, auROC 0.938) are **micro-av
   - federation-service publishes only `passed` versions and shares the gate metric next to the headline.
 - **Second, related bug (fixed in `a471707`):** when v2 was evaluated, the SDK's `Model.update()` wrote v2's gate labels onto **the version holding `default`**, which was v1 at the time. The Registry therefore showed v1 as `passed / 0.5503 / threshold 0.270`, which was false. The truthful record is `core.model_evaluations`: v1 has a `rejected (correction …)` row with 0.2923.
   - **Corrected on 28 Sep, with approval:** v1 is now `vayusetu-gate=failed`, `gate-value=0_2923`. v2 is unchanged (`passed`, holds `default`).
-  - **Still pending:** v1 still carries the stale `vayusetu-threshold=0_270` label. The Registry merges labels on update, so it is overwritten to `none` (RUNBOOK §3, "Relabel a model version").
+  - **Done, 28 Sep:** the stale threshold label is overwritten to `vayusetu-threshold=none` (the Registry merges labels on update; RUNBOOK §3, "Relabel a model version"). Verified: v1 `failed / 0_2923 / none`; v2 `passed / 0_5503 / 0_270`, holds `default`.
 - **Lesson:** a model's headline metric is not its gate. The gate must be the metric for the decision the product makes, on the class it cares about, on a split that matches deployment (unseen places).
 
 ## How scores are used in production
