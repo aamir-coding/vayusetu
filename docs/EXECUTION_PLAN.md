@@ -113,7 +113,8 @@ Load tests, Monitoring dashboards and alerting, IAM audit, `openapi.yaml`, runbo
   - Red-team set: 27 cases in 8 categories, 27/27 passing after prompt rules 8–10.
   - Load-test tool in `packages/loadtest`. It hits read-only endpoints; Chirag runs it with his own token.
   - Hotspot heatmap: model scores are calibrated, with a top-25 floor.
-  - Mumbai-Pune: all services and both web apps deployed; migrate, seed, land-cover and every backfill completed.
+  - Mumbai-Pune: all services and both web apps deployed; migrate, seed, land-cover and every backfill completed. It is already an Exchange member.
+  - National landing page **https://vayusetu.web.app** (`apps/portal`), live on the Exchange project (applied 28 Sep with approval: 11 added, 0 changed).
 - Demo rehearsal (`docs/DEMO.md` §5):
   - The citizen → Gemini → hotspot fast path → alert path now works live.
   - Seven bugs that blocked it were found and fixed. Each would have broken the live demo:
@@ -127,7 +128,6 @@ Load tests, Monitoring dashboards and alerting, IAM audit, `openapi.yaml`, runbo
   - The admin-side beats need Chirag's sign-in.
 - Waiting on Chirag's approval:
   - `terraform apply` on NCR and MH: IAM scoping, monitoring, CORS convergence, MH staged flags, MH federation sync.
-  - `terraform apply` on the Exchange, adding MH as a member.
   - Relabel hotspot v1 in the Model Registry.
   - Push `phase3/docs-ops` and open the PR.
 

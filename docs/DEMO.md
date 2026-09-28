@@ -3,6 +3,8 @@
 Live system: NCR (`vayusetu-ncr-dev`). The second state is Mumbai-Pune (`vayusetu-mh-dev`), and the National Exchange is `vayusetu-exchange-dev`. Every step below was rehearsed on the live system on 27–28 Sep 2026 (§5).
 
 ## 1. Cast and screens
+**Front door: https://vayusetu.web.app.** It has one link per state and role; open it first on the projector, then click through.
+
 | Who | Device | URL | Account |
 |---|---|---|---|
 | **Rina**, citizen (Hindi) | phone, or Chrome mobile emulation | https://vayusetu-ncr-dev.web.app | anonymous (automatic) |
