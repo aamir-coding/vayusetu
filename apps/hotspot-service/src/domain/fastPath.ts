@@ -19,9 +19,29 @@ export interface FastPathDeps {
   config: { hiddenMinConfidence: number; modelHiddenMinConfidence?: number; alertMinScore: number; minConfidence: number; minAgreement: number };
 }
 
+/** Local sources a distant monitor is not expected to see. */
+const POINT_SOURCES = new Set(['open_waste_burning', 'crop_residue_burning', 'industrial_emission', 'construction_dust']);
+/** Confidence at which a visible plume counts even against the monitor. */
+export const VISIBLE_PLUME_MIN_CONFIDENCE = 0.8;
+
+/**
+ * Does a citizen report count as evidence for the heatmap?
+ *
+ * A VISIBLE point-source plume (fire, stack, dust cloud) counts even when it
+ * disagrees with the nearest monitor or modeled AQI -- a garbage fire 2 km
+ * from a monitor is precisely the hidden hotspot this engine exists to find,
+ * and "disagrees with the monitor" is what flags it for review. The review
+ * flag keeps the REPORT in front of officials; it no longer hides the SPOT.
+ * (27 Sep rehearsal: a real fire, confidence 0.95, was flagged because the
+ * modeled AQI there read 64, and could never move the heatmap.)
+ * Diffuse haze and uncertain calls still need agreement and no review flag.
+ */
 export function qualifies(r: AnalysisResult, minConfidence: number, minAgreement: number): boolean {
-  if (r.needsHumanReview || r.sourceClassification === 'indeterminate' || r.sourceClassification === 'no_visible_pollution') return false;
+  if (r.sourceClassification === 'indeterminate' || r.sourceClassification === 'no_visible_pollution') return false;
   if (r.confidenceScore < minConfidence) return false;
+  const visiblePlume = POINT_SOURCES.has(r.sourceClassification) && r.plumeDetected === true && r.confidenceScore >= VISIBLE_PLUME_MIN_CONFIDENCE;
+  if (visiblePlume) return true;
+  if (r.needsHumanReview) return false;
   const agreement = r.crossValidation?.agreementScore;
   return agreement === undefined || agreement >= minAgreement;
 }
@@ -42,12 +62,17 @@ export async function handleAnalysisCompleted(
   const since = new Date(now.getTime() - 3 * 3_600_000).toISOString();
   const subs = (await db.collection('submissions').where('h3Index', '==', event.h3Index).where('uploadedAt', '>=', since).get())
     .docs.map((d) => d.data() as Submission);
-  const results: AnalysisResult[] = [];
+  // One vote per citizen: evidence is DISTINCT people, so one phone (or a
+  // spammer) re-reporting the same spot cannot push a cell to an alert alone.
+  const byUser = new Map<string, AnalysisResult>();
   for (const s of subs) {
     const snap = await db.collection('analysisResults').doc(s.id).get();
     const r = snap.exists ? (snap.data() as AnalysisResult) : undefined;
-    if (r && qualifies(r, deps.config.minConfidence, deps.config.minAgreement)) results.push(r);
+    if (!r || !qualifies(r, deps.config.minConfidence, deps.config.minAgreement)) continue;
+    const prev = byUser.get(s.userId);
+    if (!prev || r.confidenceScore > prev.confidenceScore) byUser.set(s.userId, r);
   }
+  const results = [...byUser.values()];
   if (results.length === 0) return 'no_qualifying_reports';
 
   const avgSeverity = results.reduce((s, r) => s + r.severityEstimate, 0) / results.length;
