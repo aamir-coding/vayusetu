@@ -283,6 +283,54 @@
     "sourceHash": "a886d1dc4f128e27",
     "text": "ਦੁਬਾਰਾ ਖੋਲ੍ਹੋ"
   },
+  "alerts.greetMorning": {
+    "sourceHash": "d924e3652734a367",
+    "text": "ਸ਼ੁਭ ਸਵੇਰ, {{name}}"
+  },
+  "alerts.greetAfternoon": {
+    "sourceHash": "6aa84b4de627c5a0",
+    "text": "ਸ਼ੁਭ ਦੁਪਹਿਰ, {{name}}"
+  },
+  "alerts.greetEvening": {
+    "sourceHash": "1d281ae2d8e8ee65",
+    "text": "ਸ਼ੁਭ ਸ਼ਾਮ, {{name}}"
+  },
+  "alerts.filterLabel": {
+    "sourceHash": "4c0e2c83749fa6d1",
+    "text": "ਸਥਿਤੀ ਅਨੁਸਾਰ ਅਲਰਟ ਫਿਲਟਰ ਕਰੋ"
+  },
+  "alerts.searchPlaceholder": {
+    "sourceHash": "66c18e8db8074863",
+    "text": "ਖੋਜ ਚੇਤਾਵਨੀਆਂ: ਸਥਾਨ, ਸਰੋਤ, ਕੀਵਰਡ"
+  },
+  "alerts.noMatchTitle": {
+    "sourceHash": "5c1d17e4cec41df4",
+    "text": "ਕੋਈ ਅਲਰਟ ਮੇਲ ਨਹੀਂ ਖਾਂਦਾ"
+  },
+  "alerts.noMatchHint": {
+    "sourceHash": "e005d50a41db52f2",
+    "text": "ਕੋਈ ਹੋਰ ਸ਼ਬਦ ਅਜ਼ਮਾਓ, ਜਾਂ ਖੋਜ ਸਾਫ਼ ਕਰੋ।"
+  },
+  "alerts.updated": {
+    "sourceHash": "c58c19070316e2b7",
+    "text": "{{status}} ਵਜੋਂ ਚਿੰਨ੍ਹਿਤ"
+  },
+  "alerts.updateFailed": {
+    "sourceHash": "e624596771ea1a07",
+    "text": "ਚੇਤਾਵਨੀ ਅੱਪਡੇਟ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕੀ"
+  },
+  "alerts.copyLink": {
+    "sourceHash": "dbf362d4f210c780",
+    "text": "ਲਿੰਕ ਕਾਪੀ ਕਰੋ"
+  },
+  "alerts.linkCopied": {
+    "sourceHash": "d12860c21e78baa5",
+    "text": "ਲਿੰਕ ਕਾਪੀ ਕੀਤਾ ਗਿਆ"
+  },
+  "alerts.notFound": {
+    "sourceHash": "9df831b933b997ce",
+    "text": "ਇਹ ਚੇਤਾਵਨੀ ਤੁਹਾਡੇ ਲਈ ਉਪਲਬਧ ਨਹੀਂ ਹੈ, ਜਾਂ ਹੁਣ ਮੌਜੂਦ ਨਹੀਂ ਹੈ।"
+  },
   "hotspots.title": {
     "sourceHash": "2075df611438810b",
     "text": "ਹੌਟਸਪੌਟ ਨਕਸ਼ਾ"
@@ -534,10 +582,6 @@
   "tour.skip": {
     "sourceHash": "5ac614dee51bcf6a",
     "text": "ਟੂਰ ਛੱਡੋ"
-  },
-  "tour.progress": {
-    "sourceHash": "487fcaf37ab97ea0",
-    "text": "{{current}} {{total}}"
   },
   "tour.welcomeTitle": {
     "sourceHash": "22973e1f89c3623f",

@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
   Skeleton,
+  usePageTitle,
 } from '@vayusetu/ui-components';
 import { useTranslation } from 'react-i18next';
 import type { CorridorId, HotspotCell } from '@vayusetu/shared-types';
@@ -95,6 +96,7 @@ function CellDetail({ cell, onClose }: { cell: HotspotCell; onClose: () => void 
 
 export function HotspotMap() {
   const { t } = useTranslation();
+  usePageTitle(t('hotspots.title'), 'VayuSetu');
   const { getToken } = useAuth();
   const { liteMode } = useLiteMode();
   const [corridorId, setCorridorId] = React.useState<CorridorId>('ncr-airshed');

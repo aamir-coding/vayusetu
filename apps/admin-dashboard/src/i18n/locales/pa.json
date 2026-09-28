@@ -88,7 +88,19 @@
       "resolved": "ਹੱਲ ਕਰੋ",
       "dismissed": "ਖਾਰਜ ਕਰੋ",
       "new": "ਦੁਬਾਰਾ ਖੋਲ੍ਹੋ"
-    }
+    },
+    "greetMorning": "ਸ਼ੁਭ ਸਵੇਰ, {{name}}",
+    "greetAfternoon": "ਸ਼ੁਭ ਦੁਪਹਿਰ, {{name}}",
+    "greetEvening": "ਸ਼ੁਭ ਸ਼ਾਮ, {{name}}",
+    "filterLabel": "ਸਥਿਤੀ ਅਨੁਸਾਰ ਅਲਰਟ ਫਿਲਟਰ ਕਰੋ",
+    "searchPlaceholder": "ਖੋਜ ਚੇਤਾਵਨੀਆਂ: ਸਥਾਨ, ਸਰੋਤ, ਕੀਵਰਡ",
+    "noMatchTitle": "ਕੋਈ ਅਲਰਟ ਮੇਲ ਨਹੀਂ ਖਾਂਦਾ",
+    "noMatchHint": "ਕੋਈ ਹੋਰ ਸ਼ਬਦ ਅਜ਼ਮਾਓ, ਜਾਂ ਖੋਜ ਸਾਫ਼ ਕਰੋ।",
+    "updated": "{{status}} ਵਜੋਂ ਚਿੰਨ੍ਹਿਤ",
+    "updateFailed": "ਚੇਤਾਵਨੀ ਅੱਪਡੇਟ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕੀ",
+    "copyLink": "ਲਿੰਕ ਕਾਪੀ ਕਰੋ",
+    "linkCopied": "ਲਿੰਕ ਕਾਪੀ ਕੀਤਾ ਗਿਆ",
+    "notFound": "ਇਹ ਚੇਤਾਵਨੀ ਤੁਹਾਡੇ ਲਈ ਉਪਲਬਧ ਨਹੀਂ ਹੈ, ਜਾਂ ਹੁਣ ਮੌਜੂਦ ਨਹੀਂ ਹੈ।"
   },
   "hotspots": {
     "title": "ਹੌਟਸਪੌਟ ਨਕਸ਼ਾ",

@@ -283,6 +283,54 @@
     "sourceHash": "a886d1dc4f128e27",
     "text": "फिर से खोलना"
   },
+  "alerts.greetMorning": {
+    "sourceHash": "d924e3652734a367",
+    "text": "सुप्रभात, {{name}}"
+  },
+  "alerts.greetAfternoon": {
+    "sourceHash": "6aa84b4de627c5a0",
+    "text": "शुभ दोपहर, {{name}}"
+  },
+  "alerts.greetEvening": {
+    "sourceHash": "1d281ae2d8e8ee65",
+    "text": "शुभ संध्या, {{name}}"
+  },
+  "alerts.filterLabel": {
+    "sourceHash": "4c0e2c83749fa6d1",
+    "text": "स्थिति के आधार पर अलर्ट फ़िल्टर करें"
+  },
+  "alerts.searchPlaceholder": {
+    "sourceHash": "66c18e8db8074863",
+    "text": "खोज संबंधी चेतावनी: स्थान, स्रोत, कीवर्ड"
+  },
+  "alerts.noMatchTitle": {
+    "sourceHash": "5c1d17e4cec41df4",
+    "text": "कोई अलर्ट मेल नहीं खाता"
+  },
+  "alerts.noMatchHint": {
+    "sourceHash": "e005d50a41db52f2",
+    "text": "कोई दूसरा शब्द आजमाएं, या खोज को रद्द करें।"
+  },
+  "alerts.updated": {
+    "sourceHash": "c58c19070316e2b7",
+    "text": "{{status}} के रूप में चिह्नित"
+  },
+  "alerts.updateFailed": {
+    "sourceHash": "e624596771ea1a07",
+    "text": "अलर्ट अपडेट नहीं हो सका"
+  },
+  "alerts.copyLink": {
+    "sourceHash": "dbf362d4f210c780",
+    "text": "लिंक की प्रतिलिपि करें"
+  },
+  "alerts.linkCopied": {
+    "sourceHash": "d12860c21e78baa5",
+    "text": "लिंक कॉपी हो गया"
+  },
+  "alerts.notFound": {
+    "sourceHash": "9df831b933b997ce",
+    "text": "यह अलर्ट आपको उपलब्ध नहीं है, या अब मौजूद नहीं है।"
+  },
   "hotspots.title": {
     "sourceHash": "2075df611438810b",
     "text": "हॉटस्पॉट मानचित्र"
@@ -534,10 +582,6 @@
   "tour.skip": {
     "sourceHash": "5ac614dee51bcf6a",
     "text": "दौरे को छोड़ें"
-  },
-  "tour.progress": {
-    "sourceHash": "487fcaf37ab97ea0",
-    "text": "{{total}} का {{current}}"
   },
   "tour.welcomeTitle": {
     "sourceHash": "22973e1f89c3623f",
