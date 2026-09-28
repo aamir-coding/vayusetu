@@ -25,7 +25,9 @@ Chirag signs in to the admin accounts; nobody else handles those passwords.
 4. **Two report photos** on the phone, both of the **same spot**, e.g. roadside garbage burning. `packages/gemini-client/redteam/images/garbage_fire.jpg` works if you have no real one.
 5. **Location: Karol Bagh, 28.65041, 77.19009** (type it manually: Report → Change → Latitude/Longitude). This is the centre of H3 cell `883da11623fffff`, inside **DL-CENTRAL**, Deshmukh's district. Alerts are routed by the district of the cell's *centre*. Do **not** use Anand Vihar: that cell straddles the Delhi–UP border, and its alert went to UP-GHAZIABAD, which neither demo account can see (28 Sep rehearsal).
 6. **Clear the demo cell.** A still-open alert on the same cell (new / acknowledged / in progress, created in the last 24 h) **suppresses** a new one, so the live alert would never appear. In Deshmukh's Alert Queue, resolve or dismiss any open alert titled "…Central Delhi near Mandir Marg" (cell `883da11623fffff`).
-7. **Notifications:** in Deshmukh's window, click "Enable alert notifications" (needs the VAPID key; without it, the live queue still updates via Firestore).
+7. **Guided tours:** each app shows a short tour on its first visit per browser (the citizen app on Report, the console after sign-in). Walk through them once during warm-up, or use the console tour as a 30-second beat; Help replays either one.
+8. **Theme:** both apps and https://vayusetu.web.app follow the device's light/dark setting; the sun/moon button overrides it. Pick one per screen for a consistent look on the projector.
+9. **Notifications:** in Deshmukh's window, click "Enable alert notifications" (needs the VAPID key; without it, the live queue still updates via Firestore).
 
 ## 3. Script
 | Time | Beat | What to show | What to say |
