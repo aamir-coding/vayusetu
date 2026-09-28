@@ -2,14 +2,21 @@
  * In-memory stand-in for the slice of the Firestore Admin API VayuSetu's
  * services call. Test-only: import from '@vayusetu/gcp-clients/testing'.
  *
+ * Composite indexes ARE enforced: a query the indexes declared in
+ * infra/terraform/modules/state-deployment would not serve throws code 9
+ * FAILED_PRECONDITION, as the real project does (the emulator does not).
+ * Opt out with `new FakeFirestore({ indexes: false })`. See declaredIndexes.ts.
+ *
  * What it does NOT model -- so passing unit tests prove nothing about these:
- *   - composite-index requirements (neither does the Firestore EMULATOR --
- *     only the real project enforces them; see WEEK2_SETUP.md)
  *   - transaction contention/retries (transactions run serially here)
  *   - FieldValue sentinels (serverTimestamp, arrayUnion, ...)
  * Error codes mirror gRPC: create() on an existing doc throws code 6
  * (ALREADY_EXISTS); update() on a missing doc throws code 5 (NOT_FOUND).
  */
+
+import { missingIndex, terraformIndexes, type DeclaredIndex } from './declaredIndexes.js';
+
+export { missingIndex, terraformIndexes, type DeclaredIndex } from './declaredIndexes.js';
 
 type DocData = Record<string, unknown>;
 
@@ -76,9 +83,16 @@ interface Order {
   dir: 'asc' | 'desc';
 }
 
+/** Which collection a query reads, and the indexes to hold it to. */
+interface QueryContext {
+  collectionId: string;
+  indexes: () => DeclaredIndex[] | undefined;
+}
+
 export class FakeQuery {
   constructor(
     protected readonly store: Map<string, DocData>,
+    protected readonly ctx: QueryContext,
     private readonly filters: Filter[] = [],
     private readonly order?: Order,
     private readonly limitN?: number,
@@ -86,16 +100,16 @@ export class FakeQuery {
   ) {}
 
   where(field: string, op: Op, value: unknown): FakeQuery {
-    return new FakeQuery(this.store, [...this.filters, { field, op, value }], this.order, this.limitN, this.cursor);
+    return new FakeQuery(this.store, this.ctx, [...this.filters, { field, op, value }], this.order, this.limitN, this.cursor);
   }
   orderBy(field: string, dir: 'asc' | 'desc' = 'asc'): FakeQuery {
-    return new FakeQuery(this.store, this.filters, { field, dir }, this.limitN, this.cursor);
+    return new FakeQuery(this.store, this.ctx, this.filters, { field, dir }, this.limitN, this.cursor);
   }
   limit(n: number): FakeQuery {
-    return new FakeQuery(this.store, this.filters, this.order, n, this.cursor);
+    return new FakeQuery(this.store, this.ctx, this.filters, this.order, n, this.cursor);
   }
   startAfter(cursor: unknown): FakeQuery {
-    return new FakeQuery(this.store, this.filters, this.order, this.limitN, cursor);
+    return new FakeQuery(this.store, this.ctx, this.filters, this.order, this.limitN, cursor);
   }
   count(): { get: () => Promise<{ data: () => { count: number } }> } {
     return {
@@ -106,7 +120,18 @@ export class FakeQuery {
     };
   }
 
+  /** Throws what the real project throws when no declared index serves this query. */
+  private requireIndex(): void {
+    const indexes = this.ctx.indexes();
+    if (!indexes) return;
+    const need = missingIndex(this.ctx.collectionId, { filters: this.filters, order: this.order }, indexes);
+    if (need) {
+      throw grpcError(9, `9 FAILED_PRECONDITION: The query requires an index: ${need} is not declared in infra/terraform/modules/state-deployment (FakeFirestore)`);
+    }
+  }
+
   private filtered(): Array<{ id: string; data: DocData }> {
+    this.requireIndex();
     let rows = [...this.store.entries()].map(([id, data]) => ({ id, data }));
     for (const f of this.filters) {
       rows = rows.filter((r) => {
@@ -164,8 +189,8 @@ export class FakeQuery {
 export class FakeCollection extends FakeQuery {
   private autoIdCounter = 0;
 
-  constructor(store: Map<string, DocData>) {
-    super(store);
+  constructor(store: Map<string, DocData>, ctx: QueryContext) {
+    super(store, ctx);
   }
 
   doc(id?: string): FakeDocRef {
@@ -191,11 +216,23 @@ export interface FakeTransaction {
   create(ref: FakeDocRef, data: DocData): FakeTransaction;
 }
 
+let terraformIndexCache: DeclaredIndex[] | undefined;
+
 export class FakeFirestore {
   private readonly collections = new Map<string, FakeCollection>();
+  private readonly indexes: () => DeclaredIndex[] | undefined;
+
+  /** `indexes`: defaults to the Terraform-declared set; `false` disables the check. */
+  constructor(opts: { indexes?: DeclaredIndex[] | false } = {}) {
+    const { indexes } = opts;
+    this.indexes = indexes === false ? () => undefined : indexes ? () => indexes : () => (terraformIndexCache ??= terraformIndexes());
+  }
 
   collection(name: string): FakeCollection {
-    if (!this.collections.has(name)) this.collections.set(name, new FakeCollection(new Map()));
+    if (!this.collections.has(name)) {
+      const ctx = { collectionId: name.split('/').pop()!, indexes: this.indexes };
+      this.collections.set(name, new FakeCollection(new Map(), ctx));
+    }
     return this.collections.get(name)!;
   }
 
