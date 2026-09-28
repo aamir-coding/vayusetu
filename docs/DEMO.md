@@ -24,7 +24,8 @@ Chirag signs in to the admin accounts; nobody else handles those passwords.
 3. **Monitoring is clean.** The dashboard "VayuSetu ncr-dev — operations" (once `monitoring.tf` is applied) shows no open incidents. Billing must be enabled (see RUNBOOK "429 / billing").
 4. **Two report photos** on the phone, both of the **same spot**, e.g. roadside garbage burning. `packages/gemini-client/redteam/images/garbage_fire.jpg` works if you have no real one.
 5. **Location: Karol Bagh, 28.65041, 77.19009** (type it manually: Report → Change → Latitude/Longitude). This is the centre of H3 cell `883da11623fffff`, inside **DL-CENTRAL**, Deshmukh's district. Alerts are routed by the district of the cell's *centre*. Do **not** use Anand Vihar: that cell straddles the Delhi–UP border, and its alert went to UP-GHAZIABAD, which neither demo account can see (28 Sep rehearsal).
-6. **Notifications:** in Deshmukh's window, click "Enable alert notifications" (needs the VAPID key; without it, the live queue still updates via Firestore).
+6. **Clear the demo cell.** A still-open alert on the same cell (new / acknowledged / in progress, created in the last 24 h) **suppresses** a new one, so the live alert would never appear. In Deshmukh's Alert Queue, resolve or dismiss any open alert titled "…Central Delhi near Mandir Marg" (cell `883da11623fffff`).
+7. **Notifications:** in Deshmukh's window, click "Enable alert notifications" (needs the VAPID key; without it, the live queue still updates via Firestore).
 
 ## 3. Script
 | Time | Beat | What to show | What to say |
@@ -97,6 +98,7 @@ The offline queue also proved itself: a report blocked at 02:17 by the CDN bug w
 | Result spins > 30 s | Cold start; wait, or show the report from My Reports. The warm-up in §2 prevents it. |
 | Report says "flagged for review" | That's a feature: say "Gemini and the monitor disagree, so a human decides". It still reaches officials. |
 | No alert after two reports | Average severity came out under 4 (§4): send the third citizen. Or both came from one device (counts once), or a report had no visible plume. Fallback: open an existing alert from the queue. |
+| Two reports, the cell turned red, but no new alert | An earlier alert on that cell is still open (§2.6). alert-service logs `suppressed`. Resolve the old one; the next report re-triggers. |
 | Alert created but not in Deshmukh's queue | The cell's centre is in another district (§2.5): use the Karol Bagh coordinates. Ms. Iyer (state admin) sees every DL district. |
 | Admin shows 429 / nothing loads | Billing: RUNBOOK "429 / billing". Fallback: the local mock demo, `pnpm --filter @vayusetu/admin-dashboard dev` + `pnpm --filter @vayusetu/citizen-pwa dev`, where every screen works offline with fixtures. |
 | Map is empty | The hourly scorer hasn't run: `gcloud run jobs execute hotspot-score-hourly-ncr-dev --region asia-south1`. |
