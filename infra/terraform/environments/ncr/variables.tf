@@ -141,3 +141,13 @@ variable "monthly_budget" {
   type    = number
   default = 15000
 }
+
+variable "hotspot_model_every_hours" {
+  type    = number
+  default = 1
+}
+
+variable "hotspot_model_hidden_min_confidence" {
+  type    = string
+  default = ""
+}
