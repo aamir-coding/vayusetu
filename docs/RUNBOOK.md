@@ -130,6 +130,13 @@ m = aiplatform.Model("projects/…/models/<id>")
 m.versioning_registry.add_version_aliases(["default"], version="<previous version id>")
 ```
 
+**Relabel a model version.** Always address the version explicitly (`@<id>`). The SDK's `Model.update()` writes to whichever version holds `default` (see the hotspot model card). A label update **merges**, so delete a key with a field-path mask. Pending: removing the stale threshold label on hotspot v1:
+```bash
+M=projects/818188514572/locations/asia-south1/models/4203279021359759360
+curl -X PATCH -H "Authorization: Bearer $(gcloud auth print-access-token)" -H "Content-Type: application/json" \
+  --data '{"labels":{}}' "https://asia-south1-aiplatform.googleapis.com/v1/$M@1?updateMask=labels.vayusetu-threshold"
+```
+
 ## 4. Incidents
 
 Record every incident in §5, even small ones.
