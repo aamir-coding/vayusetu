@@ -47,6 +47,24 @@ test.describe('citizen PWA (mock mode)', () => {
     await page.evaluate(() => localStorage.removeItem('i18nextLng'));
   });
 
+  test('a citizen who switches to Hindi before their first report is registered in Hindi', async ({ page }) => {
+    // Regression (29 Sep live test): registration used navigator.language, so
+    // a citizen who had switched the UI to Hindi got an English advisory.
+    await page.getByRole('combobox').first().click();
+    await page.getByRole('option', { name: 'हिन्दी' }).click();
+    const registered = page.waitForRequest((r) => r.url().includes('/api/v1/users/register') && r.method() === 'POST');
+    await page.locator('input[type=file]').setInputFiles({
+      name: 'smoke.jpg', mimeType: 'image/jpeg',
+      buffer: readFileSync(new URL('../../../packages/gemini-client/redteam/images/garbage_fire.jpg', import.meta.url)),
+    });
+    await page.getByRole('button', { name: hi.common.change }).click();
+    await page.getByPlaceholder(hi.capture.latitude).fill('28.6315');
+    await page.getByPlaceholder(hi.capture.longitude).fill('77.2167');
+    await page.getByRole('button', { name: hi.capture.submit }).click();
+    expect((await registered).postDataJSON().preferredLanguage).toBe('hi-IN');
+    await page.evaluate(() => localStorage.removeItem('i18nextLng'));
+  });
+
   test('result screen keeps polling from `queued` until the analysis lands', async ({ page }) => {
     // Regression (27 Sep live rehearsal): the screen polled only while
     // `pending_analysis`, so opening it while the report was still `queued`
