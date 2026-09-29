@@ -30,6 +30,13 @@ export function SnapshotResult() {
   const { push: toast } = useToast();
   usePageTitle(t('result.title'), t('app.name'));
   const [speaking, setSpeaking] = React.useState(false);
+  // A report that is still 'queued' after 45 s is delayed, not lost: say so,
+  // instead of an endless spinner (28 Sep: a delivery fault kept reports queued).
+  const [slow, setSlow] = React.useState(false);
+  React.useEffect(() => {
+    const timer = window.setTimeout(() => setSlow(true), 45_000);
+    return () => window.clearTimeout(timer);
+  }, [submissionId]);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
   React.useEffect(() => () => audioRef.current?.pause(), []);
 
@@ -97,7 +104,12 @@ export function SnapshotResult() {
         </div>
         <div>
           <p className="text-lg font-bold text-ink">{t('result.analyzing')}</p>
-          <p className="mt-1 text-sm text-slate-500">{t('result.analyzingHint')}</p>
+          <p className="mt-1 text-sm text-slate-500">{slow ? t('result.slowHint') : t('result.analyzingHint')}</p>
+          {slow && (
+            <Link to="/reports" className="mt-3 inline-block text-sm font-semibold text-brand-700 underline-offset-4 hover:underline">
+              {t('nav.reports')} →
+            </Link>
+          )}
         </div>
         <div className="w-full max-w-sm space-y-2">
           <Skeleton className="h-24 w-full" />
