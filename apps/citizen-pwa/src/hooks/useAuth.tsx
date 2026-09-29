@@ -136,20 +136,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const ensureRegistered = React.useCallback<AuthContextValue['ensureRegistered']>(
     async (opts) => {
       const token = await getToken();
+      // The language the citizen is USING -- the UI language. The switcher can
+      // only PATCH a profile it has loaded, so a choice made before the first
+      // report (or after a reload, before any API call) never reached
+      // User.preferredLanguage, and Gemini/TTS answered in the old language
+      // (29 Sep live tests: Hindi UI -> English advisory; Marathi UI -> Hindi).
+      // The UI control is the single source of truth, so sync it here, where
+      // every report passes. i18next falls back to the browser language.
+      const uiLang = i18nCodeToBcp47(i18n.resolvedLanguage ?? i18n.language);
       try {
-        const existing = await usersApi.me(token);
+        let existing = await usersApi.me(token);
+        if (existing.preferredLanguage !== uiLang) {
+          existing = await usersApi.update(token, { preferredLanguage: uiLang });
+        }
         setUser(existing);
         return existing;
       } catch (err) {
         if (!(err instanceof ApiClientError) || err.status !== 404) throw err;
       }
-      // The language the citizen is USING -- the UI language, which the
-      // switcher may have changed before they ever registered (their first
-      // report registers them). Using navigator.language instead registered a
-      // citizen who had switched to Hindi as en-IN, so Gemini and TTS answered
-      // in English (29 Sep live test). i18next already falls back to the
-      // browser language when nothing was chosen.
-      const uiLang = i18nCodeToBcp47(i18n.resolvedLanguage ?? i18n.language);
       let created: User;
       try {
         created = await usersApi.register(token, {
