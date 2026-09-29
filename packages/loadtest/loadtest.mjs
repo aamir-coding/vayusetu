@@ -111,7 +111,7 @@ if (scenario === 'smoke') {
   const breaches = limiterBreaches({ rps, tokens: TOKENS.length });
   if (breaches.length && !flag('i-know')) {
     console.error('This plan would trip the per-user rate limiter (you would measure the limiter, not capacity):');
-    for (const b of breaches) console.error(`  ${b.service}: ${b.perTokenPerMin}/min per token > ${b.limit}/min`);
+    for (const b of breaches) console.error(`  ${b.service}: ${b.perTokenPerMin}/min per token > 80% of its ${b.limit}/min limit (random bursts would cross it)`);
     console.error(`Lower --rps or add tokens (TOKENS=a,b,c). Pass --i-know to run anyway.`);
     process.exit(2);
   }
@@ -130,4 +130,7 @@ if (scenario === 'smoke') {
   console.log(`429s: ${limited.length} (expected >= 15), all ApiError RATE_LIMITED: ${clean}`);
   report(samples, { p95Ms, maxErrorRate, allow429: true });
   if (limited.length < 15 || !clean) process.exitCode = 1;
+  // The first token's one-minute window is now spent; a steady run started
+  // at once inherits it as 429s (29 Sep, Mumbai-Pune).
+  console.log('Wait 60 s before a steady run: this token is still rate-limited for up to a minute.');
 }

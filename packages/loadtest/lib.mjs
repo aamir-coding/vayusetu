@@ -41,16 +41,26 @@ export function percentile(values, p) {
 }
 
 /**
+ * Arrivals are random (open model), so a plan AVERAGING just under a limit
+ * still bursts over it inside some one-minute window. 29 Sep, Mumbai-Pune:
+ * 6 rps over 2 tokens averaged 54/min per token against 60 and drew four
+ * 429s (0.9% and 1.8% "errors") that were the plan's fault, not the
+ * service's. Plans must stay under 80% of each limit.
+ */
+export const LIMIT_HEADROOM = 0.8;
+
+/**
  * Requests per minute each token would send to each service under a plan.
- * Returns the services whose per-user limit the plan would exceed -- a test
- * that trips the limiter measures the limiter, not capacity.
+ * Returns the services whose per-user limit (times LIMIT_HEADROOM) the plan
+ * would exceed -- a test that trips the limiter measures the limiter, not
+ * capacity.
  */
 export function limiterBreaches({ rps, tokens, endpoints = ENDPOINTS }) {
   const total = endpoints.reduce((s, e) => s + e.weight, 0);
   const perService = {};
   for (const e of endpoints) perService[e.service] = (perService[e.service] ?? 0) + (rps * 60 * e.weight) / total / tokens;
   return Object.entries(perService)
-    .filter(([svc, perMin]) => perMin > PER_USER_LIMIT_PER_MIN[svc])
+    .filter(([svc, perMin]) => perMin > PER_USER_LIMIT_PER_MIN[svc] * LIMIT_HEADROOM)
     .map(([service, perMin]) => ({ service, perTokenPerMin: Math.round(perMin), limit: PER_USER_LIMIT_PER_MIN[service] }));
 }
 
