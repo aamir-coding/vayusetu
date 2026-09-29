@@ -100,36 +100,62 @@ Endpoint ownership (fixes the "unowned endpoints" gap): `submission-service` ser
 ### Phase 3 — Week-4 deliverables
 Load tests, Monitoring dashboards and alerting, IAM audit, `openapi.yaml`, runbook (including the Earth Engine commercial-licence budget line), model evaluation write-up and model cards, Pipeline A red-team set, rehearsed demo scenario.
 
-**Status (28 Sep 2026, branch `phase3/docs-ops`, not yet pushed):**
-- Done:
-  - `docs/api/openapi.yaml`: 25 endpoints, with a drift test against `shared-types`.
-  - IAM audit (`docs/security/IAM_AUDIT.md`, 9 findings) and least-privilege IAM in Terraform (`iam.tf`, `iam_scoped.tf`, 6 guard tests).
-  - `monitoring.tf`:
-    - alerts: 5xx, 429 bursts, failed jobs, data freshness, dead letters, uptime
-    - dashboard
-    - opt-in budget
-  - `docs/RUNBOOK.md`, including incident logs for 27 and 28 Sep and the Earth Engine licence line.
-  - Model cards for both models in `docs/models/`. The v1 hotspot metric bug is stated plainly.
-  - Red-team set: 27 cases in 8 categories, 27/27 passing after prompt rules 8–10.
-  - Load-test tool in `packages/loadtest`. It hits read-only endpoints; Chirag runs it with his own token.
-  - Hotspot heatmap: model scores are calibrated, with a top-25 floor.
-  - Mumbai-Pune: all services and both web apps deployed; migrate, seed, land-cover and every backfill completed. It is already an Exchange member.
-  - National landing page **https://vayusetu.web.app** (`apps/portal`), live on the Exchange project (applied 28 Sep with approval: 11 added, 0 changed).
-- Demo rehearsal (`docs/DEMO.md` §5):
-  - The citizen → Gemini → hotspot fast path → alert path now works live.
-  - Seven bugs that blocked it were found and fixed. Each would have broken the live demo:
-    - bucket CORS
-    - a cached `/users/me`, both the service worker and the Hosting CDN
-    - register 409
-    - polling stopped on `queued`
-    - deep links before sign-in
-    - flagged fires never counted
-    - a missing Firestore index
-  - The admin-side beats need Chirag's sign-in.
-- Waiting on Chirag's approval:
-  - `terraform apply` on NCR and MH: IAM scoping, monitoring, CORS convergence, MH staged flags, MH federation sync.
-  - Relabel hotspot v1 in the Model Registry.
-  - Push `phase3/docs-ops` and open the PR.
+**Status (29 Sep 2026): complete and merged to `main` (PR #13, 28 Sep).** One follow-up commit (`9facf6e`, the Pub/Sub 401 fix, already live) and this closing audit are on `phase3/docs-ops` for the next PR.
+
+Delivered:
+- `docs/api/openapi.yaml` (25 endpoints, drift-tested against `shared-types`).
+- IAM audit (`docs/security/IAM_AUDIT.md`) and least-privilege IAM, applied to NCR and MH.
+- `monitoring.tf`: alerts, dashboard, opt-in budget. 17 policies live per state.
+- `docs/RUNBOOK.md`, with incident logs for 27, 28 and 29 Sep and the Earth Engine licence line.
+- Model cards for both models (`docs/models/`). The v1 hotspot metric bug is stated plainly, and v1 is relabelled failed in the Registry.
+- Red-team set: 27 cases, 27/27 passing.
+- Load-test tool (`packages/loadtest`). Chirag runs it with his own token.
+- Mumbai-Pune fully deployed, backfilled and federated. All schedules are on in both states.
+- National landing page **https://vayusetu.web.app**.
+
+Rehearsed live, end to end (citizen photo → Gemini → fast path → Gemini-briefed alert to the right district):
+- **NCR:** Karol Bagh → DL-CENTRAL (28 Sep).
+- **Mumbai-Pune:** Pune Station → MH-PUNE (29 Sep). Two citizens fused to 0.607, and the alert was dispatched to 2 officials.
+
+### Closing audit (29 Sep): the 26 Sep findings, re-checked against the code
+| Finding | Status |
+|---|---|
+| S1 nothing consumed `submission.created` | Fixed: analysis-service, live in both states |
+| S2 mock photo upload | Fixed: signed `upload-url` flow |
+| S3 MSW hijacked dev | Fixed: mocks only with `VITE_USE_MOCKS`, plus a Vite API proxy |
+| S4 corridor ID drift | Fixed: contract IDs, and the seed job deletes the legacy docs |
+| S5 H3 res 7 vs 8 | Fixed: `OPERATIONAL_H3_RES = 8`, with a resolution test |
+| S6 IMD fake weather | Fixed: the IMD job was replaced by the Weather API and ERA5 jobs |
+| V1 CPCB "AQI" | Fixed: breakpoint sub-indices (`aqi.py`) |
+| V2 Earth Engine demo job | Fixed: scheduled, non-interactive auth, MERGE |
+| V3 non-idempotent ingestion | Fixed: staging table + MERGE on the natural key |
+| **V4 no CI** | **Open.** Every deploy is a manual `gcloud builds submit`. Needs the Cloud Build GitHub App installed on the repo (owner: Aamir), then `enable_ci_triggers = true`. |
+| V5 `pnpm test` OOM | Fixed: default `pnpm test` passes, 20/20 tasks |
+| V6 offline queue jam | Fixed: permanently rejected reports are dropped |
+| **V7 local Terraform state** | **Ready to run.** Backends enabled in code, and `infra/terraform/scripts/migrate-state.ps1` migrates the state (a person runs it; see the Terraform README). |
+| V8 security posture | Fixed: Firestore rules with tests, analysis-service private. The geocoder fallback now refuses to start in production without a Maps key (submission and alert). |
+| P1 hygiene | Fixed: `retry-analysis` uses `update`, `terraform fmt` is clean, pytest is dev-only, turbo outputs are set, admin i18n is done |
+| Contract items | Fixed: upload-url documented, `featureSchemaVersion` on shared models, field-worker role. Open (minor): an alert doesn't record whether Gemini or the template wrote its briefing (it's only in logs). |
+
+Health on 29 Sep:
+- **All green:**
+  - TypeScript: 360 tests across 13 packages
+  - ingestion: 46
+  - ML: 15
+  - Terraform: 42
+  - E2E: 12
+  - portal: 6
+  - load-test library: 5
+- **Type-check and lint are clean.**
+- **Live:** 12/12 Cloud Run services ready and 5/5 sites up.
+
+Still open:
+- **Chirag:**
+  - [ ] Run `migrate-state.ps1`, then apply the NCR and MH drift (3 in-place changes each: push audiences on alert and hotspot, and dashboard layout).
+  - [ ] Set `alert_emails` (and optionally `billing_account_id`). Until then the 17 alert policies notify nobody.
+  - [ ] Install the Cloud Build GitHub App so PRs are tested (V4).
+  - [ ] Rehearse the officials' side live, and run the load test (`packages/loadtest/README.md`).
+- **Tuning (not a bug):** hotspot model v2 raises 15–24 "watch" alerts in HR-GURUGRAM per 6-hourly run, 61 still open. Consider requiring citizen evidence for model-only watch alerts, or raising the model's alert threshold.
 
 ## What Chirag needs to do (console / accounts)
 
