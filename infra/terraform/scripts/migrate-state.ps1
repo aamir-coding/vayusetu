@@ -19,6 +19,24 @@ $ErrorActionPreference = 'Stop'
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')).Path
 $projects = @{ ncr = 'vayusetu-ncr-dev'; mh = 'vayusetu-mh-dev'; exchange = 'vayusetu-exchange-dev' }
 
+# Windows PowerShell 5.1 turns ANY stderr line from a native program into a
+# terminating error under 'Stop' -- even with 2>$null -- and gcloud writes
+# expected "not found" answers and plain progress messages to stderr. So
+# native commands run with 'Continue', and success is judged by exit code.
+function Invoke-Native([scriptblock]$Cmd) {
+  $prev = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try {
+    $out = & $Cmd 2>&1 | ForEach-Object { "$_" }
+    return [pscustomobject]@{ Code = $LASTEXITCODE; Out = ($out -join "`n") }
+  } finally { $ErrorActionPreference = $prev }
+}
+function Assert-Native([string]$What, [scriptblock]$Cmd) {
+  $r = Invoke-Native $Cmd
+  if ($r.Code -ne 0) { throw "$What failed (exit $($r.Code)):`n$($r.Out)" }
+  return $r
+}
+
 foreach ($envName in $Envs) {
   $project = $projects[$envName]
   $bucket = "gs://$project-tfstate"
@@ -27,21 +45,22 @@ foreach ($envName in $Envs) {
   Write-Host "`n=== $envName ($project)" -ForegroundColor Cyan
 
   # 1. The bucket: versioned (every state write is recoverable), never public.
-  gcloud storage buckets describe $bucket --project $project --format='value(name)' 2>$null | Out-Null
-  if ($LASTEXITCODE -ne 0) {
-    gcloud storage buckets create $bucket --project $project --location $Region --uniform-bucket-level-access --public-access-prevention
-    if ($LASTEXITCODE -ne 0) { throw "could not create $bucket" }
+  #    A 404 from describe just means "not created yet".
+  if ((Invoke-Native { gcloud storage buckets describe $bucket --project $project --format='value(name)' }).Code -ne 0) {
+    Assert-Native "create $bucket" { gcloud storage buckets create $bucket --project $project --location $Region --uniform-bucket-level-access --public-access-prevention } | Out-Null
+    Write-Host "created $bucket"
+  } else {
+    Write-Host "$bucket exists"
   }
-  gcloud storage buckets update $bucket --versioning | Out-Null
+  Assert-Native "enable versioning on $bucket" { gcloud storage buckets update $bucket --versioning } | Out-Null
 
   # 2. Already migrated? Then there is nothing to copy.
-  gcloud storage ls "$bucket/terraform/state/default.tfstate" 2>$null | Out-Null
-  $already = ($LASTEXITCODE -eq 0)
+  $already = ((Invoke-Native { gcloud storage ls "$bucket/terraform/state/default.tfstate" }).Code -eq 0)
 
   # 3. tfvars travel too: into this checkout, with a copy in the bucket.
   if (Test-Path "$src\terraform.tfvars") {
     Copy-Item "$src\terraform.tfvars" "$dst\terraform.tfvars" -Force
-    gcloud storage cp "$src\terraform.tfvars" "$bucket/tfvars/terraform.tfvars" | Out-Null
+    Assert-Native "back up tfvars to $bucket" { gcloud storage cp "$src\terraform.tfvars" "$bucket/tfvars/terraform.tfvars" } | Out-Null
   } elseif (-not (Test-Path "$dst\terraform.tfvars")) {
     throw "no terraform.tfvars in $src or $dst"
   }
@@ -50,17 +69,17 @@ foreach ($envName in $Envs) {
   try {
     if ($already) {
       Write-Host "state already in $bucket -- just initialising"
-      terraform init -input=false -reconfigure | Out-Null
+      Assert-Native "terraform init ($envName)" { terraform init -input=false -reconfigure } | Out-Null
     } else {
       if (-not (Test-Path "$src\terraform.tfstate")) { throw "no terraform.tfstate in $src" }
       Copy-Item "$src\terraform.tfstate" "$dst\terraform.tfstate" -Force
-      terraform init -input=false -migrate-state -force-copy
-      if ($LASTEXITCODE -ne 0) { throw "terraform init -migrate-state failed for $envName" }
+      Assert-Native "terraform init -migrate-state ($envName)" { terraform init -input=false -migrate-state -force-copy } | Out-Null
       Remove-Item "$dst\terraform.tfstate", "$dst\terraform.tfstate.backup" -ErrorAction SilentlyContinue
       Rename-Item "$src\terraform.tfstate" 'terraform.tfstate.pre-gcs-backup'
     }
     # 4. Proof: the resource count read back from GCS.
-    $count = (terraform state list | Measure-Object -Line).Lines
+    $list = Assert-Native "terraform state list ($envName)" { terraform state list }
+    $count = ($list.Out -split "`n" | Where-Object { $_ -match '\S' }).Count
     Write-Host "${envName}: $count resources now tracked in $bucket" -ForegroundColor Green
   } finally { Pop-Location }
 }
