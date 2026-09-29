@@ -149,6 +149,20 @@ Health on 29 Sep:
 - **Type-check and lint are clean.**
 - **Live:** 12/12 Cloud Run services ready and 5/5 sites up.
 
+### Feature check against the spec (29 Sep, live)
+Proven live today:
+- **Voice note, in Hindi:** the note is transcribed word for word and the advisory comes back in Hindi with audio.
+- **Advisories in Marathi and Punjabi.**
+- **Forecast alerts:** a forced GRAP crossing produced 4 state alerts with grounded Gemini briefings.
+- **Pipeline D escalation.**
+
+Three bugs found and fixed while doing so (`0fd51b7`, `e41cf4f`), each with a regression test:
+1. **Voice transcripts silently failed.** Speech-to-Text's service agent couldn't read the citizen-media bucket; the audio is now sent inline.
+2. **New citizens were registered in the browser's language**, not the one chosen on screen.
+3. **A language chosen before the profile loaded** never reached `User.preferredLanguage`.
+
+**Model sharing (Feature 4) fails:** every `copyModel` to the Exchange returns PERMISSION_DENIED. Google requires the destination project's Vertex AI service agent to hold **Vertex AI Service Agent** (`roles/aiplatform.serviceAgent`) on the source project. We grant only `roles/aiplatform.viewer`, both in `federation.tf` (Exchange agent on each state) and in the exchange module (each state's agent on the Exchange). The IAM change is Chirag's to make.
+
 Still open:
 - **Chirag:**
   - [ ] Run `migrate-state.ps1`, then apply the NCR and MH drift (3 in-place changes each: push audiences on alert and hotspot, and dashboard layout).
