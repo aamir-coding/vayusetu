@@ -76,6 +76,15 @@ A 6 rps × 180 s run is about 1,100 requests: a few rupees. Watch the ops dashbo
 | 6 rps: `forecast-history` p95 3,282 ms; p99 of about 4 s on every endpoint | p95 54 ms; slowest non-BigQuery request 173 ms, on one instance per service with no cold start | The network between the laptop, Firebase Hosting and Cloud Run. The baseline was about 270 ms per request, plus transient multi-second spikes. |
 | 3 and 6 rps: `hotspot-history` p95 1,526 / 2,292 ms | p95 1,064 / 1,124 ms | **The one real hotspot.** It runs a BigQuery query per call, and about 300 ms of network puts it at the 1.5 s bar. The lever: cache the 24 h history per cell for a few minutes, since it changes hourly. |
 
+**Mumbai-Pune re-run** (same day, after both fixes: `hotspot-history` cached in `1457b3b`, and a 60 s wait after `limiter`): **all four scenarios pass**, with zero errors in 1,260 steady requests.
+
+| Scenario | Client-side p95 by endpoint | Status |
+|---|---|---|
+| smoke | cold start: `forecast-latest` 9.0 s (warm-up covers it) | all 200 |
+| limiter | — | 21 × 429 `RATE_LIMITED`, no 5xx |
+| steady 3 rps | 421–637 ms; `hotspot-history` **637 ms** (was 1,526) | all 200 |
+| steady 5 rps | 463–581 ms; `hotspot-history` **517 ms** (was 2,292 at 6 rps) | all 200 |
+
 **Demo takeaways:**
 - The warm-up in `docs/DEMO.md` §2 matters. A cold hotspot or forecast service takes 8–10 s on its first request; `min_instances = 1` removes that, at a cost.
 - Pilot-level load (3–6 rps) is far below capacity: every service ran on a single instance.
