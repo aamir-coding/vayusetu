@@ -90,6 +90,36 @@ describe('GET /hotspots', () => {
     expect((await a.inject({ method: 'GET', url: '/api/v1/hotspots/8a2a1072b59ffff/history', headers: auth })).statusCode).toBe(404);
     expect((await a.inject({ method: 'GET', url: `/api/v1/hotspots/${H3}/history?range=1y`, headers: auth })).statusCode).toBe(400);
   });
+
+  it('history is cached 5 min per cell+range; the grid lookup for a day; failures are not cached', async () => {
+    let clock = NOW.getTime();
+    const d = {
+      cellExists: vi.fn(async (h: string) => h === H3),
+      history: vi.fn(async () => [{ id: `${H3}_2026-11-03T01`, h3Index: H3 }]),
+    } as unknown as DataAdapters & { cellExists: ReturnType<typeof vi.fn>; history: ReturnType<typeof vi.fn> };
+    const a = await buildApp({ data: d, now: () => clock, fastPathDeps: fastDeps().deps, pushTokenVerifier: async () => ({ email: PUSH_SA, email_verified: true }) });
+    const get = (range = '24h', h = H3) => a.inject({ method: 'GET', url: `/api/v1/hotspots/${h}/history?range=${range}`, headers: auth });
+
+    // A burst of identical requests (one with an upper-case id): one history query, one grid lookup.
+    const burst = await Promise.all([get(), get(), get(), get('24h', H3.toUpperCase())]);
+    expect(burst.every((r) => r.statusCode === 200)).toBe(true);
+    expect(d.history).toHaveBeenCalledTimes(1);
+    expect(d.cellExists).toHaveBeenCalledTimes(1);
+
+    await get('7d'); // a different range is a different query
+    expect(d.history).toHaveBeenCalledTimes(2);
+
+    clock += 5 * 60_000 + 1; // past the history TTL: refetched; the grid lookup is still cached
+    await get();
+    expect(d.history).toHaveBeenCalledTimes(3);
+    expect(d.cellExists).toHaveBeenCalledTimes(1);
+
+    d.history.mockRejectedValueOnce(new Error('bq down'));
+    clock += 5 * 60_000 + 1;
+    expect((await get()).statusCode).toBe(500);
+    expect((await get()).statusCode).toBe(200); // the failure was not cached
+    expect(d.history).toHaveBeenCalledTimes(5);
+  });
 });
 
 describe('analysis.completed fast path', () => {
