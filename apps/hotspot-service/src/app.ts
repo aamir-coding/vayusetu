@@ -14,6 +14,8 @@ import { buildFastPathDeps, dataAdapters } from './wiring.js';
 
 export interface BuildAppOptions {
   data?: DataAdapters;
+  /** Clock for the read caches (tests). */
+  now?: () => number;
   fastPathDeps?: FastPathDeps;
   pushTokenVerifier?: IdTokenVerifier;
 }
@@ -56,6 +58,6 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
     verify: opts.pushTokenVerifier,
   });
   await app.register(pubsubRoutes, { deps: opts.fastPathDeps ?? buildFastPathDeps(app.log, data), verifyPush });
-  await app.register(hotspotsRoutes, { prefix: '/api/v1', data });
+  await app.register(hotspotsRoutes, { prefix: '/api/v1', data, ...(opts.now ? { now: opts.now } : {}) });
   return app;
 }
