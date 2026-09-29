@@ -97,7 +97,8 @@
     "stepAnalysed": "Analysed, and advice sent to you",
     "stepOfficials": "Officials for this area can now see it",
     "stepReview": "An official will take a closer look, because your photo and nearby sensors disagree",
-    "stepFollow": "Follow what happens under My Reports"
+    "stepFollow": "Follow what happens under My Reports",
+    "slowHint": "This is taking longer than usual. Your report is saved and will be analysed; you can leave this screen and check My Reports later."
   },
   "reports": {
     "title": "My Reports",

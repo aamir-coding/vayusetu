@@ -98,3 +98,19 @@ run "fcm_not_firebase_admin" {
     error_message = "alert-service needs FCM send, not all of Firebase (Auth user management included)."
   }
 }
+
+run "private_push_services_accept_their_push_audience" {
+  command = plan
+
+  # A service without public invoke is authenticated by Cloud Run itself,
+  # which only accepts tokens for its URL or a listed custom audience. Pub/Sub
+  # push tokens carry the custom audience, so it MUST be listed, or every
+  # push is rejected with 401 (28 Sep: all reports stuck 'queued').
+  assert {
+    condition = alltrue([
+      for k, svc in google_cloud_run_v2_service.service :
+      contains(keys(google_cloud_run_v2_service_iam_member.public_invoker), k) || contains(coalesce(svc.custom_audiences, []), "vayusetu-${k}-${var.environment_name}")
+    ])
+    error_message = "A private service that receives Pub/Sub pushes must list its push audience in custom_audiences."
+  }
+}

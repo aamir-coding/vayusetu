@@ -245,6 +245,16 @@ Spend is tracked against `monthly_budget` (₹15,000 for dev).
    - Fixed: every API response is now `Cache-Control: private, no-store`.
    - **Check after any Hosting or API change:** `curl -sI https://<project>.web.app/api/v1/users/me` must show `cache-control: private, no-store` and no `x-cache: HIT`.
 
+### 2026-09-29 — NCR/MH: every citizen report stuck 'queued'
+- **Impact:** from the IAM apply on 28 Sep until 29 Sep morning, no report on either state was analysed. The app showed "Reading your photo…" indefinitely.
+- **Cause:** the apply made analysis-service private, as the IAM audit intended. Cloud Run's front end then checks each request's OIDC token, and accepts only the service URL or a listed *custom audience* as the addressee. Pub/Sub push tokens are addressed to `vayusetu-analysis-service-<env>`, so every push got **401 before reaching the app**. The app's own logs were empty, and only the request log showed it.
+- **Fix:**
+  - `custom_audiences` on push-receiving services (`cloud_run.tf`), plus a Terraform guard test.
+  - The same setting applied live with `gcloud run services update --add-custom-audiences`.
+  - The two stuck reports replayed (see "Dead letters").
+  - The result screen now says so after 45 s instead of spinning forever.
+- **Check after any IAM change to a push service:** request logs for `/pubsub/*` must show 200/204, not 401/403.
+
 ## 6. Earth Engine licence (budget line)
 
 - **Today:** both state projects run under **noncommercial / research registration**, which is free and appropriate for the hackathon pilot.

@@ -74,6 +74,13 @@ locals {
   # Services that reverse-geocode (both call the shared resolver in
   # packages/gcp-clients/src/geocoding.ts).
   maps_key_services = ["submission-service", "alert-service", "analysis-service"]
+
+  # Services that receive Pub/Sub pushes -> the OIDC audience on those tokens.
+  push_audiences = {
+    "analysis-service" = local.analysis_push_audience
+    "hotspot-service"  = local.hotspot_push_audience
+    "alert-service"    = local.alert_push_audience
+  }
 }
 
 resource "google_cloud_run_v2_service" "service" {
@@ -82,6 +89,13 @@ resource "google_cloud_run_v2_service" "service" {
   name     = "${each.key}-${var.environment_name}"
   location = var.region
   ingress  = "INGRESS_TRAFFIC_ALL"
+
+  # Pub/Sub push tokens are addressed to a custom audience, not the service
+  # URL. A PRIVATE service (analysis-service, see public_invoker) is checked
+  # by Cloud Run's front end, which rejects any other audience with 401 before
+  # the app sees the request -- every report sat 'queued' after the 28 Sep
+  # IAM tightening. Listing the audience here lets those tokens through.
+  custom_audiences = lookup(local.push_audiences, each.key, null) == null ? null : [local.push_audiences[each.key]]
 
   template {
     service_account = google_service_account.service[each.key].email
