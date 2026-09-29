@@ -16,6 +16,17 @@ const EnvSchema = z.object({
   // Per-USER, not per-IP: Indian mobile carriers put thousands of phones
   // behind one CGNAT address, so an IP limit would throttle a whole town.
   RATE_LIMIT_MAX_PER_MINUTE: z.coerce.number().int().positive().default(60),
+}).superRefine((e, ctx) => {
+  // Audit V8: the geocoder falls back to the default district when it has no
+  // key -- fine for local dev, but in production it would file every report
+  // under Central Delhi. Refuse to start instead.
+  if (e.NODE_ENV === 'production' && !e.GOOGLE_MAPS_API_KEY) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['GOOGLE_MAPS_API_KEY'],
+      message: 'required in production: without it every location silently resolves to DEFAULT_STATE_CODE/DEFAULT_DISTRICT_CODE',
+    });
+  }
 });
 
 export type Env = z.infer<typeof EnvSchema>;
