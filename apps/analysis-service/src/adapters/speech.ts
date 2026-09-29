@@ -13,16 +13,39 @@ export function speechLanguageCode(tag: string): string {
   return tag === 'pa-IN' ? 'pa-Guru-IN' : tag;
 }
 
-/** Cloud Speech-to-Text v2 (Chirp). Short voice notes (<= 10 s) -> synchronous recognize from gs://. */
+/** `gs://bucket/path/to/object` -> { bucket, path }; undefined for anything else. */
+export function parseGsUrl(url: string): { bucket: string; path: string } | undefined {
+  const m = /^gs:\/\/([^/]+)\/(.+)$/.exec(url);
+  return m ? { bucket: m[1]!, path: m[2]! } : undefined;
+}
+
+/** Voice notes are capped at 10 s by the PWA; anything far larger is not one. */
+export const MAX_VOICE_NOTE_BYTES = 2 * 1024 * 1024;
+
+/**
+ * Cloud Speech-to-Text v2 (Chirp). Short voice notes (<= 10 s) -> synchronous
+ * recognize with the audio sent INLINE. Passing the gs:// URI made Speech
+ * read the object as ITS service agent (service-<n>@gcp-sa-speech), which has
+ * no access to the private citizen-media bucket -- every voice note lost its
+ * transcript with a 403 (29 Sep live test). This service can already read
+ * the bucket, so it downloads the note and no extra grant is needed.
+ */
 export function createTranscriber(cfg: { project: string; location: string; model: string }) {
   // REST transport (`fallback`): over gRPC the `us` multi-region endpoint
   // answers NOT_FOUND for the same request REST serves fine (verified live).
   const client = new v2.SpeechClient({ apiEndpoint: `${cfg.location}-speech.googleapis.com`, fallback: true });
+  const storage = () => getStorage(getAdminApp());
   return async (audioGsUrl: string, language: string): Promise<string | undefined> => {
+    const loc = parseGsUrl(audioGsUrl);
+    if (!loc) throw new Error(`not a gs:// URL: ${audioGsUrl}`);
+    const file = storage().bucket(loc.bucket).file(loc.path);
+    const [meta] = await file.getMetadata();
+    if (Number(meta.size ?? 0) > MAX_VOICE_NOTE_BYTES) throw new Error(`voice note too large (${meta.size} bytes)`);
+    const [content] = await file.download();
     const [response] = await client.recognize({
       recognizer: `projects/${cfg.project}/locations/${cfg.location}/recognizers/_`,
       config: { autoDecodingConfig: {}, languageCodes: [speechLanguageCode(language)], model: cfg.model },
-      uri: audioGsUrl,
+      content,
     });
     const text = (response.results ?? [])
       .map((r) => r.alternatives?.[0]?.transcript?.trim())

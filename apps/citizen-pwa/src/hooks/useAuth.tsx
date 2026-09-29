@@ -10,6 +10,7 @@ import {
 import type { User, UserRole } from '@vayusetu/shared-types';
 import { firebaseAuth, isFirebaseConfigured } from '../lib/firebase';
 import { ApiClientError, usersApi } from '../lib/apiClient';
+import i18n, { i18nCodeToBcp47 } from '../i18n';
 
 /**
  * Product Spec Feature 1, Persona 1 (Rina): "no login wall that blocks a
@@ -142,18 +143,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (err) {
         if (!(err instanceof ApiClientError) || err.status !== 404) throw err;
       }
-      const detectedLang = navigator.language?.startsWith('hi')
-        ? 'hi-IN'
-        : navigator.language?.startsWith('pa')
-          ? 'pa-IN'
-          : navigator.language?.startsWith('mr')
-            ? 'mr-IN'
-            : 'en-IN';
+      // The language the citizen is USING -- the UI language, which the
+      // switcher may have changed before they ever registered (their first
+      // report registers them). Using navigator.language instead registered a
+      // citizen who had switched to Hindi as en-IN, so Gemini and TTS answered
+      // in English (29 Sep live test). i18next already falls back to the
+      // browser language when nothing was chosen.
+      const uiLang = i18nCodeToBcp47(i18n.resolvedLanguage ?? i18n.language);
       let created: User;
       try {
         created = await usersApi.register(token, {
           displayName: opts?.displayName?.trim() || 'Citizen Reporter',
-          preferredLanguage: opts?.preferredLanguage ?? detectedLang,
+          preferredLanguage: opts?.preferredLanguage ?? uiLang,
           role: opts?.role ?? 'citizen',
         });
       } catch (err) {
