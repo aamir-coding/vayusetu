@@ -11,16 +11,13 @@ terraform {
     }
   }
 
-  # Remote state -- swap this for a real backend before more than one
-  # person applies against this environment. Uncomment once the state
-  # bucket exists (see infra/terraform/README.md's "Remote state"
-  # section); until then, state is local, which is fine for one engineer
-  # bootstrapping Day 1 but WILL conflict the moment a second person runs
-  # `apply` from a different machine.
-  # backend "gcs" {
-  #   bucket = "vayusetu-exchange-dev-tfstate"
-  #   prefix = "terraform/state"
-  # }
+  # Remote state in a versioned bucket in this project (GCS locks it, so two
+  # people can't apply at once). Migrated from local state with
+  # infra/terraform/scripts/migrate-state.ps1; see README "Remote state".
+  backend "gcs" {
+    bucket = "vayusetu-exchange-dev-tfstate"
+    prefix = "terraform/state"
+  }
 }
 
 provider "google" {
