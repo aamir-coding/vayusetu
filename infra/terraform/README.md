@@ -210,3 +210,25 @@ terraform show -no-color destroy.tfplan
 terraform apply destroy.tfplan
 ```
 Cloud Run deletion protection may need to be disabled before destroying. Non-production buckets and BigQuery datasets have `force_destroy` / `delete_contents_on_destroy` enabled, so their contents can be deleted. Firestore uses an abandon deletion policy in this module. Do not reuse this pattern unmodified once a `prod` environment exists.
+
+## Remote state
+Each environment keeps its state in a versioned bucket in its own project (`gs://<project>-tfstate/terraform/state`), set in `environments/<env>/providers.tf`. GCS locks the state during a run, so two people can't apply at once, and versioning makes every past state recoverable.
+
+**One-time migration** from local files, run by a person:
+```powershell
+powershell -ExecutionPolicy Bypass -File infra\terraform\scripts\migrate-state.ps1 -From "<checkout that holds the old terraform.tfstate files>"
+```
+The script:
+1. creates the buckets
+2. copies each `terraform.tfvars` into this checkout, with a backup in `gs://<project>-tfstate/tfvars/`
+3. runs `terraform init -migrate-state`
+4. renames the old local file to `terraform.tfstate.pre-gcs-backup`
+
+Then plan and apply with plain `terraform plan` / `terraform apply` from `environments/<env>`, with no `-state` flag.
+
+**After migrating, never plan from a checkout whose `providers.tf` still has the backend commented out.** It would read an empty local state and propose creating every resource again.
+
+`terraform.tfvars` is not in git (`.gitignore`). A new machine restores it with:
+```powershell
+gcloud storage cp gs://<project>-tfstate/tfvars/terraform.tfvars infra\terraform\environments\<env>\
+```
