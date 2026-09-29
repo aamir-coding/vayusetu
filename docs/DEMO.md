@@ -24,7 +24,8 @@ Chirag signs in to the admin accounts; nobody else handles those passwords.
 3. **Monitoring is clean.** The dashboard "VayuSetu ncr-dev — operations" (once `monitoring.tf` is applied) shows no open incidents. Billing must be enabled (see RUNBOOK "429 / billing").
 4. **Two report photos** on the phone, both of the **same spot**, e.g. roadside garbage burning. `packages/gemini-client/redteam/images/garbage_fire.jpg` works if you have no real one.
 5. **Location: Karol Bagh, 28.65041, 77.19009** (type it manually: Report → Change → Latitude/Longitude). This is the centre of H3 cell `883da11623fffff`, inside **DL-CENTRAL**, Deshmukh's district. Alerts are routed by the district of the cell's *centre*. Do **not** use Anand Vihar: that cell straddles the Delhi–UP border, and its alert went to UP-GHAZIABAD, which neither demo account can see (28 Sep rehearsal).
-6. **Clear the demo cell.** A still-open alert on the same cell (new / acknowledged / in progress, created in the last 24 h) **suppresses** a new one, so the live alert would never appear. In Deshmukh's Alert Queue, resolve or dismiss any open alert titled "…Central Delhi near Mandir Marg" (cell `883da11623fffff`).
+5b. **Not in Delhi or Maharashtra?** That's fine: the location is typed, not taken from GPS, and the photo can come from the gallery. For the Mumbai–Pune console, use **Pune Station, 18.52571, 73.87579** (cell `8860885007fffff`, 2.8 km from the nearest monitor). A report from anywhere else is still analysed, but it lies outside both states' maps, so it produces no hotspot or alert.
+6. **Clear the demo cell.** A still-open alert on the same cell (new / acknowledged / in progress, created in the last 24 h) **suppresses** a new one, so the live alert would never appear. In Deshmukh's Alert Queue, resolve or dismiss any open alert titled "…Central Delhi near Mandir Marg" (cell `883da11623fffff`). For a Mumbai-Pune demo, do the same in the Pune district console for the Pune Station cell `8860885007fffff`: the 29 Sep rehearsal left alert `hotspot_8860885007fffff_2026-09-29T11` open.
 7. **Guided tours:** each app shows a short tour on its first visit per browser (the citizen app on Report, the console after sign-in). Walk through them once during warm-up, or use the console tour as a 30-second beat; Help replays either one.
 8. **Theme:** both apps and https://vayusetu.web.app follow the device's light/dark setting; the sun/moon button overrides it. Pick one per screen for a consistent look on the projector.
 9. **Notifications:** in Deshmukh's window, click "Enable alert notifications" (needs the VAPID key; without it, the live queue still updates via Firestore).
@@ -93,6 +94,12 @@ The margin was 0.0068, which is why §4 keeps a third citizen ready.
 Anand Vihar (the first attempt) also alerted, at **0.816**, but the alert went to UP-GHAZIABAD, where no demo account sees it. Hence §2.5.
 
 The offline queue also proved itself: a report blocked at 02:17 by the CDN bug was re-sent by itself at 04:28, once the fix was live.
+
+### 29 Sep 2026: Mumbai-Pune, live, end to end
+- **Reports:** two anonymous citizens sent the same photo from Pune Station (18.52571, 73.87579). Both resolved to cell `8860885007fffff`, MH-PUNE. Gemini rated each open waste burning, severity 4, confidence 0.95, visible plume (flagged for review: the monitor disagreed).
+- **Fast path:** 0.373 after the first citizen, **0.607** after the second (model score 0).
+- **Alert:** `hotspot_8860885007fffff_2026-09-29T11`, "Watch Alert: Open Waste Burning Hotspot in Pune District". The Gemini briefing cites 2 citizen reports and the Shivajinagar monitor. It was dispatched to 2 officials (Pune district and the state admin), about 55 s after the first report.
+- **Registration:** the second citizen's first visit went `/users/me` 404, then `register` 201. The 28 Sep CDN-cache fix holds.
 
 ## 6. If something goes wrong
 | Symptom | Do |

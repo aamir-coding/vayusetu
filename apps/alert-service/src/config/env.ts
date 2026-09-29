@@ -52,6 +52,15 @@ const EnvSchema = z
     BRIEFING_TIMEOUT_MS: z.coerce.number().int().min(1000).max(90_000).default(30_000),
   })
   .superRefine((e, ctx) => {
+    // Audit V8: without a key every hotspot cell resolves to the fallback
+    // district, so alerts would route to the wrong officer. Refuse to start.
+    if (e.NODE_ENV === 'production' && !e.GOOGLE_MAPS_API_KEY) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['GOOGLE_MAPS_API_KEY'],
+        message: 'required in production: without it every location silently resolves to DEFAULT_STATE_CODE/DEFAULT_DISTRICT_CODE',
+      });
+    }
     if (e.PUBSUB_PUSH_AUTH === 'oidc') {
       if (!e.PUBSUB_PUSH_AUDIENCE) {
         ctx.addIssue({ code: 'custom', path: ['PUBSUB_PUSH_AUDIENCE'], message: 'required when PUBSUB_PUSH_AUTH=oidc' });

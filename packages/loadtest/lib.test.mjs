@@ -30,6 +30,14 @@ test('flags plans that would trip the per-user limiter', () => {
   assert.deepEqual(limiterBreaches({ rps: 5, tokens: 2 }), []);
 });
 
+test('plans need 20% headroom: random bursts cross a limit the average only nears', () => {
+  // 29 Sep Mumbai-Pune: 6 rps over 2 tokens = 54/min per token vs 60 -> four real 429s.
+  const b = limiterBreaches({ rps: 6, tokens: 2 });
+  assert.ok(b.some((x) => x.service === 'submission-service' && x.perTokenPerMin === 54));
+  // Delhi's 3 tokens at 6 rps (36/min) ran with zero 429s.
+  assert.deepEqual(limiterBreaches({ rps: 6, tokens: 3 }), []);
+});
+
 test('summary and verdict', () => {
   const samples = [
     ...Array.from({ length: 99 }, () => ({ name: 'hotspots', status: '200', ms: 100 })),
