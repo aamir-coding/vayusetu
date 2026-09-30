@@ -110,6 +110,9 @@ export async function analyzeSubmission(submissionId: string, deps: AnalysisDeps
   const input: PipelineAInput = {
     photo: { gcsUri: sub.photoStorageUrl, mimeType: mimeFromUrl(sub.photoStorageUrl) },
     ...(transcript ? { transcript } : {}),
+    // The one measurement taken AT the spot -- it was stored and shown but
+    // never reached Gemini until the 30 Sep live check.
+    ...(sub.fieldSensorReading ? { fieldSensor: sub.fieldSensorReading } : {}),
     context: ctx.context,
     advisoryLanguage: language,
     clarifications: answered.map((c) => ({

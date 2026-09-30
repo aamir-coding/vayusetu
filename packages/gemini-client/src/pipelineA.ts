@@ -139,6 +139,8 @@ export interface ClarificationTurn {
 export interface PipelineAInput {
   photo: { gcsUri: string; mimeType: string };
   transcript?: string;
+  /** Field worker's handheld reading taken with the photo, ug/m3 (Product Spec Feature 1, Persona 2). */
+  fieldSensor?: { pm25?: number; pm10?: number };
   context: PipelineAContext;
   advisoryLanguage: string;
   /** Earlier Pipeline D turns (question + citizen answer), oldest first. */
@@ -162,6 +164,9 @@ export function buildPipelineAParts(input: PipelineAInput): Part[] {
       ? `satelliteAtCell: aerosolIndex=${ctx.satellite.aerosolIndex ?? 'n/a'}, aod550nm=${ctx.satellite.aod550nm ?? 'n/a'}, no2Column=${ctx.satellite.no2ColumnMolM2 ?? 'n/a'}, date=${ctx.satellite.observationDate ?? 'n/a'}`
       : 'satelliteAtCell: unavailable',
     ...(ctx.modeledAqi ? [`modeledAQIAtCell: ${ctx.modeledAqi.aqi} (${ctx.modeledAqi.category ?? 'unknown'})`] : []),
+    ...(input.fieldSensor && (input.fieldSensor.pm25 !== undefined || input.fieldSensor.pm10 !== undefined)
+      ? [`handheldSensorAtSpot: pm25=${input.fieldSensor.pm25 ?? 'n/a'} ug/m3, pm10=${input.fieldSensor.pm10 ?? 'n/a'} ug/m3 (field worker, taken with this photo)`]
+      : []),
     input.transcript ? `voiceTranscript: ${JSON.stringify(input.transcript)}` : 'voiceTranscript: none',
   ];
   const parts: Part[] = [
