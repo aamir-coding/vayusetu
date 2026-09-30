@@ -1,5 +1,5 @@
 import { GeocodingError } from '@vayusetu/gcp-clients';
-import type { Alert, AlertType, Corridor, ForecastRun, GeoPoint, HotspotCell, Jurisdiction } from '@vayusetu/shared-types';
+import type { Alert, AlertSeverity, AlertType, Corridor, ForecastRun, GeoPoint, HotspotCell, Jurisdiction } from '@vayusetu/shared-types';
 import type { z } from 'zod';
 import { alertsCollection, corridorsCollection, forecastsCollection, hotspotsCollection } from '../lib/collections.js';
 import { cellCenter } from '../lib/geo.js';
@@ -34,6 +34,11 @@ export interface PipelineDeps {
   findRecipients: (j: Jurisdiction) => Promise<Recipient[]>;
   hotspotThresholds: HotspotThresholds;
   suppressionWindowHours: number;
+  /**
+   * Audit M7 (alert fatigue): a cell with NO citizen report is model-only
+   * evidence, and opens an alert only at this severity or above. Unset = no gate.
+   */
+  modelOnlyMinSeverity?: 'watch' | 'warning' | 'critical';
   fallbackStateCode: string;
   now: () => Date;
   logger: {
@@ -44,6 +49,7 @@ export interface PipelineDeps {
 
 export type EventOutcome =
   | { result: 'below_threshold' }
+  | { result: 'model_only_below_gate'; severity: AlertSeverity }
   | { result: 'suppressed'; alertId: string; by: string }
   | { result: 'created'; alertId: string; notified: number }
   | { result: 'duplicate'; alertId: string }
@@ -222,6 +228,16 @@ export async function handleHotspotUpdated(payload: HotspotUpdatedPayload, deps:
 
   const severity = hotspotSeverity(cell.hotspotConfidenceScore, deps.hotspotThresholds);
   if (severity === null) return { result: 'below_threshold' };
+  // Audit M7: 73 open NCR alerts on 26 Sep were mostly model-only 'watch'
+  // cells nobody had reported. Citizen evidence always pages; the model
+  // alone must clear a higher bar.
+  if (
+    deps.modelOnlyMinSeverity &&
+    cell.contributingSignals.citizenReportCount === 0 &&
+    SEVERITY_RANK[severity] < SEVERITY_RANK[deps.modelOnlyMinSeverity]
+  ) {
+    return { result: 'model_only_below_gate', severity };
+  }
 
   const corridor = await readValidated<Corridor>(
     corridorsCollection().doc(cell.corridorId),
