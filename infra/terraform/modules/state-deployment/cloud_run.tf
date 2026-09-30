@@ -72,6 +72,16 @@ locals {
     }
   }
 
+  # Audit L7: browsers reach every API same-origin through the Hosting
+  # rewrites, so CORS only matters for someone calling *.run.app directly.
+  # Allow the two Hosting sites instead of the '*' default.
+  cors_services = ["submission-service", "alert-service", "hotspot-service", "forecast-service", "federation-service"]
+  cors_origin = join(",", distinct(concat(
+    local.citizen_hosting_origins,
+    ["https://${google_firebase_hosting_site.admin.site_id}.web.app", "https://${google_firebase_hosting_site.admin.site_id}.firebaseapp.com"],
+    var.dashboard_base_url != "" && var.dashboard_base_url != null ? [trimsuffix(var.dashboard_base_url, "/")] : [],
+  )))
+
   # Services that reverse-geocode (both call the shared resolver in
   # packages/gcp-clients/src/geocoding.ts).
   maps_key_services = ["submission-service", "alert-service", "analysis-service"]
@@ -122,7 +132,10 @@ resource "google_cloud_run_v2_service" "service" {
       }
 
       dynamic "env" {
-        for_each = lookup(local.service_env, each.key, {})
+        for_each = merge(
+          lookup(local.service_env, each.key, {}),
+          contains(local.cors_services, each.key) ? { CORS_ORIGIN = local.cors_origin } : {},
+        )
         content {
           name  = env.key
           value = env.value

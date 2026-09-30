@@ -44,7 +44,12 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
     errorResponseBuilder: (_req, ctx) => new ApiHttpError('RATE_LIMITED', `Rate limit exceeded, retry in ${ctx.after}`),
   });
 
-  app.get('/healthz', { config: { public: true, rateLimit: false } }, async () => ({ ok: true, service: 'federation-service' }));
+  // /health like every other service (audit L5): Cloud Run's *.run.app edge
+  // intercepts the literal /healthz (infra/terraform/README.md). /healthz
+  // stays as an alias for anything already probing it.
+  const health = async () => ({ ok: true, service: 'federation-service' });
+  app.get('/health', { config: { public: true, rateLimit: false } }, health);
+  app.get('/healthz', { config: { public: true, rateLimit: false } }, health);
 
   const deps = opts.deps ?? (await import('./wiring.js')).buildProductionAdapters();
   await app.register(federationRoutes, {

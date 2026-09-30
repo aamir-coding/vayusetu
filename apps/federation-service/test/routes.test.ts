@@ -48,6 +48,16 @@ beforeEach(async () => {
 });
 afterEach(async () => app.close());
 
+describe('health (audit L5)', () => {
+  it('answers on /health like every other service, and on the /healthz alias, without auth', async () => {
+    for (const url of ['/health', '/healthz']) {
+      const res = await app.inject({ method: 'GET', url });
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toEqual({ ok: true, service: 'federation-service' });
+    }
+  });
+});
+
 describe('auth (contract: state_admin+ for reads, super_admin only for import)', () => {
   it('401 without a token; 403 for district_admin on every endpoint', async () => {
     expect((await app.inject({ method: 'GET', url: '/api/v1/federation/models' })).statusCode).toBe(401);
