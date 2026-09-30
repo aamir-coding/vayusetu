@@ -2,6 +2,7 @@ import * as React from 'react';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import type { Jurisdiction, UserRole } from '@vayusetu/shared-types';
 import { firebaseAuth, isFirebaseConfigured } from '../lib/firebase';
+import { jurisdictionFromClaims, type OfficialClaims } from '../lib/officialSession';
 
 /**
  * API_CONTRACTS.md: "district_admin/state_admin/super_admin accounts are
@@ -66,14 +67,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       const idTokenResult = await firebaseUser.getIdTokenResult();
-      const claims = idTokenResult.claims as { role?: string; stateCode?: string; districtCode?: string };
-      if (claims.role && claims.stateCode) {
-        setSession({
-          uid: firebaseUser.uid,
-          displayName: firebaseUser.email ?? firebaseUser.uid,
-          role: claims.role as OfficialSession['role'],
-          jurisdiction: { stateCode: claims.stateCode, districtCode: claims.districtCode },
-        });
+      const scope = jurisdictionFromClaims(idTokenResult.claims as OfficialClaims);
+      if (scope) {
+        setSession({ uid: firebaseUser.uid, displayName: firebaseUser.email ?? firebaseUser.uid, ...scope });
       } else {
         // Signed in, but no custom claims yet — a super_admin hasn't
         // provisioned this account. Surface as "no session" rather than
