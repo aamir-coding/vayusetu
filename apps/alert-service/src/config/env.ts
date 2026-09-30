@@ -43,6 +43,9 @@ const EnvSchema = z
     // An open alert for the same cell/corridor-state suppresses a new one of
     // equal-or-lower severity for this long (alert-fatigue guard).
     SUPPRESSION_WINDOW_HOURS: z.coerce.number().positive().default(24),
+    // Audit M7: a hotspot with zero citizen reports (model-only) opens an
+    // alert only at this severity or above. 'off' restores the old behaviour.
+    MODEL_ONLY_MIN_SEVERITY: z.enum(['off', 'watch', 'warning', 'critical']).default('warning'),
 
     // Pipeline C. 'gemini' = Gemini Pro via src/gemini/modelCall.ts (model id
     // and location: GEMINI_BRIEFING_MODEL / GEMINI_LOCATION, see

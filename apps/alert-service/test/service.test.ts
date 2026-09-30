@@ -236,6 +236,29 @@ describe('hotspot.updated pipeline', () => {
     expect(fakeDb.collection('alerts').all()).toHaveLength(0);
   });
 
+  it('audit M7: a model-only cell needs the gate severity; citizen evidence always pages', async () => {
+    await app.close();
+    app = await buildApp({ pipelineDeps: { ...makeDeps(), modelOnlyMinSeverity: 'warning' }, pushTokenVerifier: verifier });
+    const modelOnly = (hour: string, score: number) => {
+      const cell = seedCell(hour, score);
+      const c = { ...cell, contributingSignals: { ...cell.contributingSignals, citizenReportCount: 0 } };
+      fakeDb.collection('hotspots').seed(c.id, c as never);
+      return c;
+    };
+    const watchNoCitizens = modelOnly('2026-09-24T04', 0.65);
+    expect((await hotspotEvent(watchNoCitizens)).statusCode).toBe(204);
+    expect(alertDoc(`hotspot_${watchNoCitizens.id}`)).toBeUndefined();
+    expect(resolveJurisdiction).not.toHaveBeenCalled(); // gated before geocoding/briefing
+
+    const warningNoCitizens = modelOnly('2026-09-24T05', 0.8);
+    await hotspotEvent(warningNoCitizens);
+    expect(alertDoc(`hotspot_${warningNoCitizens.id}`)?.severity).toBe('warning');
+
+    const watchWithCitizens = seedCell('2026-09-24T06', 0.65, latLngToCell(28.70, 77.10, 8));
+    await hotspotEvent(watchWithCitizens);
+    expect(alertDoc(`hotspot_${watchWithCitizens.id}`)?.severity).toBe('watch');
+  });
+
   it('ACKs an event whose HotspotCell doc does not exist (non-retryable)', async () => {
     const res = await push('hotspot-updated', { hotspotCellId: 'ghost_2026-09-24T06', corridorId: 'ncr-airshed', hotspotConfidenceScore: 0.95 });
     expect(res.statusCode).toBe(204);
