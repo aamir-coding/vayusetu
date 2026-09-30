@@ -29,6 +29,12 @@ module "mh_dev" {
   billing_account_id = var.billing_account_id
   monthly_budget     = var.monthly_budget
 
+  # Pre-production readiness audit (all default off; see the module variables)
+  citizen_media_retention_days = var.citizen_media_retention_days # M5
+  enable_app_check             = var.enable_app_check             # H1
+  app_check_mode               = var.app_check_mode               # H1
+  app_check_extra_domains      = var.app_check_extra_domains      # H1
+
   # Ingestion (ingestion.tf)
   corridor_ids                    = ["mumbai-pune-corridor"]
   cpcb_api_key_secret_populated   = var.cpcb_api_key_secret_populated
