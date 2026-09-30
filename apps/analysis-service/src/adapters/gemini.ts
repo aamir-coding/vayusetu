@@ -18,9 +18,17 @@ const SCHEMAS = {
 };
 
 /** Pipeline A ('assess': one function) or Pipeline D ('clarify': assessment OR one question). */
-export function createGeminiTriage(ai: GenerativeModelTransport, model: string) {
+/**
+ * `timeoutMs` bounds each model call (retries included). Without it a hung
+ * call could outlive the 120 s Pub/Sub ack deadline, so the message was
+ * redelivered while the first attempt still ran: double Gemini spend and two
+ * writers racing on analysisResults (audit H3). Up to 3 calls per report x
+ * 25 s stays inside the deadline.
+ */
+export function createGeminiTriage(ai: GenerativeModelTransport, model: string, timeoutMs = 25_000) {
   return async (input: PipelineAInput, mode: TriageMode): Promise<TriageOutcome> => {
     const res = await callWithSchema({
+      signal: AbortSignal.timeout(timeoutMs),
       ai,
       model,
       systemInstruction: mode === 'clarify' ? PIPELINE_D_SYSTEM_INSTRUCTION : PIPELINE_A_SYSTEM_INSTRUCTION,
