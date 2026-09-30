@@ -19,12 +19,13 @@ vi.mock('@vayusetu/gcp-clients', async (importOriginal) => ({
     return 'fake-message-id';
   },
   createSignedReadUrl: async (gs: string) => `https://storage.googleapis.com/signed/${gs.slice(5)}?X-Goog-Signature=fake`,
-  createSignedUploadUrl: async (args: { bucket: string; objectPath: string; contentType: string }) => {
+  createSignedUploadUrl: async (args: { bucket: string; objectPath: string; contentType: string; maxBytes: number }) => {
     signCalls.push(args);
     return {
       uploadUrl: `https://storage.googleapis.com/${args.bucket}/${args.objectPath}?X-Goog-Signature=fake`,
       storageUrl: `gs://${args.bucket}/${args.objectPath}`,
       expiresAt: new Date(Date.now() + 900_000).toISOString(),
+      uploadHeaders: { 'x-goog-content-length-range': `0,${args.maxBytes}` },
     };
   },
 }));
@@ -240,6 +241,12 @@ describe('submission-service', () => {
       expect(res.statusCode).toBe(400);
     });
 
+    it('caps photos at 10 MB (audit H2)', async () => {
+      await register('rina');
+      expect((await sign('rina', { kind: 'photo', contentType: 'image/jpeg' })).statusCode).toBe(200);
+      expect(signCalls[0]!.maxBytes).toBe(10 * 1024 * 1024);
+    });
+
     it('issues a URL scoped under the caller\u2019s uid and signs the exact Content-Type sent', async () => {
       await register('rina');
       const res = await sign('rina', { kind: 'audio', contentType: 'audio/webm;codecs=opus' });
@@ -248,6 +255,9 @@ describe('submission-service', () => {
       expect(body.storageUrl).toMatch(/^gs:\/\/test-media\/submissions\/rina\/\d{4}-\d{2}-\d{2}\/audio-[0-9a-f-]{36}\.webm$/);
       expect(body.uploadUrl).toContain('X-Goog-Signature');
       expect(signCalls[0]).toMatchObject({ bucket: 'test-media', contentType: 'audio/webm;codecs=opus' });
+      // Audit H2: the size cap is signed into the URL and returned for the client to send.
+      expect(signCalls[0]!.maxBytes).toBe(2 * 1024 * 1024);
+      expect(body.uploadHeaders).toEqual({ 'x-goog-content-length-range': '0,2097152' });
     });
   });
 

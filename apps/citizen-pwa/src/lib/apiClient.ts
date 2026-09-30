@@ -114,6 +114,8 @@ export interface UploadUrlResponse {
   uploadUrl: string;
   storageUrl: string;
   expiresAt: string;
+  /** Signed headers the PUT must carry verbatim (e.g. the size limit). */
+  uploadHeaders?: Record<string, string>;
 }
 
 export const submissionsApi = {

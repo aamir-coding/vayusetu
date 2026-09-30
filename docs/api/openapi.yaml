@@ -150,11 +150,18 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [uploadUrl, storageUrl, expiresAt]
+                required: [uploadUrl, storageUrl, expiresAt, uploadHeaders]
                 properties:
                   uploadUrl: { type: string, format: uri }
                   storageUrl: { type: string, pattern: '^gs://' }
                   expiresAt: { $ref: '#/components/schemas/ISODateString' }
+                  uploadHeaders:
+                    type: object
+                    additionalProperties: { type: string }
+                    description: >-
+                      Send these on the PUT exactly as given; they are signed into the URL. Includes
+                      `x-goog-content-length-range` (photo 10 MB, audio 2 MB max), which Cloud Storage enforces.
+                    examples: [{ x-goog-content-length-range: '0,10485760' }]
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }

@@ -48,6 +48,9 @@ export function mediaPrefixFor(uid: string): string {
   return `submissions/${uid}/`;
 }
 
+/** Client-compressed photos are ~0.1-1 MB and voice notes (<= 10 s) ~0.2 MB. */
+export const MAX_UPLOAD_BYTES = { photo: 10 * 1024 * 1024, audio: 2 * 1024 * 1024 } as const;
+
 export default async function uploadsRoutes(app: FastifyInstance) {
   app.post('/submissions/upload-url', async (request, reply) => {
     const { uid } = requireAuthUser(request);
@@ -77,6 +80,7 @@ export default async function uploadsRoutes(app: FastifyInstance) {
       bucket: env.MEDIA_BUCKET,
       objectPath,
       contentType: body.contentType,
+      maxBytes: MAX_UPLOAD_BYTES[body.kind],
     });
     reply.status(200).send(signed);
   });
