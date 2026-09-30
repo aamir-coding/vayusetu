@@ -9,6 +9,7 @@
 #   data freshness ........ a scheduled job hasn't SUCCEEDED lately RUNBOOK "Stale data"
 #   dead letters .......... Pub/Sub gave up on an event            RUNBOOK "Dead letters"
 #   uptime ................ submission-service /health            RUNBOOK "Service down"
+#   fallback routing ...... an alert could not be geocoded (L9)    RUNBOOK "Alert routed to state"
 #   budget ................ spend vs var.monthly_budget            RUNBOOK "Budget"
 
 locals {
@@ -109,6 +110,35 @@ resource "google_monitoring_alert_policy" "service_429" {
   notification_channels = local.notification_channels
   alert_strategy {
     auto_close = "3600s"
+  }
+  depends_on = [google_project_service.required]
+}
+
+# Audit L9: alert-service routes an alert whose cell centre does not geocode
+# to the whole STATE instead of its district. The alert is not lost, but no
+# district officer is paged for it, so an operator should know.
+resource "google_monitoring_alert_policy" "alert_fallback_routing" {
+  project      = var.project_id
+  display_name = "[${var.environment_name}] alert-service: alert routed to state fallback (no district)"
+  combiner     = "OR"
+
+  conditions {
+    display_name = "\"Cell centre did not geocode\" logged"
+    condition_matched_log {
+      filter = "resource.type = \"cloud_run_revision\" AND resource.labels.service_name = \"alert-service-${var.environment_name}\" AND jsonPayload.msg = \"Cell centre did not geocode; routed to fallback state\""
+    }
+  }
+
+  documentation {
+    content   = "A hotspot alert's cell centre did not reverse-geocode, so it went to state admins only (fallback state). Check the Maps key and quota, then reassign the alert to its district from the Alert Queue. RUNBOOK.md, section \"Alert routed to state\": ${local.runbook}"
+    mime_type = "text/markdown"
+  }
+  notification_channels = local.notification_channels
+  alert_strategy {
+    notification_rate_limit {
+      period = "3600s"
+    }
+    auto_close = "86400s"
   }
   depends_on = [google_project_service.required]
 }

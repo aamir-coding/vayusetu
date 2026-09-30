@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { v2 } from '@google-cloud/speech';
 import { TextToSpeechClient } from '@google-cloud/text-to-speech';
-import { getAdminApp } from '@vayusetu/gcp-clients';
+import { getAdminApp, parseGsUrl } from '@vayusetu/gcp-clients';
 import { getStorage } from 'firebase-admin/storage';
 
 /**
@@ -11,12 +11,6 @@ import { getStorage } from 'firebase-admin/storage';
  */
 export function speechLanguageCode(tag: string): string {
   return tag === 'pa-IN' ? 'pa-Guru-IN' : tag;
-}
-
-/** `gs://bucket/path/to/object` -> { bucket, path }; undefined for anything else. */
-export function parseGsUrl(url: string): { bucket: string; path: string } | undefined {
-  const m = /^gs:\/\/([^/]+)\/(.+)$/.exec(url);
-  return m ? { bucket: m[1]!, path: m[2]! } : undefined;
 }
 
 /** Voice notes are capped at 10 s by the PWA; anything far larger is not one. */

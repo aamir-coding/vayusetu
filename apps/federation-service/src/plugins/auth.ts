@@ -20,7 +20,7 @@ declare module 'fastify' {
     authUser?: AuthedUser;
   }
   interface FastifyContextConfig {
-    /** Skip Firebase auth. Used by /healthz and the Pub/Sub push routes
+    /** Skip Firebase auth. Used by /health and the Pub/Sub push routes
      *  (which authenticate with Google OIDC instead -- plugins/pushAuth.ts). */
     public?: boolean;
   }

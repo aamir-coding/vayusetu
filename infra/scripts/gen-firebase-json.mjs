@@ -25,6 +25,12 @@ const securityHeaders = {
     { key: 'X-Content-Type-Options', value: 'nosniff' },
     { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
     { key: 'Permissions-Policy', value: 'camera=(self), microphone=(self), geolocation=(self)' },
+    // Audit M4: neither app may be framed by another site (clickjacking of
+    // e.g. the officials' status buttons). A full script-src policy would have
+    // to allow Maps, Firebase and Google Fonts; these directives restrict
+    // only framing, <base> and plugins, so they can't break the apps.
+    { key: 'X-Frame-Options', value: 'DENY' },
+    { key: 'Content-Security-Policy', value: "frame-ancestors 'none'; base-uri 'self'; object-src 'none'" },
   ],
 };
 // Service worker + manifest must never be cached, or clients pin an old app.

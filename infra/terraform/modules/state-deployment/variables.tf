@@ -300,6 +300,38 @@ variable "alert_429_per_5m" {
   description = "HTTP 429s per service per 5 minutes before alerting."
 }
 
+variable "citizen_media_retention_days" {
+  type        = number
+  default     = 0
+  description = "Audit M5: delete citizen photos/voice notes older than this many days (0 = keep forever). Deletion is permanent; analyses in Firestore/BigQuery are kept."
+  validation {
+    condition     = var.citizen_media_retention_days == 0 || var.citizen_media_retention_days >= 30
+    error_message = "Use 0 (off) or at least 30 days, so officials can still open a report's media during an investigation."
+  }
+}
+
+variable "enable_app_check" {
+  type        = bool
+  default     = false
+  description = "Audit H1: create a reCAPTCHA Enterprise key, register it with Firebase App Check for the citizen web app, and ship its site key in the citizen build (app_check.tf)."
+}
+
+variable "app_check_mode" {
+  type        = string
+  default     = "off"
+  description = "submission-service APP_CHECK: off | monitor (log only) | enforce (401 without a valid token). Needs enable_app_check and a rebuilt citizen PWA before 'enforce'."
+  validation {
+    condition     = contains(["off", "monitor", "enforce"], var.app_check_mode)
+    error_message = "app_check_mode must be off, monitor or enforce."
+  }
+}
+
+variable "app_check_extra_domains" {
+  type        = list(string)
+  default     = []
+  description = "Extra domains (e.g. a custom domain) allowed to use the App Check reCAPTCHA key, besides <project>.web.app and <project>.firebaseapp.com."
+}
+
 variable "billing_account_id" {
   type        = string
   default     = ""

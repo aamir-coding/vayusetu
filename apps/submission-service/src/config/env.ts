@@ -9,6 +9,10 @@ const EnvSchema = z.object({
   DEFAULT_STATE_CODE: z.string().default('DL'),
   DEFAULT_DISTRICT_CODE: z.string().default('DL-CENTRAL'),
   CORS_ORIGIN: z.string().default('*'),
+  // Audit H1: Firebase App Check on the citizen write routes. 'monitor' logs
+  // missing/invalid tokens without rejecting; 'enforce' 401s them. Roll out
+  // off -> monitor -> enforce once the PWA ships with VITE_RECAPTCHA_SITE_KEY.
+  APP_CHECK: z.enum(['off', 'monitor', 'enforce']).default('off'),
   // Citizen-media bucket (Terraform output `citizen_media_bucket`). Unset =>
   // POST /submissions/upload-url returns a clear 500 and POST /submissions
   // skips the media-ownership check (local dev without GCS).

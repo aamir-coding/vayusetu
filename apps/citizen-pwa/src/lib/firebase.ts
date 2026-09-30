@@ -27,3 +27,45 @@ if (isFirebaseConfigured) {
 }
 
 export { app as firebaseApp, auth as firebaseAuth };
+
+/**
+ * Firebase App Check (audit H1): proves API calls come from this PWA in a
+ * real browser, not a script minting anonymous accounts. Only active when
+ * Terraform ships VITE_RECAPTCHA_SITE_KEY (enable_app_check); the SDK is
+ * loaded lazily so builds without a key carry none of it.
+ */
+const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+let appCheckReady: Promise<import('firebase/app-check').AppCheck | null> | null = null;
+
+function appCheck() {
+  if (!app || !recaptchaSiteKey) return null;
+  const firebaseApp = app;
+  appCheckReady ??= import('firebase/app-check')
+    .then(({ initializeAppCheck, ReCaptchaEnterpriseProvider }) =>
+      initializeAppCheck(firebaseApp, { provider: new ReCaptchaEnterpriseProvider(recaptchaSiteKey), isTokenAutoRefreshEnabled: true }),
+    )
+    .catch(() => null);
+  return appCheckReady;
+}
+
+/**
+ * `{ 'X-Firebase-AppCheck': token }`, or `{}` when App Check is off or the
+ * token cannot be minted. Never throws: submission-service decides (monitor
+ * logs, enforce rejects), so a reCAPTCHA hiccup in monitor mode costs nothing.
+ */
+export async function appCheckHeaders(): Promise<Record<string, string>> {
+  const ready = appCheck();
+  if (!ready) return {};
+  try {
+    const instance = await ready;
+    if (!instance) return {};
+    const { getToken } = await import('firebase/app-check');
+    const { token } = await getToken(instance);
+    return { 'X-Firebase-AppCheck': token };
+  } catch {
+    return {};
+  }
+}
+
+// Start attestation at load, so the first report does not wait on reCAPTCHA.
+void appCheck();

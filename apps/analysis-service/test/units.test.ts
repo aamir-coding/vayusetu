@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { Submission } from '@vayusetu/shared-types';
 import { assembleContext } from '../src/adapters/context.js';
-import { parseGsUrl, speechLanguageCode, ttsCacheKey } from '../src/adapters/speech.js';
+import { parseGsUrl } from '@vayusetu/gcp-clients';
+import { speechLanguageCode, ttsCacheKey } from '../src/adapters/speech.js';
 import { categoryForAqi, crossValidate, istLabel, seasonFor, visualCategory } from '../src/pipeline/crossValidate.js';
 
 const base = {

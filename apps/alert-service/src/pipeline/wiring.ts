@@ -51,6 +51,7 @@ export function buildPipelineDeps(logger: FastifyBaseLogger): PipelineDeps {
     findRecipients,
     hotspotThresholds: parseHotspotThresholds(env.HOTSPOT_SEVERITY_THRESHOLDS),
     suppressionWindowHours: env.SUPPRESSION_WINDOW_HOURS,
+    modelOnlyMinSeverity: env.MODEL_ONLY_MIN_SEVERITY === 'off' ? undefined : env.MODEL_ONLY_MIN_SEVERITY,
     fallbackStateCode: env.DEFAULT_STATE_CODE,
     now: () => new Date(),
     logger,

@@ -135,6 +135,18 @@ describe('analysis.completed fast path', () => {
     });
   }
 
+  it('a flooded cell reads at most MAX_FAST_PATH_REPORTS reports, in one batched read (audit M3)', async () => {
+    for (let i = 0; i < 201; i++) seedReport(`f${i}`, {});
+    const getAll = vi.spyOn(fakeDb, 'getAll');
+    const { deps } = fastDeps();
+    await push(await app(deps), { submissionId: 'f0', h3Index: H3, corridorId: 'ncr-airshed' });
+    expect(getAll).toHaveBeenCalledTimes(1);
+    expect(getAll.mock.calls[0]!.length).toBe(200);
+    const doc = (await fakeDb.collection('hotspots').doc(`${H3}_2026-11-03T02`).get()).data()!;
+    expect((doc as { contributingSignals: { citizenReportCount: number } }).contributingSignals.citizenReportCount).toBe(200);
+    getAll.mockRestore();
+  });
+
   it('three verified reports + a fresh model score push the cell over the line and publish', async () => {
     fakeDb.collection('hotspots').seed(`${H3}_2026-11-03T01`, cell('2026-11-03T01:00:00.000Z', 0.3));
     for (const id of ['s1', 's2', 's3']) seedReport(id, {});

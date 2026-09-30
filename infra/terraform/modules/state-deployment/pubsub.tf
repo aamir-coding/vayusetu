@@ -127,10 +127,13 @@ resource "google_pubsub_topic_iam_member" "dead_letter_publisher" {
 resource "google_pubsub_subscription" "alert_service_push" {
   for_each = var.enable_alert_push_subscriptions ? local.alert_push_routes : {}
 
-  project              = var.project_id
-  name                 = "alert-service-${replace(each.key, ".", "-")}"
-  topic                = google_pubsub_topic.events[each.key].id
-  ack_deadline_seconds = 60 # geocoding + briefing (Gemini from Week 3) + FCM fan-out
+  project = var.project_id
+  name    = "alert-service-${replace(each.key, ".", "-")}"
+  topic   = google_pubsub_topic.events[each.key].id
+  # Audit M8: geocoding + a Gemini briefing (BRIEFING_TIMEOUT_MS, default 30 s)
+  # + FCM fan-out can pass 60 s; a redelivery mid-flight re-runs the event.
+  # 120 s matches alert-service's env.ts comment and analysis_service_push.
+  ack_deadline_seconds = 120
 
   push_config {
     push_endpoint = "${google_cloud_run_v2_service.service["alert-service"].uri}${each.value}"

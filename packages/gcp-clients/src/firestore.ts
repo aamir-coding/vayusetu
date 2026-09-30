@@ -1,4 +1,5 @@
 import { type App, getApps, initializeApp } from 'firebase-admin/app';
+import { type AppCheck, getAppCheck } from 'firebase-admin/app-check';
 import { type Auth, getAuth } from 'firebase-admin/auth';
 import { type Firestore, getFirestore } from 'firebase-admin/firestore';
 import { type Messaging, getMessaging } from 'firebase-admin/messaging';
@@ -32,6 +33,11 @@ export function getDb(): Firestore {
 
 export function getAdminAuth(): Auth {
   return getAuth(getAdminApp());
+}
+
+/** Firebase App Check: verifies the X-Firebase-AppCheck token a genuine app build attaches. */
+export function getAdminAppCheck(): AppCheck {
+  return getAppCheck(getAdminApp());
 }
 
 /** FCM. There is no FCM emulator -- this always talks to the real project,

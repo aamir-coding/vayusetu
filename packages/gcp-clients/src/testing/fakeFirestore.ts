@@ -228,6 +228,11 @@ export class FakeFirestore {
     this.indexes = indexes === false ? () => undefined : indexes ? () => indexes : () => (terraformIndexCache ??= terraformIndexes());
   }
 
+  /** Batched point reads, in argument order, like Firestore.getAll. */
+  async getAll(...refs: FakeDocRef[]): Promise<FakeDocSnapshot[]> {
+    return Promise.all(refs.map((r) => r.get()));
+  }
+
   collection(name: string): FakeCollection {
     if (!this.collections.has(name)) {
       const ctx = { collectionId: name.split('/').pop()!, indexes: this.indexes };

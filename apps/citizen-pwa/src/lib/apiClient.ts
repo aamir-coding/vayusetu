@@ -9,6 +9,7 @@ import type {
   User,
   UserRole,
 } from '@vayusetu/shared-types';
+import { appCheckHeaders } from './firebase';
 
 /**
  * Thin typed wrapper around the REST surface documented in
@@ -40,6 +41,7 @@ async function request<T>(path: string, token: string, init?: RequestInit): Prom
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
+      ...(await appCheckHeaders()),
       ...(init?.headers ?? {}),
     },
   });
@@ -114,6 +116,8 @@ export interface UploadUrlResponse {
   uploadUrl: string;
   storageUrl: string;
   expiresAt: string;
+  /** Signed headers the PUT must carry verbatim (e.g. the size limit). */
+  uploadHeaders?: Record<string, string>;
 }
 
 export const submissionsApi = {

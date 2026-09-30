@@ -137,7 +137,7 @@ export function FederationPanel() {
                             </div>
                           )}
                           {m.headline.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5 font-mono text-[11px] text-slate-500">
+                            <div className="flex flex-wrap gap-1.5 font-mono text-[11px] text-slate-500 dark:text-slate-300">
                               {m.headline.map((r) => (
                                 <span key={r.key} className="rounded bg-slate-100 px-1.5 py-0.5 dark:bg-slate-800">
                                   {r.label}: {formatMetric(r.value)}
@@ -150,7 +150,7 @@ export function FederationPanel() {
                               <summary className="cursor-pointer select-none">{t('federation.moreMetrics', { count: m.rest.length })}</summary>
                               <div className="mt-1.5 flex max-h-40 flex-wrap gap-1.5 overflow-auto font-mono text-[11px]">
                                 {m.rest.map((r) => (
-                                  <span key={r.key} className="rounded bg-slate-100 px-1.5 py-0.5 dark:bg-slate-800">
+                                  <span key={r.key} className="rounded bg-slate-100 px-1.5 py-0.5 dark:bg-slate-800 dark:text-slate-300">
                                     {r.label}: {formatMetric(r.value)}
                                   </span>
                                 ))}
