@@ -5,6 +5,7 @@ import { env } from './config/env.js';
 import errorHandlerPlugin from './plugins/errorHandler.js';
 import { ApiHttpError } from './lib/errors.js';
 import authPlugin from './plugins/auth.js';
+import appCheckPlugin, { type AppCheckMode, type AppCheckVerifier } from './plugins/appCheck.js';
 import usersRoutes from './routes/users.js';
 import submissionsRoutes from './routes/submissions.js';
 import uploadsRoutes from './routes/uploads.js';
@@ -14,6 +15,8 @@ import resourcesRoutes from './routes/resources.js';
 export interface BuildAppOptions {
   /** Overrides RATE_LIMIT_MAX_PER_MINUTE -- lets tests exercise 429 without 60+ requests. */
   rateLimitMax?: number;
+  /** Overrides APP_CHECK and the Firebase verifier (tests). */
+  appCheck?: { mode: AppCheckMode; verify?: AppCheckVerifier };
 }
 
 /**
@@ -46,6 +49,7 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
 
   // auth.ts uses fastify-plugin (fp), so its onRequest hook applies globally.
   await app.register(authPlugin);
+  await app.register(appCheckPlugin, opts.appCheck ?? { mode: env.APP_CHECK });
 
   // preHandler runs AFTER auth's onRequest hook, so the limit can key on the
   // verified uid. Week 1 keyed on IP at onRequest -- behind carrier CGNAT
