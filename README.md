@@ -47,6 +47,31 @@ The monitor network isn't going to get 100× denser. **The people are already ev
 </tr>
 </table>
 
+## The officials' side
+
+<table>
+<tr>
+<td width="50%" valign="top" align="center">
+<img src="docs/readme/admin-alerts.jpg" alt="An alert opened in the officials' console: Gemini briefing, recommended actions, public advisory, cited signals and audit trail" width="100%">
+<sub><b>Alert queue.</b> A live Pune alert raised by two citizen reports. Gemini 3.1 Pro wrote the briefing, actions and public advisory; the chips are the signals it was <i>required</i> to cite. Every status change joins the audit trail.</sub>
+</td>
+<td width="50%" valign="top" align="center">
+<img src="docs/readme/admin-forecast.jpg" alt="72-hour AQI forecast with uncertainty band, GRAP stage per horizon and key drivers" width="100%">
+<sub><b>72-hour forecast.</b> The Vertex AI AutoML model's trajectory for the Delhi–NCR airshed, with its uncertainty band, the GRAP stage each horizon implies, and the drivers behind it.</sub>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top" align="center">
+<img src="docs/readme/admin-hotspot-map.jpg" alt="Hotspot Map: scored H3 cells on Google Maps with a cell's signals and 7-day history" width="100%">
+<sub><b>Hotspot map.</b> Scored 0.7 km² cells on Google Maps; click one for its signals and 7-day history. (Captured at a rules-based hour between model runs — model hours add hidden-hotspot outlines.)</sub>
+</td>
+<td width="50%" valign="top" align="center">
+<img src="docs/readme/admin-federation.jpg" alt="Federation panel in Mumbai-Pune showing Delhi NCR's shared forecast and hotspot models with their quality-gate metrics" width="100%">
+<sub><b>Federation.</b> Mumbai–Pune's console showing the models Delhi NCR shared through the National Exchange, each led by the metric its quality gate used.</sub>
+</td>
+</tr>
+</table>
+
 ## Why this is different
 
 | | Typical pollution apps | **VayuSetu** |
@@ -161,7 +186,7 @@ flowchart TB
 
 | Live and verified end to end | Next |
 |---|---|
-| Citizen reporting (photo + voice, 4 languages, offline), Gemini triage and spoken advice, hotspot fusion and hidden hotspots, district-routed alerts with Gemini briefings, 72 h GRAP forecasts, official workflow with audit trail, two state deployments, landing page | **Cross-state model copy** — summaries and the model catalogue are live; the Vertex AI model copy between projects is awaiting one IAM role change |
+| Citizen reporting (photo + voice, 4 languages, offline, field-worker sensor readings), Gemini triage and spoken advice, hotspot fusion and hidden hotspots, district-routed alerts with Gemini briefings, 72 h GRAP forecasts, official workflow with audit trail, resource coordination, **cross-state model sharing** (NCR's hotspot and forecast models published to the National Exchange and mirrored by Mumbai–Pune), two state deployments, landing page | **Automatic CI** on every pull request (today every deploy is a reviewed, manual Cloud Build run) |
 | Delhi NCR runs trained AutoML hotspot and forecast models | **Mumbai–Pune** currently uses the rules-based scorer and a persistence forecast until it has enough local history to train its own (or imports NCR's) |
 | | **Phase 2:** an IVR hotline for feature phones (Vertex AI Agent Builder), secure-aggregation federated learning, CI on every pull request |
 

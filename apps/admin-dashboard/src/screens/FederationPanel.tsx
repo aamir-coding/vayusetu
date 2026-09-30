@@ -31,6 +31,7 @@ import { federationApi, resourcesApi } from '../lib/apiClient';
 import { corridorView, DEFAULT_CORRIDORS } from '../lib/corridors';
 import type { HexDatum } from '../lib/hexGeo';
 import { HexMap } from '../components/HexMap';
+import { formatMetric, splitMetrics, versionLabel } from '../lib/modelMetrics';
 
 const RESOURCE_TYPES: ResourceType[] = [
   'inspection_team',
@@ -103,7 +104,7 @@ export function FederationPanel() {
             <Card className="mb-3 border-emerald-200 bg-emerald-50/50">
               <CardContent className="flex items-center gap-2 py-3 text-sm">
                 <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                {t('federation.active')} <span className="font-semibold">{modelsData.currentlyActive.sourceStateCode} · {modelsData.currentlyActive.modelType} v{modelsData.currentlyActive.version}</span>
+                {t('federation.active')} <span className="font-semibold">{modelsData.currentlyActive.sourceStateCode} · {modelsData.currentlyActive.modelType} {versionLabel(modelsData.currentlyActive.version)}</span>
               </CardContent>
             </Card>
           )}
@@ -116,7 +117,7 @@ export function FederationPanel() {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-sm">
-                        {model.sourceStateCode} · {model.modelType} v{model.version}
+                        {model.sourceStateCode} · {model.modelType} {versionLabel(model.version)}
                       </CardTitle>
                       {session?.role !== 'super_admin' && <ShieldAlert className="h-4 w-4 text-slate-300" aria-hidden="true" />}
                     </div>
@@ -125,13 +126,40 @@ export function FederationPanel() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="flex flex-col gap-3">
-                    <div className="flex flex-wrap gap-1.5 font-mono text-[11px] text-slate-500">
-                      {Object.entries(model.performanceMetrics).map(([k, v]) => (
-                        <span key={k} className="rounded bg-slate-100 px-1.5 py-0.5">
-                          {k}: {v}
-                        </span>
-                      ))}
-                    </div>
+                    {(() => {
+                      const m = splitMetrics(model.modelType, model.performanceMetrics);
+                      return (
+                        <div className="flex flex-col gap-2 text-xs">
+                          {m.gate && (
+                            <div className="flex items-baseline justify-between rounded-md bg-emerald-50 px-2.5 py-1.5 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200">
+                              <span>{t('federation.gateMetric')} · {m.gate.label}</span>
+                              <span className="font-mono text-sm font-semibold">{formatMetric(m.gate.value)}</span>
+                            </div>
+                          )}
+                          {m.headline.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 font-mono text-[11px] text-slate-500">
+                              {m.headline.map((r) => (
+                                <span key={r.key} className="rounded bg-slate-100 px-1.5 py-0.5 dark:bg-slate-800">
+                                  {r.label}: {formatMetric(r.value)}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {m.rest.length > 0 && (
+                            <details className="text-slate-500">
+                              <summary className="cursor-pointer select-none">{t('federation.moreMetrics', { count: m.rest.length })}</summary>
+                              <div className="mt-1.5 flex max-h-40 flex-wrap gap-1.5 overflow-auto font-mono text-[11px]">
+                                {m.rest.map((r) => (
+                                  <span key={r.key} className="rounded bg-slate-100 px-1.5 py-0.5 dark:bg-slate-800">
+                                    {r.label}: {formatMetric(r.value)}
+                                  </span>
+                                ))}
+                              </div>
+                            </details>
+                          )}
+                        </div>
+                      );
+                    })()}
                     <Button
                       size="sm"
                       variant="outline"
