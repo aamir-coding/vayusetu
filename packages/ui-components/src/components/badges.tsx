@@ -42,14 +42,17 @@ export function StatusPill({
 
 export function AqiBadge({
   category,
+  label,
   className,
 }: {
   category: AQICategory;
+  /** Translated label; defaults to the English name. */
+  label?: string;
   className?: string;
 }) {
   return (
     <StatusPill className={cn(AQI_CATEGORY_CLASS[category], className)}>
-      {AQI_CATEGORY_LABEL[category]}
+      {label ?? AQI_CATEGORY_LABEL[category]}
     </StatusPill>
   );
 }

@@ -254,5 +254,25 @@
   "tour.helpBody": {
     "sourceHash": "22fb9fd98aa23b8a",
     "text": "मार्गदर्शिका पुन्हा पाहण्यासाठी कधीही हे बटण टॅप करा."
+  },
+  "severityWord.1": {
+    "sourceHash": "057b5de48d7b90f1",
+    "text": "किमान"
+  },
+  "severityWord.2": {
+    "sourceHash": "329d81722740efdd",
+    "text": "सौम्य"
+  },
+  "severityWord.3": {
+    "sourceHash": "5c42afc7a23018d3",
+    "text": "मध्यम"
+  },
+  "severityWord.4": {
+    "sourceHash": "c4ebc6d4a5832cd9",
+    "text": "उच्च"
+  },
+  "severityWord.5": {
+    "sourceHash": "aa93f64a309c41c2",
+    "text": "गंभीर"
   }
 }
