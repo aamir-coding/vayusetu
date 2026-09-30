@@ -559,6 +559,14 @@
     "sourceHash": "fcf3103acfd219a5",
     "text": "{{count}} कोशिकाएँ · {{pct}} %"
   },
+  "federation.gateMetric": {
+    "sourceHash": "7d2ef2a202346824",
+    "text": "गुणवत्ता द्वार"
+  },
+  "federation.moreMetrics": {
+    "sourceHash": "7ecd4b9854acd844",
+    "text": "{{count}} और मेट्रिक्स"
+  },
   "theme.toDark": {
     "sourceHash": "9b7878aef90b527c",
     "text": "डार्क मोड"
