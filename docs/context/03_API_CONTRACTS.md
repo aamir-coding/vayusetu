@@ -99,6 +99,7 @@ export interface Submission {
     pm10?: number;
   };
   clarifications?: ClarificationExchange[];
+  retryCount?: number;                // times retry-analysis re-queued it; a reporter may retry at most 3 times
 }
 
 export interface AnalysisResult {

@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { Query } from 'firebase-admin/firestore';
 import { z } from 'zod';
-import { GeocodingError } from '@vayusetu/gcp-clients';
+import { GeocodingError, getDb } from '@vayusetu/gcp-clients';
 import type { AnalysisResult, ClarificationExchange, Jurisdiction, Paginated, Submission, User } from '@vayusetu/shared-types';
 import { analysisResultsCollection, submissionsCollection, usersCollection } from '../lib/collections.js';
 import { requireAuthUser } from '../plugins/auth.js';
@@ -97,6 +97,10 @@ function assertOwnMedia(uid: string, url: string | undefined, field: string) {
     });
   }
 }
+
+/** Audit M1: reporter-initiated re-analysis limits (officials are not capped). */
+export const REPORTER_MAX_RETRIES = 3;
+export const REPORTER_RETRY_STUCK_MS = 10 * 60_000;
 
 export default async function submissionsRoutes(app: FastifyInstance) {
   app.post('/submissions', async (request, reply) => {
@@ -197,26 +201,32 @@ export default async function submissionsRoutes(app: FastifyInstance) {
     assertOwnMedia(uid, body.answerPhotoStorageUrl, 'answerPhotoStorageUrl');
 
     const ref = submissionsCollection().doc(id);
-    const snap = await ref.get();
-    if (!snap.exists) throw new ApiHttpError('NOT_FOUND', 'Submission not found');
-    const submission = snap.data()!;
-    if (submission.userId !== uid) throw new ApiHttpError('FORBIDDEN_JURISDICTION', 'Only the reporter can answer');
+    // Read-check-write in ONE transaction: two taps on "send answer" used to
+    // both pass the "not yet answered" check and trigger two re-analyses
+    // (audit M2). Now the second sees answeredAt and gets 409.
+    const updated = await getDb().runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      if (!snap.exists) throw new ApiHttpError('NOT_FOUND', 'Submission not found');
+      const submission = snap.data()!;
+      if (submission.userId !== uid) throw new ApiHttpError('FORBIDDEN_JURISDICTION', 'Only the reporter can answer');
 
-    const analysisSnap = await analysisResultsCollection().doc(id).get();
-    const pending = analysisSnap.exists ? (analysisSnap.data() as AnalysisResult).pendingClarification : undefined;
-    const clarifications: ClarificationExchange[] = [...(submission.clarifications ?? [])];
-    const exchange = pending ? clarifications.find((c) => c.turn === pending.turn) : undefined;
-    if (!pending || !exchange || exchange.answeredAt) {
-      throw new ApiHttpError('CONFLICT', 'No clarifying question is waiting for an answer');
-    }
-    Object.assign(exchange, {
-      ...(body.answerText ? { answerText: body.answerText } : {}),
-      ...(body.answerPhotoStorageUrl ? { answerPhotoStorageUrl: body.answerPhotoStorageUrl } : {}),
-      answeredAt: new Date().toISOString(),
+      const analysisSnap = await tx.get(analysisResultsCollection().doc(id));
+      const pending = analysisSnap.exists ? (analysisSnap.data() as AnalysisResult).pendingClarification : undefined;
+      const clarifications: ClarificationExchange[] = [...(submission.clarifications ?? [])];
+      const exchange = pending ? clarifications.find((c) => c.turn === pending.turn) : undefined;
+      if (!pending || !exchange || exchange.answeredAt) {
+        throw new ApiHttpError('CONFLICT', 'No clarifying question is waiting for an answer');
+      }
+      Object.assign(exchange, {
+        ...(body.answerText ? { answerText: body.answerText } : {}),
+        ...(body.answerPhotoStorageUrl ? { answerPhotoStorageUrl: body.answerPhotoStorageUrl } : {}),
+        answeredAt: new Date().toISOString(),
+      });
+      tx.update(ref, { clarifications, status: 'pending_analysis' });
+      return { ...submission, clarifications, status: 'pending_analysis' as const };
     });
-    await ref.update({ clarifications, status: 'pending_analysis' });
     await publishSubmissionCreated(id);
-    reply.status(202).send({ submission: { ...submission, clarifications, status: 'pending_analysis' } });
+    reply.status(202).send({ submission: updated });
   });
 
   app.get('/submissions', async (request, reply) => {
@@ -271,26 +281,45 @@ export default async function submissionsRoutes(app: FastifyInstance) {
     const { id } = request.params as { id: string };
 
     const ref = submissionsCollection().doc(id);
-    const snap = await ref.get();
-    if (!snap.exists) throw new ApiHttpError('NOT_FOUND', 'Submission not found');
-    const submission = snap.data()!;
+    const updated = await getDb().runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      if (!snap.exists) throw new ApiHttpError('NOT_FOUND', 'Submission not found');
+      const submission = snap.data()!;
+      const isReporter = submission.userId === uid;
 
-    if (submission.userId !== uid) {
-      const requesterSnap = await usersCollection().doc(uid).get();
-      const scope = requesterSnap.exists ? officialScope(requesterSnap.data()!) : null;
-      const allowed = scope === 'all' || (scope !== null && jurisdictionContains(scope, submission.jurisdiction));
-      if (!allowed) throw new ApiHttpError('FORBIDDEN_JURISDICTION', 'Outside your assigned jurisdiction');
-    }
+      if (!isReporter) {
+        const requesterSnap = await tx.get(usersCollection().doc(uid));
+        const scope = requesterSnap.exists ? officialScope(requesterSnap.data()!) : null;
+        const allowed = scope === 'all' || (scope !== null && jurisdictionContains(scope, submission.jurisdiction));
+        if (!allowed) throw new ApiHttpError('FORBIDDEN_JURISDICTION', 'Outside your assigned jurisdiction');
+      }
 
-    // Contract: 409 when "already analyzed and not flagged for review".
-    if (submission.status === 'analyzed') {
-      throw new ApiHttpError('CONFLICT', 'Already analyzed');
-    }
+      // Contract: 409 when "already analyzed and not flagged for review".
+      if (submission.status === 'analyzed') {
+        throw new ApiHttpError('CONFLICT', 'Already analyzed');
+      }
 
-    // update(), not set(): a whole-doc write could clobber a concurrent
-    // analysis-service write (transcript, clarifications).
-    await ref.update({ status: 'pending_analysis' });
-    const updated: Submission = { ...submission, status: 'pending_analysis' };
+      // Audit M1: every retry is a Gemini call. A reporter may retry only a
+      // report that failed or is stuck, a few times; re-running a FLAGGED
+      // report (to flip the verdict) is an official's call.
+      const retryCount = submission.retryCount ?? 0;
+      if (isReporter) {
+        const stuck =
+          (submission.status === 'queued' || submission.status === 'pending_analysis') &&
+          Date.now() - Date.parse(submission.uploadedAt) > REPORTER_RETRY_STUCK_MS;
+        if (!(submission.status === 'failed' || stuck)) {
+          throw new ApiHttpError('CONFLICT', 'Only a failed or stuck report can be re-analysed by its reporter');
+        }
+        if (retryCount >= REPORTER_MAX_RETRIES) {
+          throw new ApiHttpError('RATE_LIMITED', 'This report has been re-analysed too many times');
+        }
+      }
+
+      // update(), not set(): a whole-doc write could clobber a concurrent
+      // analysis-service write (transcript, clarifications).
+      tx.update(ref, { status: 'pending_analysis', retryCount: retryCount + 1 });
+      return { ...submission, status: 'pending_analysis' as const, retryCount: retryCount + 1 };
+    });
     await publishSubmissionCreated(updated.id);
 
     reply.status(202).send({ submission: updated });
