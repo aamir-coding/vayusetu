@@ -83,13 +83,27 @@ export function CaptureScreen() {
     });
   }, []);
 
+  // Latest object URLs, for the unmount cleanup below: a [] effect closes
+  // over the FIRST render's values (null), so it used to revoke nothing.
+  const objectUrlsRef = React.useRef<{ photo: string | null; audio: string | null }>({ photo: null, audio: null });
+  objectUrlsRef.current = { photo: photoUrl, audio: audioUrl };
+
   React.useEffect(() => {
     return () => {
       streamRef.current?.getTracks().forEach((t) => t.stop());
-      if (photoUrl) URL.revokeObjectURL(photoUrl);
-      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      // Leaving mid-recording must release the microphone and the timer
+      // (audit L1); drop onstop so it cannot set state after unmount.
+      if (recordTimerRef.current) window.clearInterval(recordTimerRef.current);
+      const recorder = recorderRef.current;
+      if (recorder && recorder.state !== 'inactive') {
+        recorder.onstop = null;
+        recorder.stop();
+        recorder.stream.getTracks().forEach((t) => t.stop());
+      }
+      const { photo, audio } = objectUrlsRef.current;
+      if (photo) URL.revokeObjectURL(photo);
+      if (audio) URL.revokeObjectURL(audio);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function startCamera() {
