@@ -939,6 +939,7 @@ export interface Paginated<T> {
 `GET /api/v1/hotspots`
 **Auth:** any authenticated user
 **Query:** `?corridorId= (required) &bbox=minLat,minLng,maxLat,maxLng &sinceHour=ISODateString`
+Without `sinceHour`: the live heatmap, i.e. the newest hourly grid overlaid with newer citizen fast-path cells (one doc per cell, so `timestampHour` can differ between cells).
 **Response `200`:** `{ cells: HotspotCell[] }`
 **Errors:** `400`, `401`
 
