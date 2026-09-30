@@ -403,18 +403,44 @@ describe('submission-service', () => {
       expect(res.statusCode).toBe(409);
     });
 
-    it('202s and re-publishes for a queued submission; flagged_for_review is retryable too', async () => {
+    const retry = (id: string, uid: string) =>
+      app.inject({ method: 'POST', url: `/api/v1/submissions/${id}/retry-analysis`, headers: auth(uid) });
+    const setDoc = (id: string, data: Record<string, unknown>) => fakeDb.collection('submissions').doc(id).set(data, { merge: true });
+
+    it('202s and re-publishes a FAILED report for its reporter, counting retries', async () => {
       await register('rina');
       const { submission } = (await submit('rina')).json();
+      await setDoc(submission.id, { status: 'failed' });
       published.length = 0;
-      const res = await app.inject({ method: 'POST', url: `/api/v1/submissions/${submission.id}/retry-analysis`, headers: auth('rina') });
+      const res = await retry(submission.id, 'rina');
       expect(res.statusCode).toBe(202);
-      expect(res.json().submission.status).toBe('pending_analysis');
+      expect(res.json().submission).toMatchObject({ status: 'pending_analysis', retryCount: 1 });
       expect(published).toHaveLength(1);
+    });
 
-      await fakeDb.collection('submissions').doc(submission.id).set({ status: 'flagged_for_review' }, { merge: true });
-      const again = await app.inject({ method: 'POST', url: `/api/v1/submissions/${submission.id}/retry-analysis`, headers: auth('rina') });
-      expect(again.statusCode).toBe(202);
+    it('audit M1: a reporter cannot re-run a flagged or fresh report, and is capped at 3 retries', async () => {
+      await register('rina');
+      const { submission } = (await submit('rina')).json();
+      expect((await retry(submission.id, 'rina')).statusCode).toBe(409); // queued, not stuck yet
+      await setDoc(submission.id, { status: 'flagged_for_review' });
+      expect((await retry(submission.id, 'rina')).statusCode).toBe(409); // a flag is an official's call
+      await setDoc(submission.id, { status: 'failed', retryCount: 3 });
+      expect((await retry(submission.id, 'rina')).statusCode).toBe(429);
+    });
+
+    it('a report stuck in queued for over 10 minutes is retryable by its reporter', async () => {
+      await register('rina');
+      const { submission } = (await submit('rina')).json();
+      await setDoc(submission.id, { uploadedAt: new Date(Date.now() - 11 * 60_000).toISOString() });
+      expect((await retry(submission.id, 'rina')).statusCode).toBe(202);
+    });
+
+    it('an official in scope can re-run a flagged report, without the reporter cap', async () => {
+      await register('rina');
+      const { submission } = (await submit('rina')).json();
+      await setDoc(submission.id, { status: 'flagged_for_review', retryCount: 5 });
+      seedOfficial('iyer', 'state_admin', { stateCode: submission.jurisdiction.stateCode });
+      expect((await retry(submission.id, 'iyer')).statusCode).toBe(202);
     });
   });
   describe('PATCH /users/me role upgrade (Phase 1 contract)', () => {
