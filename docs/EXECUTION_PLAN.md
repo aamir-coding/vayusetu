@@ -139,7 +139,7 @@ Rehearsed live, end to end (citizen photo → Gemini → fast path → Gemini-br
 
 Health on 29 Sep:
 - **All green:**
-  - TypeScript: 360 tests across 13 packages
+  - TypeScript: 323 tests across 13 packages (452 in total with Python, Terraform, E2E, portal and load-test suites; recounted 30 Sep)
   - ingestion: 46
   - ML: 15
   - Terraform: 42
@@ -149,13 +149,43 @@ Health on 29 Sep:
 - **Type-check and lint are clean.**
 - **Live:** 12/12 Cloud Run services ready and 5/5 sites up.
 
-Still open:
-- **Chirag:**
-  - [ ] Run `migrate-state.ps1`, then apply the NCR and MH drift (3 in-place changes each: push audiences on alert and hotspot, and dashboard layout).
-  - [ ] Set `alert_emails` (and optionally `billing_account_id`). Until then the 17 alert policies notify nobody.
-  - [ ] Install the Cloud Build GitHub App so PRs are tested (V4).
-  - [ ] Rehearse the officials' side live, and run the load test (`packages/loadtest/README.md`).
-- **Tuning (not a bug):** hotspot model v2 raises 15–24 "watch" alerts in HR-GURUGRAM per 6-hourly run, 61 still open. Consider requiring citizen evidence for model-only watch alerts, or raising the model's alert threshold.
+### Feature check against the spec (29 Sep, live)
+Proven live today:
+- **Voice note, in Hindi:** the note is transcribed word for word and the advisory comes back in Hindi with audio.
+- **Advisories in Marathi and Punjabi.**
+- **Forecast alerts:** a forced GRAP crossing produced 4 state alerts with grounded Gemini briefings.
+- **Pipeline D escalation.**
+
+Three bugs found and fixed while doing so (`0fd51b7`, `e41cf4f`), each with a regression test:
+1. **Voice transcripts silently failed.** Speech-to-Text's service agent couldn't read the citizen-media bucket; the audio is now sent inline.
+2. **New citizens were registered in the browser's language**, not the one chosen on screen.
+3. **A language chosen before the profile loaded** never reached `User.preferredLanguage`.
+
+**30 Sep: closed.**
+- **Model sharing (Feature 4):**
+  - Root cause: a cross-project `copyModel` needs the destination's Vertex AI agent to hold `roles/aiplatform.serviceAgent` on the source; we had granted `aiplatform.viewer`.
+  - Chirag applied the fix (`fa38e47`).
+  - The next manual syncs published `dl-hotspot-v2` and `dl-forecast-v1` into the Exchange registry and catalog, and Mumbai-Pune mirrored both.
+- **Field-worker sensor reading:**
+  - A real field-worker report (PM2.5 182, PM10 260) showed the reading was stored but never reached Gemini.
+  - It now does (`b25eb57`). Re-analysed live, Gemini's note cites the "on-site spot sensor".
+- **Super admin stuck on the login page:** the dashboard required a state claim for every role. Fixed (`c009bc6`).
+- **Resource Coordination Board:** a live request was posted (DL, water sprinkler × 2).
+- **Test alerts:** all dismissed by the officials, with an audit trail.
+- **Also done:**
+  - Remote Terraform state in GCS (all 3 environments).
+  - NCR/MH drift applied.
+  - Alert emails live (17 policies per state notify Chirag).
+  - Load tests passed in both states.
+
+**Every Product Spec feature has now been exercised live**, in both states where it applies.
+
+Still open (none blocks the demo):
+- **Optional:**
+  - [ ] Install the Cloud Build GitHub App so PRs are tested automatically (audit V4). Until then deploys are manual `gcloud builds submit`.
+  - [ ] A `super_admin` account in the Mumbai-Pune project, if the demo should show the one-click model import there. Import is super_admin-only, and only NCR has one.
+  - [ ] A live Pipeline D question: the escalation is proven, but a question actually reaching a citizen needs a genuinely ambiguous photo (question → answer → re-analysis is E2E-tested in mock mode).
+- **Tuning (not a bug):** hotspot model v2 raises 15–24 "watch" alerts in HR-GURUGRAM per 6-hourly run. Consider requiring citizen evidence for model-only watch alerts, or raising the model's alert threshold.
 
 ## What Chirag needs to do (console / accounts)
 

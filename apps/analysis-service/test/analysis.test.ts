@@ -144,6 +144,14 @@ describe('Pipeline A happy path', () => {
     expect((await submission()).transcript).toBe('यहाँ कूड़ा जल रहा है');
   });
 
+  it("passes a field worker's handheld sensor reading to the model", async () => {
+    // 30 Sep live check: the reading was stored and displayed but never reached Gemini.
+    seed({ fieldSensorReading: { pm25: 182, pm10: 260 } });
+    const { deps, triage } = makeDeps([assessment()]);
+    await push(await appWith(deps), { submissionId: 'sub1' });
+    expect(triage.mock.calls[0]![0]).toMatchObject({ fieldSensor: { pm25: 182, pm10: 260 } });
+  });
+
   it('forces human review when the photo and the reference AQI are > 2 categories apart', async () => {
     seed();
     // no visible pollution (good) vs monitor 350 (very_poor): 4 categories apart

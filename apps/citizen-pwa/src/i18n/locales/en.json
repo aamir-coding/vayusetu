@@ -177,5 +177,12 @@
     "reportsBody": "Every report you send is here, with its result and anything officials ask you.",
     "helpTitle": "Need this again?",
     "helpBody": "Tap this button any time to replay the guide."
+  },
+  "severityWord": {
+    "1": "Minimal",
+    "2": "Mild",
+    "3": "Moderate",
+    "4": "High",
+    "5": "Severe"
   }
 }

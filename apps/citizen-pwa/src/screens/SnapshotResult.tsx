@@ -169,7 +169,7 @@ export function SnapshotResult() {
           <p className="relative text-xs font-semibold uppercase tracking-[0.14em] text-white/80">{t('result.found')}</p>
           <div className="relative mt-1 flex items-start justify-between gap-3">
             <p className="text-xl font-extrabold leading-tight">{source}</p>
-            {result.estimatedAQICategory && <AqiBadge category={result.estimatedAQICategory} className="shrink-0 ring-2 ring-white/60" />}
+            {result.estimatedAQICategory && <AqiBadge category={result.estimatedAQICategory} label={t(`aqiCategory.${result.estimatedAQICategory}`)} className="shrink-0 ring-2 ring-white/60" />}
           </div>
         </div>
 
@@ -185,7 +185,7 @@ export function SnapshotResult() {
               ))}
             </div>
             <div className="mt-1.5 flex items-center justify-between text-xs text-slate-500">
-              <span>{severityWord(result.severityEstimate)}</span>
+              <span>{t(`severityWord.${result.severityEstimate}`, { defaultValue: severityWord(result.severityEstimate) })}</span>
               {result.visibilityMeters !== undefined && (
                 <span className="flex items-center gap-1">
                   <Eye className="h-3.5 w-3.5" aria-hidden="true" />

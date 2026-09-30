@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Submission } from '@vayusetu/shared-types';
 import { assembleContext } from '../src/adapters/context.js';
-import { speechLanguageCode, ttsCacheKey } from '../src/adapters/speech.js';
+import { parseGsUrl, speechLanguageCode, ttsCacheKey } from '../src/adapters/speech.js';
 import { categoryForAqi, crossValidate, istLabel, seasonFor, visualCategory } from '../src/pipeline/crossValidate.js';
 
 const base = {
@@ -73,6 +73,15 @@ describe('speech helpers', () => {
   it('maps Punjabi to the code Cloud Speech accepts', () => {
     expect(speechLanguageCode('pa-IN')).toBe('pa-Guru-IN');
     expect(speechLanguageCode('hi-IN')).toBe('hi-IN');
+  });
+
+  it('parses gs:// URLs for the inline voice-note download', () => {
+    expect(parseGsUrl('gs://vayusetu-mh-dev-citizen-media/submissions/u/2026-09-29/audio-1.webm')).toEqual({
+      bucket: 'vayusetu-mh-dev-citizen-media',
+      path: 'submissions/u/2026-09-29/audio-1.webm',
+    });
+    expect(parseGsUrl('https://storage.googleapis.com/b/o')).toBeUndefined();
+    expect(parseGsUrl('gs://bucket-only')).toBeUndefined();
   });
 
   it('TTS cache key depends on text, language and voice only', () => {

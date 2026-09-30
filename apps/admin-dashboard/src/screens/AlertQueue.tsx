@@ -29,6 +29,7 @@ import {
 import { useAuth } from '../hooks/useAuth';
 import { useLiveAlerts } from '../hooks/useLiveAlerts';
 import { alertsApi } from '../lib/apiClient';
+import { scopeLabel } from '../lib/officialSession';
 
 const STATUS_ICON: Record<AlertStatus, React.ComponentType<{ className?: string }>> = {
   new: ClipboardList,
@@ -131,7 +132,7 @@ export function AlertQueue() {
     )
     .sort((a, b) => severityRank(b.severity) - severityRank(a.severity) || b.createdAt.localeCompare(a.createdAt));
 
-  const place = session?.jurisdiction.districtCode ?? session?.jurisdiction.stateCode ?? '';
+  const place = session ? scopeLabel(session.jurisdiction) : '';
 
   async function copyLink(a: Alert) {
     try {

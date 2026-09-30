@@ -129,7 +129,7 @@ resource "google_project_iam_member" "state_registry_user" {
 resource "google_project_iam_member" "state_vertex_agent_reads_models" {
   for_each   = var.member_states
   project    = var.project_id
-  role       = "roles/aiplatform.viewer"
+  role       = "roles/aiplatform.serviceAgent"
   member     = "serviceAccount:service-${each.value.project_number}@gcp-sa-aiplatform.iam.gserviceaccount.com"
   depends_on = [google_project_service.required] # cloudresourcemanager on a fresh project
 }
