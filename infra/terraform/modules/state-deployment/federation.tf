@@ -97,6 +97,6 @@ resource "google_cloud_scheduler_job" "federation_sync" {
 resource "google_project_iam_member" "exchange_vertex_agent_reads_models" {
   count   = var.exchange_project_number != "" ? 1 : 0
   project = var.project_id
-  role    = "roles/aiplatform.viewer"
+  role    = "roles/aiplatform.serviceAgent"
   member  = "serviceAccount:service-${var.exchange_project_number}@gcp-sa-aiplatform.iam.gserviceaccount.com"
 }

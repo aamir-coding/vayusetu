@@ -157,6 +157,14 @@ describe('helpers', () => {
     expect(parts[3]).toEqual({ fileData: { fileUri: 'gs://b/2.jpg', mimeType: 'image/jpeg' } });
   });
 
+  it('renders a field worker sensor reading only when present', () => {
+    const base = { photo: { gcsUri: 'gs://b/p.jpg', mimeType: 'image/jpeg' }, advisoryLanguage: 'en-IN', context: { localTime: 't', season: 's' } };
+    expect(buildPipelineAParts({ ...base, fieldSensor: { pm25: 182, pm10: 260 } })[1]!.text).toContain(
+      'handheldSensorAtSpot: pm25=182 ug/m3, pm10=260 ug/m3',
+    );
+    expect(buildPipelineAParts(base)[1]!.text).not.toContain('handheldSensorAtSpot');
+  });
+
   it('model ids and retryability', () => {
     expect(resolveModels({})).toEqual({ triage: 'gemini-3.7-flash', briefing: 'gemini-3.1-pro-preview' });
     expect(resolveModels({ GEMINI_BRIEFING_MODEL: 'gemini-3.1-pro' }).briefing).toBe('gemini-3.1-pro');

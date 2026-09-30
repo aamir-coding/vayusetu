@@ -47,6 +47,46 @@ test.describe('citizen PWA (mock mode)', () => {
     await page.evaluate(() => localStorage.removeItem('i18nextLng'));
   });
 
+  test('a citizen who switches to Hindi before their first report is registered in Hindi', async ({ page }) => {
+    // Regression (29 Sep live test): registration used navigator.language, so
+    // a citizen who had switched the UI to Hindi got an English advisory.
+    await page.getByRole('combobox').first().click();
+    await page.getByRole('option', { name: 'हिन्दी' }).click();
+    const registered = page.waitForRequest((r) => r.url().includes('/api/v1/users/register') && r.method() === 'POST');
+    await page.locator('input[type=file]').setInputFiles({
+      name: 'smoke.jpg', mimeType: 'image/jpeg',
+      buffer: readFileSync(new URL('../../../packages/gemini-client/redteam/images/garbage_fire.jpg', import.meta.url)),
+    });
+    await page.getByRole('button', { name: hi.common.change }).click();
+    await page.getByPlaceholder(hi.capture.latitude).fill('28.6315');
+    await page.getByPlaceholder(hi.capture.longitude).fill('77.2167');
+    await page.getByRole('button', { name: hi.capture.submit }).click();
+    expect((await registered).postDataJSON().preferredLanguage).toBe('hi-IN');
+    await page.evaluate(() => localStorage.removeItem('i18nextLng'));
+  });
+
+  test('a registered citizen who switches language before the app loads their profile gets it saved', async ({ page }) => {
+    // Regression (29 Sep live test): after a reload the profile isn't loaded
+    // until the next report, so the switcher couldn't PATCH it; a Marathi UI
+    // produced a Hindi advisory. Registering out-of-band leaves the app's
+    // `user` unset, which is exactly that state.
+    await createReports(page, 0); // registers as en-IN
+    await page.getByRole('combobox').first().click();
+    await page.getByRole('option', { name: 'मराठी' }).click();
+    const mr = locale('mr');
+    const saved = page.waitForRequest((r) => r.url().includes('/api/v1/users/me') && r.method() === 'PATCH');
+    await page.locator('input[type=file]').setInputFiles({
+      name: 'smoke.jpg', mimeType: 'image/jpeg',
+      buffer: readFileSync(new URL('../../../packages/gemini-client/redteam/images/garbage_fire.jpg', import.meta.url)),
+    });
+    await page.getByRole('button', { name: mr.common.change }).click();
+    await page.getByPlaceholder(mr.capture.latitude).fill('18.5089');
+    await page.getByPlaceholder(mr.capture.longitude).fill('73.9260');
+    await page.getByRole('button', { name: mr.capture.submit }).click();
+    expect((await saved).postDataJSON().preferredLanguage).toBe('mr-IN');
+    await page.evaluate(() => localStorage.removeItem('i18nextLng'));
+  });
+
   test('result screen keeps polling from `queued` until the analysis lands', async ({ page }) => {
     // Regression (27 Sep live rehearsal): the screen polled only while
     // `pending_analysis`, so opening it while the report was still `queued`

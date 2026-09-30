@@ -6,7 +6,7 @@ Four distinct Gemini workflows, deliberately split by volume/latency profile (ch
 ## Pipeline A — Citizen Report Multimodal Triage
 **Model:** Gemini 3.7 Flash, via Vertex AI · **Trigger:** Pub/Sub `submission.created` · **Volume:** highest in the system (one call per citizen submission)
 
-**Input assembly:** submitted photo (inline, GCS URI reference) + voice-note transcript if present (Cloud Speech-to-Text) + a short structured context block — nearest official monitor ID + current AQI, satellite aerosol index for the submission's H3 cell, local time of day, season — injected as text alongside the image.
+**Input assembly:** submitted photo (inline, GCS URI reference) + voice-note transcript if present (Cloud Speech-to-Text) + a short structured context block — nearest official monitor ID + current AQI, satellite aerosol index for the submission's H3 cell, local time of day, season, and, for a field worker, the handheld PM2.5/PM10 reading taken with the photo (`handheldSensorAtSpot`) — injected as text alongside the image.
 
 **System instruction:**
 ```text

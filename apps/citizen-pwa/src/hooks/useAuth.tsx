@@ -10,6 +10,7 @@ import {
 import type { User, UserRole } from '@vayusetu/shared-types';
 import { firebaseAuth, isFirebaseConfigured } from '../lib/firebase';
 import { ApiClientError, usersApi } from '../lib/apiClient';
+import i18n, { i18nCodeToBcp47 } from '../i18n';
 
 /**
  * Product Spec Feature 1, Persona 1 (Rina): "no login wall that blocks a
@@ -135,25 +136,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const ensureRegistered = React.useCallback<AuthContextValue['ensureRegistered']>(
     async (opts) => {
       const token = await getToken();
+      // The language the citizen is USING -- the UI language. The switcher can
+      // only PATCH a profile it has loaded, so a choice made before the first
+      // report (or after a reload, before any API call) never reached
+      // User.preferredLanguage, and Gemini/TTS answered in the old language
+      // (29 Sep live tests: Hindi UI -> English advisory; Marathi UI -> Hindi).
+      // The UI control is the single source of truth, so sync it here, where
+      // every report passes. i18next falls back to the browser language.
+      const uiLang = i18nCodeToBcp47(i18n.resolvedLanguage ?? i18n.language);
       try {
-        const existing = await usersApi.me(token);
+        let existing = await usersApi.me(token);
+        if (existing.preferredLanguage !== uiLang) {
+          existing = await usersApi.update(token, { preferredLanguage: uiLang });
+        }
         setUser(existing);
         return existing;
       } catch (err) {
         if (!(err instanceof ApiClientError) || err.status !== 404) throw err;
       }
-      const detectedLang = navigator.language?.startsWith('hi')
-        ? 'hi-IN'
-        : navigator.language?.startsWith('pa')
-          ? 'pa-IN'
-          : navigator.language?.startsWith('mr')
-            ? 'mr-IN'
-            : 'en-IN';
       let created: User;
       try {
         created = await usersApi.register(token, {
           displayName: opts?.displayName?.trim() || 'Citizen Reporter',
-          preferredLanguage: opts?.preferredLanguage ?? detectedLang,
+          preferredLanguage: opts?.preferredLanguage ?? uiLang,
           role: opts?.role ?? 'citizen',
         });
       } catch (err) {

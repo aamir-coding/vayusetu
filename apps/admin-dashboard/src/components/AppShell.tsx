@@ -22,6 +22,7 @@ import { usePush } from '../hooks/usePush';
 import { useAuth } from '../hooks/useAuth';
 import { PORTAL_URL } from '../lib/links';
 import { useLiteMode } from '../hooks/useLiteMode';
+import { scopeLabel } from '../lib/officialSession';
 
 
 interface NavItem {
@@ -116,7 +117,7 @@ export function AppShell() {
           <div className="min-w-0 flex-1">
             <p className="truncate text-[15px] font-bold leading-tight text-ink">{current ? t(current.labelKey) : 'VayuSetu'}</p>
             <p className="truncate text-[11px] leading-tight text-slate-400">
-              {session ? `${t(`role.${session.role}`)} · ${session.jurisdiction.districtCode ?? session.jurisdiction.stateCode}` : t('app.console')}
+              {session ? `${t(`role.${session.role}`)} · ${scopeLabel(session.jurisdiction)}` : t('app.console')}
             </p>
           </div>
           <ThemeToggle labels={{ toDark: t('theme.toDark'), toLight: t('theme.toLight') }} />
@@ -255,7 +256,7 @@ function SettingsPanel({ onHelp }: { onHelp: () => void }) {
           <div className="min-w-0">
             <p className="truncate text-xs font-semibold text-ink">{session.displayName}</p>
             <p className="truncate text-[11px] text-slate-400">
-              {t(`role.${session.role}`)} · {session.jurisdiction.districtCode ?? session.jurisdiction.stateCode}
+              {t(`role.${session.role}`)} · {scopeLabel(session.jurisdiction)}
             </p>
           </div>
           <button
