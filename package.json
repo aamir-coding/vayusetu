@@ -2,7 +2,7 @@
   "name": "vayusetu",
   "version": "0.1.0",
   "private": true,
-  "description": "VayuSetu — Federated AI-powered air-quality early-warning platform for hyperlocal pollution detection and forecasting (Google Cloud Hackathon, Track B: Clean Air & Climate Resilience).",
+  "description": "VayuSetu \u2014 Federated AI-powered air-quality early-warning platform for hyperlocal pollution detection and forecasting (Google Cloud Hackathon, Track B: Clean Air & Climate Resilience).",
   "license": "UNLICENSED",
   "engines": {
     "node": ">=20.0.0",
@@ -28,5 +28,12 @@
     "prettier": "^3.3.3",
     "rimraf": "^6.0.1",
     "@types/node": "^22.7.5"
+  },
+  "pnpm": {
+    "overrides": {
+      "undici@>=6.0.0 <6.28.1": "^6.28.1",
+      "fast-uri@<3.1.8": "^3.1.8",
+      "fast-uri@>=4.0.0 <4.1.5": "^4.1.5"
+    }
   }
 }

@@ -143,7 +143,7 @@ describe('analysis.completed fast path', () => {
     expect(getAll).toHaveBeenCalledTimes(1);
     expect(getAll.mock.calls[0]!.length).toBe(200);
     const doc = (await fakeDb.collection('hotspots').doc(`${H3}_2026-11-03T02`).get()).data()!;
-    expect(doc.contributingSignals.citizenReportCount).toBe(200);
+    expect((doc as { contributingSignals: { citizenReportCount: number } }).contributingSignals.citizenReportCount).toBe(200);
     getAll.mockRestore();
   });
 
