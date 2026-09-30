@@ -43,6 +43,36 @@ function toContract(d: Record<string, unknown>): HotspotCell {
   return cell as unknown as HotspotCell;
 }
 
+/**
+ * How far back the live map looks for the newest hourly grid. The job scores
+ * the PREVIOUS hour at :40, so it trails the fast path by up to ~2h40m.
+ */
+export const LIVE_WINDOW_MS = 6 * 3_600_000;
+
+/** Fast-path docs (a citizen report fused onto the model score), not the hourly job's grid. */
+const isFastPath = (d: Record<string, unknown>) => {
+  const v = String(d.modelVersion ?? '');
+  return v === 'citizen-evidence' || v.endsWith('+citizen');
+};
+
+/**
+ * The live heatmap: the newest hourly grid, overlaid with any NEWER fast-path
+ * cells, one (the newest) doc per cell. The fast path writes the current hour
+ * while the job has only scored the previous one, so "newest hour only" used
+ * to shrink the map to just the freshly reported cells after every report.
+ * Input must be sorted by timestampHour DESC.
+ */
+export function liveGrid(docs: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
+  const gridHour = docs.find((d) => !isFastPath(d))?.timestampHour as string | undefined;
+  const byCell = new Map<string, Record<string, unknown>>();
+  for (const d of docs) {
+    if (gridHour && (d.timestampHour as string) < gridHour) break;
+    const h = d.h3Index as string;
+    if (!byCell.has(h)) byCell.set(h, d);
+  }
+  return [...byCell.values()];
+}
+
 export function inBBox(h3Index: string, [minLat, minLng, maxLat, maxLng]: number[]): boolean {
   const [lat, lng] = cellToLatLng(h3Index);
   return lat >= minLat! && lat <= maxLat! && lng >= minLng! && lng <= maxLng!;
@@ -54,7 +84,7 @@ export default async function hotspotsRoutes(app: FastifyInstance, opts: { data:
   const history = new TtlCache<HotspotCell[]>(HISTORY_TTL_MS, 2_000, now);
 
   // GET /hotspots?corridorId=&bbox=&sinceHour= -- API_CONTRACTS.md 4.2.
-  // Without sinceHour: the latest scored hour (what the live heatmap shows).
+  // Without sinceHour: the live heatmap (liveGrid: newest hourly grid + newer citizen fast-path cells).
   app.get('/hotspots', async (request, reply) => {
     requireAuthUser(request);
     const q = ListQuery.parse(request.query);
@@ -67,8 +97,9 @@ export default async function hotspotsRoutes(app: FastifyInstance, opts: { data:
     } else {
       const latest = (await col.where('corridorId', '==', q.corridorId).orderBy('timestampHour', 'desc').limit(1).get()).docs[0];
       const hour = latest?.data().timestampHour as string | undefined;
-      docs = hour
-        ? (await col.where('corridorId', '==', q.corridorId).where('timestampHour', '==', hour).get()).docs.map((d) => d.data())
+      const since = hour ? new Date(new Date(hour).getTime() - LIVE_WINDOW_MS).toISOString() : undefined;
+      docs = since
+        ? liveGrid((await col.where('corridorId', '==', q.corridorId).where('timestampHour', '>=', since).orderBy('timestampHour', 'desc').limit(5000).get()).docs.map((d) => d.data()))
         : [];
     }
     let cells = docs.map(toContract);
