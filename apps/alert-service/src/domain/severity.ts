@@ -11,7 +11,7 @@ import type { AlertSeverity, Corridor, ForecastHorizonPoint, ForecastRun, GRAPSt
 /** Numeric urgency order. Use this for any comparison or sorting -- NEVER the
  *  severity string itself: lexicographically, 'watch' > 'warning' > 'info' >
  *  'critical', i.e. critical sorts LAST. (DB_SCHEMA.md's alerts index sorts
- *  `severity DESC` on the string -- flagged in WEEK2_SETUP.md.) */
+ *  `severity DESC` on the string.) */
 export const SEVERITY_RANK: Record<AlertSeverity, number> = { info: 0, watch: 1, warning: 2, critical: 3 };
 
 export const GRAP_STAGE_RANK: Record<GRAPStage, number> = { none: 0, stage_1: 1, stage_2: 2, stage_3: 3, stage_4: 4 };

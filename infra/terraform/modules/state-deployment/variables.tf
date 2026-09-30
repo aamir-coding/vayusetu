@@ -51,7 +51,7 @@ variable "default_state_code" {
 variable "default_district_code" {
   type        = string
   default     = "DL-CENTRAL"
-  description = "District half of the jurisdiction fallback. Team convention code, not a numeric LGD code -- see WEEK2_SETUP.md."
+  description = "District half of the jurisdiction fallback. Team convention code, not a numeric LGD code."
 }
 
 variable "maps_api_key_secret_populated" {
@@ -75,7 +75,7 @@ variable "enable_alert_push_subscriptions" {
 variable "enable_ci_triggers" {
   type        = bool
   default     = false
-  description = "Create Cloud Build GitHub triggers. Requires the one-time manual step of installing the Cloud Build GitHub App on the repo and connecting it in the console first (see WEEK2_SETUP.md); applying with this true before that fails."
+  description = "Create Cloud Build GitHub triggers. Requires the one-time manual step of installing the Cloud Build GitHub App on the repo and connecting it in the console first; applying with this true before that fails."
 }
 
 variable "github_owner" {

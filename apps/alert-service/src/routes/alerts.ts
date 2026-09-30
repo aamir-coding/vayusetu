@@ -132,7 +132,7 @@ export default async function alertsRoutes(app: FastifyInstance) {
   /**
    * CONTRACT NOTE: API_CONTRACTS.md lists only 401/403/404 for this endpoint,
    * but a missing/ineligible officerId is a client input error, so it's 400
-   * VALIDATION_ERROR -- flagged in WEEK2_SETUP.md to add 400 to the contract.
+   * VALIDATION_ERROR -- 400 should be added to the contract.
    */
   app.post('/alerts/:id/assign', async (request, reply) => {
     const caller = await requireOfficial(request);

@@ -19,7 +19,7 @@ export interface SignedUpload {
  * the IAM Credentials `signBlob` API, which needs the runtime service
  * account to hold roles/iam.serviceAccountTokenCreator (granted in
  * infra/terraform iam.tf). With plain user ADC locally, signing fails with
- * "Cannot sign data without `client_email`" -- see WEEK2_SETUP.md.
+ * "Cannot sign data without `client_email`".
  */
 export async function createSignedUploadUrl(args: {
   bucket: string;

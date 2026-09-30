@@ -37,7 +37,7 @@ export interface ChannelAdapter {
 
 /**
  * Which channels fire at which severity. Product decision, not in any
- * contract doc -- flagged in WEEK2_SETUP.md. Rationale: push reaches the
+ * contract doc. Rationale: push reaches the
  * dashboard; SMS/WhatsApp are for "officers without the dashboard open"
  * (ARCHITECTURE_OVERVIEW.md), so they're reserved for alerts worth
  * interrupting someone for.

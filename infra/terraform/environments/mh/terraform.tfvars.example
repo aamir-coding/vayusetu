@@ -1,7 +1,7 @@
 project_id = "vayusetu-mh-dev"
 region     = "asia-south1"
 
-# Week 2 -- flip each ONLY after its manual step in WEEK2_SETUP.md:
+# Week 2 -- flip each ONLY after its manual step:
 # maps_api_key_secret_populated   = true   # after: gcloud secrets versions add google-maps-api-key ...
 # enable_alert_push_subscriptions = true   # after: alert-service's real image is deployed once
 # enable_ci_triggers              = true   # after: Cloud Build GitHub App installed + repo connected
@@ -9,7 +9,7 @@ region     = "asia-south1"
 # github_repo                     = "vayusetu"
 # dashboard_base_url              = "https://vayusetu-mh-dev-admin.web.app"
 
-# Pre-production readiness audit (docs/AUDIT_FOLLOWUPS.md)
+# Pre-production readiness audit
 # citizen_media_retention_days = 90         # M5: delete raw citizen media after N days (0 = keep)
 # enable_app_check             = true       # H1: reCAPTCHA Enterprise key + App Check for the citizen PWA
 # app_check_mode               = "monitor"  # H1: off -> monitor -> enforce
