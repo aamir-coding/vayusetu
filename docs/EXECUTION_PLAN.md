@@ -139,7 +139,7 @@ Rehearsed live, end to end (citizen photo → Gemini → fast path → Gemini-br
 
 Health on 29 Sep:
 - **All green:**
-  - TypeScript: 360 tests across 13 packages
+  - TypeScript: 323 tests across 13 packages (452 in total with Python, Terraform, E2E, portal and load-test suites; recounted 30 Sep)
   - ingestion: 46
   - ML: 15
   - Terraform: 42
