@@ -13,6 +13,9 @@ info:
     - `Authorization: Bearer <Firebase ID token>` is required everywhere. No endpoint is
       unauthenticated, because jurisdiction-correct routing needs a resolvable identity.
     - Errors use the `ApiError` envelope.
+    - Citizen write operations (`registerUser`, upload-url, `createSubmission`, clarify,
+      `retryAnalysis`) also take `X-Firebase-AppCheck` (see `components.parameters.appCheckToken`).
+      Checked only when the deployment sets `APP_CHECK`: `monitor` logs, `enforce` returns 401.
     - List endpoints take `pageSize` (default 20, max 100) and `pageToken`, and return a paginated envelope.
     - `FORBIDDEN_JURISDICTION` (403) fires whenever an official reads or acts outside their
       `User.jurisdiction`. The API layer and the Firestore security rules enforce this identically.
@@ -744,6 +747,14 @@ components:
       description: Firebase Auth ID token. Officials carry `role`, `stateCode` and `districtCode` custom claims.
 
   parameters:
+    appCheckToken:
+      name: X-Firebase-AppCheck
+      in: header
+      required: false
+      description: >-
+        Firebase App Check token from the citizen PWA (reCAPTCHA Enterprise). Required on citizen
+        write operations when submission-service runs with APP_CHECK=enforce.
+      schema: { type: string }
     idPath:
       name: id
       in: path
