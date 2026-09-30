@@ -48,6 +48,9 @@ export function qualifies(r: AnalysisResult, minConfidence: number, minAgreement
 
 const MODEL_SCORE_MAX_AGE_H = 3;
 
+/** Newest reports a single fast-path rescore considers (audit M3): bounds the reads when a cell is flooded. */
+export const MAX_FAST_PATH_REPORTS = 200;
+
 type HotspotDoc = HotspotCell & { modelScore?: number; expireAt?: Date };
 
 export async function handleAnalysisCompleted(
@@ -65,13 +68,16 @@ export async function handleAnalysisCompleted(
   // uploadedAt DESC) exists -- and every fast-path event failed live with
   // FAILED_PRECONDITION until the 28 Sep rehearsal caught it.
   const subs = (
-    await db.collection('submissions').where('h3Index', '==', event.h3Index).where('uploadedAt', '>=', since).orderBy('uploadedAt', 'desc').get()
+    await db.collection('submissions').where('h3Index', '==', event.h3Index).where('uploadedAt', '>=', since).orderBy('uploadedAt', 'desc').limit(MAX_FAST_PATH_REPORTS).get()
   ).docs.map((d) => d.data() as Submission);
   // One vote per citizen: evidence is DISTINCT people, so one phone (or a
   // spammer) re-reporting the same spot cannot push a cell to an alert alone.
   const byUser = new Map<string, AnalysisResult>();
-  for (const s of subs) {
-    const snap = await db.collection('analysisResults').doc(s.id).get();
+  // ONE batched read for all the analyses, not one round-trip per report
+  // (audit M3: a busy or spammed cell made every event slower).
+  const snaps = subs.length ? await db.getAll(...subs.map((s) => db.collection('analysisResults').doc(s.id))) : [];
+  for (const [i, s] of subs.entries()) {
+    const snap = snaps[i]!;
     const r = snap.exists ? (snap.data() as AnalysisResult) : undefined;
     if (!r || !qualifies(r, deps.config.minConfidence, deps.config.minAgreement)) continue;
     const prev = byUser.get(s.userId);
