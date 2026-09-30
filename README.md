@@ -101,32 +101,26 @@ States join a **National Exchange** that no single state owns. Each night a stat
 ## Architecture
 
 ```mermaid
-flowchart LR
-  subgraph Citizen["Citizen (PWA · offline-first · 4 languages)"]
-    P[Photo + voice note]
+flowchart TB
+  C["📱 <b>Citizen app</b><br/>photo + voice · 4 languages · offline · no sign-up"]
+  subgraph ST["One state's own Google Cloud project — Delhi NCR, Mumbai–Pune, …"]
+    A["<b>Analysis</b><br/>Gemini 3.7 Flash · Speech-to-Text · Text-to-Speech<br/>cross-checked against monitors"]
+    D["<b>Signals</b><br/>Earth Engine satellites · Air Quality · Weather · ERA5<br/>→ BigQuery"]
+    H["<b>Hotspot fusion</b><br/>citizen fast path + AutoML model<br/>hidden-hotspot flag"]
+    F["<b>Forecast</b><br/>AutoML · 24 / 48 / 72 h · GRAP stage"]
+    AL["<b>Alerting</b><br/>district routing · Gemini 3.1 Pro cited briefing · push"]
   end
-  subgraph State["One state's Google Cloud project (NCR, Mumbai–Pune, …)"]
-    S[submission-service<br/>Cloud Run]
-    A[analysis-service<br/>Gemini 3.7 Flash · Speech-to-Text · TTS]
-    H[hotspot-service<br/>fast path + hourly AutoML scoring]
-    F[forecast-service<br/>AutoML Forecasting, every 6 h]
-    AL[alert-service<br/>routing · Gemini 3.1 Pro briefings · FCM]
-    I[ingestion jobs<br/>Earth Engine · Air Quality · Weather · OpenAQ · ERA5]
-    FS[(Firestore)]
-    BQ[(BigQuery)]
-    V[Vertex AI<br/>Pipelines · Model Registry]
-    AD[Admin console<br/>alert queue · hotspot map · forecast]
-  end
-  subgraph Nation["National Exchange project"]
-    X[(k-anonymised summaries<br/>+ shared models)]
-  end
-  P -->|signed upload| S -->|Pub/Sub| A -->|Pub/Sub| H -->|hotspot.updated| AL
-  F -->|forecast.updated| AL
-  I --> BQ --> H & F
-  V --> H & F
-  A & H & F & AL --- FS
-  AL -->|real-time, district-scoped| AD
-  State <-->|nightly federation-sync| X
+  O["🛡️ <b>Officials' console</b><br/>live, district-scoped queue · map · forecast"]
+  X[("🇮🇳 <b>National Exchange</b><br/>k-anonymised summaries + shared models")]
+  C -->|report| A
+  A -.->|advice + audio, seconds| C
+  A --> H
+  D --> H
+  D --> F
+  H -->|hotspot| AL
+  F -->|threshold crossing| AL
+  AL -->|real time| O
+  ST <-.->|nightly| X
 ```
 
 **Event-driven and serverless:** six Cloud Run services connected by Pub/Sub, eleven scheduled Cloud Run jobs for ingestion and scoring, Firestore for live state, BigQuery for history and features, Vertex AI for training and batch prediction. Everything is Terraform — a new state is `terraform apply` plus a data backfill.
