@@ -23,8 +23,8 @@ function contentTypeFor(kind: 'photo' | 'audio', blob: Blob): string {
 
 export async function uploadBlob(token: string, kind: 'photo' | 'audio', blob: Blob): Promise<string> {
   const contentType = contentTypeFor(kind, blob);
-  const { uploadUrl, storageUrl } = await submissionsApi.uploadUrl(token, { kind, contentType });
-  const put = await fetch(uploadUrl, { method: 'PUT', body: blob, headers: { 'Content-Type': contentType } });
+  const { uploadUrl, storageUrl, uploadHeaders } = await submissionsApi.uploadUrl(token, { kind, contentType });
+  const put = await fetch(uploadUrl, { method: 'PUT', body: blob, headers: { ...uploadHeaders, 'Content-Type': contentType } });
   if (!put.ok) throw new UploadError(put.status);
   return storageUrl;
 }
