@@ -559,6 +559,14 @@
     "sourceHash": "fcf3103acfd219a5",
     "text": "{{count}} पेशी · {{pct}} %"
   },
+  "federation.gateMetric": {
+    "sourceHash": "7d2ef2a202346824",
+    "text": "गुणवत्ता गेट"
+  },
+  "federation.moreMetrics": {
+    "sourceHash": "7ecd4b9854acd844",
+    "text": "अधिक मेट्रिक्स {{count}}"
+  },
   "theme.toDark": {
     "sourceHash": "9b7878aef90b527c",
     "text": "डार्क मोड"
