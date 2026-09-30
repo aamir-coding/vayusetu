@@ -10,7 +10,7 @@ variable "region" {
 
 # ---------------------------------------------------------------- Week 2
 # Each defaults to the safe/off state; flip in terraform.tfvars as you
-# complete the matching manual step in WEEK2_SETUP.md.
+# complete the matching manual step for it.
 
 variable "maps_api_key_secret_populated" {
   type    = bool

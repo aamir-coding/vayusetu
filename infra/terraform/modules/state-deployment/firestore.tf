@@ -118,7 +118,7 @@ resource "google_firestore_index" "resource_requests_by_jurisdiction" {
 # GET /alerts sorts by createdAt, not severity: DB_SCHEMA.md's
 # alerts_by_jurisdiction index sorts `severity DESC` on a string, where
 # 'critical' sorts LAST. That index is kept (DB_SCHEMA.md is Engineer 4's
-# to change) but nothing queries it. See WEEK2_SETUP.md.
+# to change) but nothing queries it.
 locals {
   merge_indexes = {
     submissions_by_state_code     = { collection = "submissions", field = "jurisdiction.stateCode", sort = "uploadedAt" }

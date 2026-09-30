@@ -8,7 +8,7 @@ import type { AlertStatus } from '@vayusetu/shared-types';
  *    offers can ever 409. Verified in test/domain.test.ts.
  *  - dismissed is terminal; resolved can only be re-opened to in_progress.
  *  - Stricter than the admin-dashboard MSW mock, which permitted backwards
- *    moves like in_progress -> acknowledged. Flagged in WEEK2_SETUP.md.
+ *    moves like in_progress -> acknowledged.
  */
 export const ALLOWED_TRANSITIONS: Record<AlertStatus, readonly AlertStatus[]> = {
   new: ['acknowledged', 'in_progress', 'resolved', 'dismissed'],

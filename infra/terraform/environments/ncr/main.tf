@@ -11,7 +11,7 @@ module "ncr_dev" {
   exchange_project_number = var.exchange_project_number
   enable_federation_sync  = var.enable_federation_sync
 
-  # Week 2 (see WEEK2_SETUP.md for when to flip each)
+  # Week 2
   maps_api_key_secret_populated   = var.maps_api_key_secret_populated
   enable_alert_push_subscriptions = var.enable_alert_push_subscriptions
   enable_ci_triggers              = var.enable_ci_triggers

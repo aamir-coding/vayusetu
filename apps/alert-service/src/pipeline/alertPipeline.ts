@@ -287,7 +287,7 @@ export async function handleHotspotUpdated(payload: HotspotUpdatedPayload, deps:
  * single assignedJurisdiction -- so each state's admins get their own
  * actionable, separately-trackable alert. This matches the admin-dashboard
  * fixture (NCR forecast alert assigned to {stateCode: 'DL'}), but the
- * contract doesn't spell it out: flagged in WEEK2_SETUP.md.
+ * contract doesn't spell it out.
  */
 export async function handleForecastUpdated(payload: ForecastUpdatedPayload, deps: PipelineDeps): Promise<EventOutcome[]> {
   const run = await readValidated<ForecastRun>(

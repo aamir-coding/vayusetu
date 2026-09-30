@@ -97,7 +97,7 @@ vayusetu/
 
 ## Engineer 3 — AI Pipeline & Gemini/Vertex AI Integration Lead
 
-> **Status (26 Sep 2026): role vacant.** Engineer 3 left the team with no committed work. This scope is being delivered under the other roles per `docs/EXECUTION_PLAN.md`, with no features cut.
+> **Status (26 Sep 2026): role vacant.** Engineer 3 left the team with no committed work. This scope is being delivered under the other roles, with no features cut.
 
 **Scope:** `apps/analysis-service`, `apps/hotspot-service`, `apps/forecast-service`, `packages/gemini-client`, `ml/`.
 

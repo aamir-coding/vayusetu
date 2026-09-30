@@ -3,7 +3,7 @@
 # finite batch work, need up to an hour (Earth Engine exports), and sharing
 # one image keeps the seed data/H3 constants in exactly one place.
 #
-# Rollout (see docs/EXECUTION_PLAN.md):
+# Rollout:
 #   1. apply (jobs created on the placeholder image, schedules OFF)
 #   2. build + push the ingestion-jobs image; CI or
 #      `gcloud run jobs update <job> --image=<img>` for each job

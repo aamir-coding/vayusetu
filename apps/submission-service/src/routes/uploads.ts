@@ -15,8 +15,8 @@ import { usersCollection } from '../lib/collections.js';
  * apps/citizen-pwa/src/lib/uploadClient.ts is still calling an MSW-only
  * `/mock-storage/sign`. The response shape deliberately matches what that
  * client already expects ({ uploadUrl, storageUrl }) plus `expiresAt`, so
- * Engineer 1's change is a URL swap. The proposed contract text is in
- * WEEK2_SETUP.md; do not treat this as final until it's merged there.
+ * Engineer 1's change is a URL swap.
+ * The contract text for this is not final yet.
  */
 
 const CONTENT_TYPES = {

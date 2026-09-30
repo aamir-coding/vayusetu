@@ -60,6 +60,19 @@ const cell = (hour: string, score: number, extra: object = {}) => ({
 beforeEach(() => fakeDb.reset());
 
 describe('GET /hotspots', () => {
+  it('live map = newest hourly grid + newer fast-path cells, newest doc per cell', async () => {
+    const B = '883da1ab29fffff';
+    const C = '883da1ab2dfffff';
+    fakeDb.collection('hotspots').seed('g0', { ...cell('2026-11-02T23:00:00.000Z', 0.9), h3Index: C, id: 'g0' });
+    fakeDb.collection('hotspots').seed('g1', cell('2026-11-03T00:00:00.000Z', 0.5));
+    fakeDb.collection('hotspots').seed('g2', { ...cell('2026-11-03T00:00:00.000Z', 0.7), h3Index: B, id: 'g2' });
+    // A report two hours after the job's hour: must NOT hide the rest of the grid.
+    fakeDb.collection('hotspots').seed('f', cell('2026-11-03T02:00:00.000Z', 0.65, { modelVersion: 'hs-v1@1+citizen' }));
+    const res = await (await app(fastDeps().deps)).inject({ method: 'GET', url: '/api/v1/hotspots?corridorId=ncr-airshed', headers: auth });
+    const cells = res.json().cells as Array<{ h3Index: string; hotspotConfidenceScore: number; timestampHour: string }>;
+    expect(cells.map((c) => [c.h3Index, c.hotspotConfidenceScore])).toEqual([[B, 0.7], [H3, 0.65]]);
+  });
+
   it('returns the latest scored hour, sorted, without internal fields', async () => {
     fakeDb.collection('hotspots').seed('old', cell('2026-11-03T00:00:00.000Z', 0.99));
     fakeDb.collection('hotspots').seed('a', cell('2026-11-03T01:00:00.000Z', 0.4));
