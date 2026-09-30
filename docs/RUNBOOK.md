@@ -76,7 +76,7 @@ Also:
    Hotspot and forecast summaries log a `modelVersion`: `projects/…/models/…@N` on model hours, `heuristic-v0` or `persistence-v0` otherwise.
 
 ### 2.3 Terraform
-State is **local** to the checkout that last applied: `infra/terraform/environments/<env>/terraform.tfstate`, gitignored, together with `terraform.tfvars`. Move it to a GCS backend before a second person ever applies (this needs approval).
+State lives in GCS, `gs://<project>-tfstate/terraform/state` (`providers.tf`), with locking, so any teammate with access can plan. `terraform.tfvars` is still local and gitignored; copy it from `terraform.tfvars.example`.
 
 1. `terraform plan -out=plan.tfplan` and read every line. Replacements of Cloud Run services, Firestore, BigQuery tables or buckets are **never** expected.
 2. Get Chirag's approval for that exact plan.
