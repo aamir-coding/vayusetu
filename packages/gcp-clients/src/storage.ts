@@ -7,6 +7,8 @@ export interface SignedUpload {
    *  `fileData.fileUri`, so analysis-service never has to re-download it. */
   storageUrl: string;
   expiresAt: string;
+  /** Headers the PUT must carry exactly as given (they are part of the signature). */
+  uploadHeaders: Record<string, string>;
 }
 
 /**
@@ -23,18 +25,25 @@ export async function createSignedUploadUrl(args: {
   bucket: string;
   objectPath: string;
   contentType: string;
+  /** Upper bound on the object's size, enforced by Cloud Storage itself (audit H2). */
+  maxBytes: number;
   expiresInSeconds?: number;
 }): Promise<SignedUpload> {
   const expiresMs = Date.now() + (args.expiresInSeconds ?? 900) * 1000;
+  // x-goog-content-length-range is signed into the URL: GCS rejects a PUT
+  // whose body is outside the range, so a caller can't store a multi-GB
+  // object on our bill. The client must send the header verbatim.
+  const uploadHeaders = { 'x-goog-content-length-range': `0,${args.maxBytes}` };
   const [uploadUrl] = await getStorage(getAdminApp())
     .bucket(args.bucket)
     .file(args.objectPath)
-    .getSignedUrl({ version: 'v4', action: 'write', expires: expiresMs, contentType: args.contentType });
+    .getSignedUrl({ version: 'v4', action: 'write', expires: expiresMs, contentType: args.contentType, extensionHeaders: uploadHeaders });
 
   return {
     uploadUrl,
     storageUrl: `gs://${args.bucket}/${args.objectPath}`,
     expiresAt: new Date(expiresMs).toISOString(),
+    uploadHeaders,
   };
 }
 

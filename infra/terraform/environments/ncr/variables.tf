@@ -151,3 +151,23 @@ variable "hotspot_model_hidden_min_confidence" {
   type    = string
   default = ""
 }
+
+variable "citizen_media_retention_days" {
+  type    = number
+  default = 0
+}
+
+variable "enable_app_check" {
+  type    = bool
+  default = false
+}
+
+variable "app_check_mode" {
+  type    = string
+  default = "off"
+}
+
+variable "app_check_extra_domains" {
+  type    = list(string)
+  default = []
+}

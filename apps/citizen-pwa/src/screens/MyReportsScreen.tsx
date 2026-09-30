@@ -100,7 +100,8 @@ export function MyReportsScreen() {
                   <Link to={`/result/${submission.id}`} className="text-xs font-semibold text-accent-700 hover:underline">
                     {t('reports.awaitingAnswer')}
                   </Link>
-                ) : submission.status === 'failed' || submission.status === 'flagged_for_review' ? (
+                ) : submission.status === 'failed' && (submission.retryCount ?? 0) < 3 ? (
+                  // Flagged reports are re-run by officials, not the reporter (audit M1).
                   <button
                     type="button"
                     onClick={() => retry(submission.id)}

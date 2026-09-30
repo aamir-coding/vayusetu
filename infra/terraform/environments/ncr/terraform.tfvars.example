@@ -8,3 +8,8 @@ region     = "asia-south1"
 # github_owner                    = "your-org"
 # github_repo                     = "vayusetu"
 # dashboard_base_url              = "https://vayusetu-ncr-dev-admin.web.app"
+
+# Pre-production readiness audit (docs/AUDIT_FOLLOWUPS.md)
+# citizen_media_retention_days = 90         # M5: delete raw citizen media after N days (0 = keep)
+# enable_app_check             = true       # H1: reCAPTCHA Enterprise key + App Check for the citizen PWA
+# app_check_mode               = "monitor"  # H1: off -> monitor -> enforce

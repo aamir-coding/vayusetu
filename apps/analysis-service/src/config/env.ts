@@ -29,6 +29,8 @@ const EnvSchema = z
 
     // Pipeline D runs when Pipeline A says indeterminate below this confidence.
     CLARIFY_BELOW_CONFIDENCE: z.coerce.number().min(0).max(1).default(0.4),
+    // Per Gemini triage call (audit H3); keep 3x this under the 120 s ack deadline.
+    TRIAGE_TIMEOUT_MS: z.coerce.number().int().min(5_000).max(40_000).default(25_000),
     // A monitor reading older than this is context, never the cross-validation reference.
     MONITOR_FRESH_HOURS: z.coerce.number().positive().default(6),
     MONITOR_MAX_DISTANCE_KM: z.coerce.number().positive().default(5),

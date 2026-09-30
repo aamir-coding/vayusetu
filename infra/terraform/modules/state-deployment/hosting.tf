@@ -23,6 +23,9 @@ locals {
         VITE_FIREBASE_MESSAGING_SENDER_ID = data.google_firebase_web_app_config.frontend[cfg.web_app].messaging_sender_id
         VITE_FIREBASE_APP_ID              = google_firebase_web_app.frontend[cfg.web_app].app_id
       },
+      app == "citizen-pwa" && var.enable_app_check ? {
+        VITE_RECAPTCHA_SITE_KEY = google_recaptcha_enterprise_key.citizen[0].name # public; audit H1
+      } : {},
       app == "admin-dashboard" ? {
         VITE_GOOGLE_MAPS_API_KEY = google_apikeys_key.maps_browser.key_string
         VITE_FIREBASE_VAPID_KEY  = var.firebase_vapid_public_key

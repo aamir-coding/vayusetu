@@ -13,6 +13,9 @@ info:
     - `Authorization: Bearer <Firebase ID token>` is required everywhere. No endpoint is
       unauthenticated, because jurisdiction-correct routing needs a resolvable identity.
     - Errors use the `ApiError` envelope.
+    - Citizen write operations (`registerUser`, upload-url, `createSubmission`, clarify,
+      `retryAnalysis`) also take `X-Firebase-AppCheck` (see `components.parameters.appCheckToken`).
+      Checked only when the deployment sets `APP_CHECK`: `monitor` logs, `enforce` returns 401.
     - List endpoints take `pageSize` (default 20, max 100) and `pageToken`, and return a paginated envelope.
     - `FORBIDDEN_JURISDICTION` (403) fires whenever an official reads or acts outside their
       `User.jurisdiction`. The API layer and the Firestore security rules enforce this identically.
@@ -150,11 +153,18 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [uploadUrl, storageUrl, expiresAt]
+                required: [uploadUrl, storageUrl, expiresAt, uploadHeaders]
                 properties:
                   uploadUrl: { type: string, format: uri }
                   storageUrl: { type: string, pattern: '^gs://' }
                   expiresAt: { $ref: '#/components/schemas/ISODateString' }
+                  uploadHeaders:
+                    type: object
+                    additionalProperties: { type: string }
+                    description: >-
+                      Send these on the PUT exactly as given; they are signed into the URL. Includes
+                      `x-goog-content-length-range` (photo 10 MB, audio 2 MB max), which Cloud Storage enforces.
+                    examples: [{ x-goog-content-length-range: '0,10485760' }]
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
@@ -737,6 +747,14 @@ components:
       description: Firebase Auth ID token. Officials carry `role`, `stateCode` and `districtCode` custom claims.
 
   parameters:
+    appCheckToken:
+      name: X-Firebase-AppCheck
+      in: header
+      required: false
+      description: >-
+        Firebase App Check token from the citizen PWA (reCAPTCHA Enterprise). Required on citizen
+        write operations when submission-service runs with APP_CHECK=enforce.
+      schema: { type: string }
     idPath:
       name: id
       in: path
@@ -911,6 +929,10 @@ components:
         clarifications:
           type: array
           items: { $ref: '#/components/schemas/ClarificationExchange' }
+        retryCount:
+          type: integer
+          minimum: 0
+          description: Times retry-analysis re-queued this report (a reporter may retry at most 3 times).
 
     AnalysisResult:
       type: object

@@ -19,7 +19,7 @@ export function buildAnalysisDeps(logger: FastifyBaseLogger): AnalysisDeps {
 
   logger.info({ triageModel: models.triage, stt: `${env.STT_MODEL}@${env.STT_LOCATION}` }, 'analysis pipeline ready');
   return {
-    triage: createGeminiTriage(ai, models.triage),
+    triage: createGeminiTriage(ai, models.triage, env.TRIAGE_TIMEOUT_MS),
     transcribe: createTranscriber({ project: env.GOOGLE_CLOUD_PROJECT, location: env.STT_LOCATION, model: env.STT_MODEL }),
     loadContext: createContextLoader({
       project: env.GOOGLE_CLOUD_PROJECT,
