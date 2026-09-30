@@ -197,6 +197,12 @@ The uptime check on submission-service `/health` failed for more than 10 minutes
 2. `gcloud run services describe submission-service-<env>`: is the latest revision ready?
 3. Roll back the revision if a deploy preceded it.
 
+### Alert routed to state
+alert-service could not reverse-geocode a hotspot cell's centre, so the alert went to the state admins with no district, and no district officer was paged.
+1. Check the Maps key: `maps-api-key` secret has a version, and the Geocoding API quota isn't exhausted.
+2. From the Alert Queue, a state admin reassigns the alert to the right district (the map shows where the cell is).
+3. One occurrence at the edge of the grid is expected, for example a cell over a river or a state border. Repeats across many cells mean geocoding is down.
+
 ### Budget
 Spend is tracked against `monthly_budget` (₹15,000 for dev).
 - **Big movers:**

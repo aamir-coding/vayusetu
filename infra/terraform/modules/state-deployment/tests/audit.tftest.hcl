@@ -105,3 +105,23 @@ run "alert_push_ack_deadline_covers_a_briefing" {
     error_message = "Audit M8: alert-service push needs 120 s (Gemini briefing + geocode + FCM)."
   }
 }
+
+run "cors_pinned_to_hosting_origins" {
+  command = plan
+  assert {
+    condition     = local.cors_origin != "*" && strcontains(local.cors_origin, "https://vayusetu-test.web.app") && strcontains(local.cors_origin, "https://vayusetu-test-admin.web.app")
+    error_message = "Audit L7: CORS allows exactly the citizen and admin Hosting origins, not '*'."
+  }
+  assert {
+    condition     = !contains(local.cors_services, "analysis-service")
+    error_message = "analysis-service is push-only and has no CORS config."
+  }
+}
+
+run "fallback_routing_is_alerted" {
+  command = plan
+  assert {
+    condition     = strcontains(one(google_monitoring_alert_policy.alert_fallback_routing.conditions).condition_matched_log[0].filter, "Cell centre did not geocode")
+    error_message = "Audit L9: the state-fallback log line raises an incident."
+  }
+}
