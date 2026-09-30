@@ -37,6 +37,7 @@ locals {
       MEDIA_BUCKET          = google_storage_bucket.citizen_media.name
       DEFAULT_STATE_CODE    = var.default_state_code
       DEFAULT_DISTRICT_CODE = var.default_district_code
+      APP_CHECK             = var.app_check_mode # audit H1 (app_check.tf)
     }
     hotspot-service    = local.hotspot_env
     forecast-service   = local.forecast_env
