@@ -167,7 +167,9 @@
     "noSummariesHint": "States publish last week's aggregates nightly, once enough citizens have reported (k-anonymity floor).",
     "byState": "By contributing state",
     "byStateHint": "Mean of cell averages, latest week",
-    "stateCells": "{{count}} cells · {{pct}}%"
+    "stateCells": "{{count}} cells · {{pct}}%",
+    "gateMetric": "Quality gate",
+    "moreMetrics": "{{count}} more metrics"
   },
   "theme": {
     "toDark": "Dark mode",
