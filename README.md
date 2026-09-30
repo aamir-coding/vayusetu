@@ -60,6 +60,16 @@ The monitor network isn't going to get 100× denser. **The people are already ev
 <sub><b>72-hour forecast.</b> The Vertex AI AutoML model's trajectory for the Delhi–NCR airshed, with its uncertainty band, the GRAP stage each horizon implies, and the drivers behind it.</sub>
 </td>
 </tr>
+<tr>
+<td width="50%" valign="top" align="center">
+<img src="docs/readme/admin-hotspot-map.jpg" alt="Hotspot Map: scored H3 cells on Google Maps with a cell's signals and 7-day history" width="100%">
+<sub><b>Hotspot map.</b> Scored 0.7 km² cells on Google Maps; click one for its signals and 7-day history. (Captured at a rules-based hour between model runs — model hours add hidden-hotspot outlines.)</sub>
+</td>
+<td width="50%" valign="top" align="center">
+<img src="docs/readme/admin-federation.jpg" alt="Federation panel in Mumbai-Pune showing Delhi NCR's shared forecast and hotspot models with their quality-gate metrics" width="100%">
+<sub><b>Federation.</b> Mumbai–Pune's console showing the models Delhi NCR shared through the National Exchange, each led by the metric its quality gate used.</sub>
+</td>
+</tr>
 </table>
 
 ## Why this is different
